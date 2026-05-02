@@ -1,0 +1,29 @@
+{
+    "name": "vault-lab",
+    "version": "0.1.0",
+    "description": "A multi-account Ethereum vault built with Solidity, with Go low-level RPC tooling and Rust high-safety client experiments.",
+    "private": true,
+    "scripts": {
+        "compile": "solcjs --abi --bin --base-path . -o build contracts/MultiAccountVault.sol",
+        "clean": "rm -rf build artifacts cache",
+        "test": "echo \"No JavaScript tests configured\""
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github-personal:andantan/vault-lab.git"
+    },
+    "keywords": [
+        "solidity",
+        "ethereum",
+        "vault",
+        "geth",
+        "go",
+        "rust"
+    ],
+    "author": "andantan",
+    "license": "MIT",
+    "type": "commonjs",
+    "devDependencies": {
+        "solc": "^0.8.35"
+    }
+}
