@@ -13,7 +13,6 @@ contract MultiAccountVault is
     VaultDistribution
 {
     constructor() {
-        master = msg.sender;
-        _addAccount(master, VaultTypes.AccountRole.Master);
+        _addAccount(msg.sender, VaultTypes.AccountRole.Master);
     }
 }

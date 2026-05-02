@@ -56,8 +56,12 @@ abstract contract VaultAccounts is VaultAccess, IVaultAccounts {
             revert InvalidRole(role);
         }
 
-        if (role == VaultTypes.AccountRole.Master && master != address(0)) {
-            revert InvalidRole(role);
+        if (role == VaultTypes.AccountRole.Master) {
+            if (master != address(0)) {
+                revert InvalidRole(role);
+            }
+
+            master = account;
         }
 
         isAccount[account] = true;

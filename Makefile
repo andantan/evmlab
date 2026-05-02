@@ -5,6 +5,7 @@ GETH_CONTAINER = vault-lab-geth
 GETH_VOLUME = vault-lab-geth-data
 
 BIN_DIR = bin
+BUILD_DIR = build
 
 GO_DIR = go
 GO_BIN = vaultctl
@@ -14,7 +15,7 @@ RUST_BIN = vaultctl-rs
 
 .PHONY: help \
 	up down logs geth-logs geth-attach geth-reset \
-	compile hardhat-test test \
+	compile deploy-local test \
 	go-build go-run go-test \
 	rust-build rust-run rust-test \
 	clean
@@ -29,8 +30,8 @@ help:
 	@echo "  make geth-attach     Attach to geth IPC console"
 	@echo "  make geth-reset      Remove local geth volume and restart"
 	@echo ""
-	@echo "  make compile         Compile Solidity contracts with Hardhat"
-	@echo "  make hardhat-test    Run Hardhat tests"
+	@echo "  make compile         Compile Solidity contracts with solcjs"
+	@echo "  make deploy-local    Compile and deploy to local geth using Go"
 	@echo "  make test            Run all available tests"
 	@echo ""
 	@echo "  make go-build        Build Go client"
@@ -64,12 +65,12 @@ geth-reset:
 	$(DOCKER) compose up -d --wait
 
 compile:
-	npx hardhat compile
+	mkdir -p $(BUILD_DIR)
+	npx solcjs --abi --bin --base-path . -o $(BUILD_DIR) contracts/MultiAccountVault.sol
 
-hardhat-test:
-	npx hardhat test
+deploy-local: compile go-run
 
-test: hardhat-test go-test rust-test
+test: go-test rust-test
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
@@ -110,6 +111,7 @@ rust-test:
 
 clean:
 	rm -rf $(BIN_DIR)
+	rm -rf $(BUILD_DIR)
 	rm -rf artifacts cache
 	@if [ -d "$(RUST_DIR)" ]; then \
 		cd $(RUST_DIR) && cargo clean; \
