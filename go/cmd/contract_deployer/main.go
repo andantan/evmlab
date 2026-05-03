@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/ecdsa"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -12,12 +11,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/andantan/vault-lab/go/core"
+	coretypes "github.com/andantan/vault-lab/go/core/types"
 	"github.com/andantan/vault-lab/go/internal/config"
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	gethcrypto "github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/andantan/vault-lab/go/internal/rpc"
+	"github.com/andantan/vault-lab/go/internal/util"
 )
 
 func main() {
@@ -64,24 +62,24 @@ func run() error {
 		return err
 	}
 
-	ctx := context.Background()
-
-	client, err := ethclient.Dial(cfg.RPCURL)
+	evmKey, err := core.DeriveKeyFromHex(key.PrivateKey, key.PublicKey, key.Address)
 	if err != nil {
-		return fmt.Errorf("connect rpc: %w", err)
+		return fmt.Errorf("derive key: %w", err)
 	}
-	defer client.Close()
+	deployerAddr := evmKey.Address.String()
+	fmt.Println("Deployer:", deployerAddr)
 
-	chainID, err := client.ChainID(ctx)
+	ctx := context.Background()
+	client := rpc.NewClient(cfg.RPCURL)
+
+	chainIDHex, err := client.ChainID(ctx)
 	if err != nil {
 		return fmt.Errorf("get chain id: %w", err)
 	}
-
-	privateKey, from, err := keyToAddress(key.PrivateKey)
+	chainID, err := util.HexToBigInt(chainIDHex)
 	if err != nil {
-		return err
+		return fmt.Errorf("parse chain id: %w", err)
 	}
-	fmt.Println("Deployer:", from.Hex())
 
 	bytecode, err := loadBytecode(root, contractPath)
 	if err != nil {
@@ -89,79 +87,106 @@ func run() error {
 	}
 	fmt.Println("Bytecode size:", len(bytecode))
 
-	nonce, err := client.PendingNonceAt(ctx, from)
+	nonceHex, err := client.GetTransactionCount(ctx, deployerAddr, "pending")
 	if err != nil {
 		return fmt.Errorf("get nonce: %w", err)
 	}
+	nonce, err := util.HexToUint64(nonceHex)
+	if err != nil {
+		return fmt.Errorf("parse nonce: %w", err)
+	}
 
-	gasLimit, err := client.EstimateGas(ctx, ethereum.CallMsg{
-		From:  from,
-		To:    nil,
-		Value: big.NewInt(0),
-		Data:  bytecode,
+	gasLimitHex, err := client.EstimateGas(ctx, map[string]string{
+		"from": deployerAddr,
+		"data": "0x" + hex.EncodeToString(bytecode),
 	})
 	if err != nil {
 		return fmt.Errorf("estimate gas: %w", err)
 	}
+	gasLimit, err := util.HexToUint64(gasLimitHex)
+	if err != nil {
+		return fmt.Errorf("parse gas limit: %w", err)
+	}
 	gasLimit = gasLimit + gasLimit/5
 
-	tipCap, err := client.SuggestGasTipCap(ctx)
+	tipCapHex, err := client.MaxPriorityFeePerGas(ctx)
 	if err != nil {
-		return fmt.Errorf("suggest gas tip cap: %w", err)
+		return fmt.Errorf("get tip cap: %w", err)
+	}
+	tipCap, err := util.HexToBigInt(tipCapHex)
+	if err != nil {
+		return fmt.Errorf("parse tip cap: %w", err)
 	}
 
-	header, err := client.HeaderByNumber(ctx, nil)
+	block, err := client.BlockByNumber(ctx, "latest")
 	if err != nil {
-		return fmt.Errorf("get latest header: %w", err)
+		return fmt.Errorf("get latest block: %w", err)
 	}
+	baseFee, err := util.HexToBigInt(block["baseFeePerGas"].(string))
+	if err != nil {
+		return fmt.Errorf("parse base fee: %w", err)
+	}
+	feeCap := new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), tipCap)
 
-	feeCap := new(big.Int).Add(
-		new(big.Int).Mul(header.BaseFee, big.NewInt(2)),
-		tipCap,
-	)
-
-	tx := types.NewTx(&types.DynamicFeeTx{
+	tx := &coretypes.DynamicFeeTx{
 		ChainID:   chainID,
 		Nonce:     nonce,
 		GasTipCap: tipCap,
 		GasFeeCap: feeCap,
-		Gas:       gasLimit,
+		GasLimit:  gasLimit,
 		To:        nil,
 		Value:     big.NewInt(0),
 		Data:      bytecode,
-	})
+	}
 
-	signedTx, err := types.SignTx(tx, types.LatestSignerForChainID(chainID), privateKey)
+	unsigned, err := core.Codec.EncodeDynamicFeeUnsigned(tx)
+	if err != nil {
+		return fmt.Errorf("encode unsigned tx: %w", err)
+	}
+
+	txHash := core.Hasher.Hash(unsigned)
+	sig, err := core.Signer.Sign(txHash, *evmKey.PrivateKey)
 	if err != nil {
 		return fmt.Errorf("sign tx: %w", err)
 	}
 
-	if err = client.SendTransaction(ctx, signedTx); err != nil {
+	rawTxBytes, err := core.Codec.EncodeDynamicFeeSigned(tx, sig)
+	if err != nil {
+		return fmt.Errorf("encode signed tx: %w", err)
+	}
+
+	txHashHex, err := client.SendRawTransaction(ctx, "0x"+hex.EncodeToString(rawTxBytes))
+	if err != nil {
 		return fmt.Errorf("send tx: %w", err)
 	}
 
 	fmt.Println("RPC:", cfg.RPCURL)
 	fmt.Println("Chain ID:", chainID.String())
-	fmt.Println("Deploy tx:", signedTx.Hash().Hex())
+	fmt.Println("Deploy tx:", txHashHex)
 
-	receipt, err := waitReceipt(ctx, client, signedTx.Hash(), 30*time.Second)
+	receipt, err := client.WaitForReceipt(ctx, txHashHex, 30*time.Second)
 	if err != nil {
 		return err
 	}
 
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		return fmt.Errorf("deployment failed: status=%d", receipt.Status)
+	if receipt["status"] != "0x1" {
+		return fmt.Errorf("deployment failed: status=%s", receipt["status"])
 	}
 
-	code, err := client.CodeAt(ctx, receipt.ContractAddress, nil)
+	contractAddr := receipt["contractAddress"].(string)
+	blockNumber := receipt["blockNumber"].(string)
+	gasUsed := receipt["gasUsed"].(string)
+
+	codeHex, err := client.GetCode(ctx, contractAddr, "latest")
 	if err != nil {
 		return fmt.Errorf("get deployed code: %w", err)
 	}
+	codeSize := (len(strings.TrimPrefix(codeHex, "0x"))) / 2
 
-	fmt.Println("Contract address:", receipt.ContractAddress.Hex())
-	fmt.Println("Block number:", receipt.BlockNumber.String())
-	fmt.Println("Gas used:", receipt.GasUsed)
-	fmt.Println("Runtime code size:", len(code), "bytes")
+	fmt.Println("Contract address:", contractAddr)
+	fmt.Println("Block number:", blockNumber)
+	fmt.Println("Gas used:", gasUsed)
+	fmt.Println("Runtime code size:", codeSize, "bytes")
 
 	return nil
 }
@@ -194,39 +219,6 @@ func loadBytecode(root, contractPath string) ([]byte, error) {
 	}
 
 	return bytecode, nil
-}
-
-func keyToAddress(privateKeyHex string) (*ecdsa.PrivateKey, common.Address, error) {
-	privateKeyHex = strings.TrimPrefix(strings.TrimSpace(privateKeyHex), "0x")
-
-	privateKey, err := gethcrypto.HexToECDSA(privateKeyHex)
-	if err != nil {
-		return nil, common.Address{}, fmt.Errorf("parse private key: %w", err)
-	}
-
-	publicKey, ok := privateKey.Public().(*ecdsa.PublicKey)
-	if !ok {
-		return nil, common.Address{}, fmt.Errorf("invalid public key type")
-	}
-
-	return privateKey, gethcrypto.PubkeyToAddress(*publicKey), nil
-}
-
-func waitReceipt(ctx context.Context, client *ethclient.Client, txHash common.Hash, timeout time.Duration) (*types.Receipt, error) {
-	deadline := time.Now().Add(timeout)
-
-	for {
-		receipt, err := client.TransactionReceipt(ctx, txHash)
-		if err == nil {
-			return receipt, nil
-		}
-
-		if time.Now().After(deadline) {
-			return nil, fmt.Errorf("timeout waiting for receipt: %s", txHash.Hex())
-		}
-
-		time.Sleep(500 * time.Millisecond)
-	}
 }
 
 func findProjectRoot() (string, error) {
