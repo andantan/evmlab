@@ -3,7 +3,7 @@ package core
 import (
 	"errors"
 
-	"github.com/andantan/vault-lab/go/core/types"
+	"github.com/andantan/evmlab/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
 )

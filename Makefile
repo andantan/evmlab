@@ -1,15 +1,16 @@
-PROJECT = vault-lab
+PROJECT = evmlab
 DOCKER ?= docker
 
-GETH_CONTAINER = vault-lab-geth
-GETH_VOLUME = vault-lab-geth-data
-BLOCKSCOUT_DB_VOLUME = vault-lab-blockscout-db-data
+GETH_CONTAINER = evmlab-geth
+GETH_VOLUME = evmlab-geth-data
+BLOCKSCOUT_DB_VOLUME = evmlab-blockscout-db-data
 
 BIN_DIR = bin
 BUILD_DIR = build
 
 GO_DIR = go
-GO_BIN = contract_deployer
+GO_DEPLOYER_BIN = contract_deployer
+GO_SERVER_BIN   = server
 
 EXPLORER_URL ?= http://localhost:3000
 
@@ -18,7 +19,8 @@ EXPLORER_URL ?= http://localhost:3000
 	geth-logs geth-attach geth-reset \
 	explorer \
 	compile standard-json deploy test \
-	go-build go-run go-test \
+	go-build-deployer go-build-server go-build \
+	server go-test \
 	clean
 
 help:
@@ -40,9 +42,11 @@ help:
 	@echo "  make deploy          Compile and deploy to local geth (CONTRACT=<path>)"
 	@echo "  make test            Run all tests"
 	@echo ""
-	@echo "  make go-build        Build Go binary"
-	@echo "  make go-run          Run Go binary"
-	@echo "  make go-test         Run Go tests"
+	@echo "  make go-build          Build all Go binaries"
+	@echo "  make go-build-deployer Build contract_deployer binary"
+	@echo "  make go-build-server   Build server binary"
+	@echo "  make server            Build and run API server"
+	@echo "  make go-test           Run Go tests"
 	@echo ""
 	@echo "  make clean           Remove generated build outputs"
 
@@ -88,20 +92,25 @@ standard-json:
 	mkdir -p $(BUILD_DIR)/$(CONTRACT_SUBDIR)
 	bash $(CONTRACT_DIR)/build-standard-json.sh $(CONTRACT_NAME)
 
-deploy: go-build compile standard-json
+deploy: go-build-deployer compile standard-json
 	@[ -n "$(DEPLOYER)" ] || (echo "error: DEPLOYER is required (e.g. make deploy CONTRACT=... DEPLOYER=key0)" && exit 1)
-	./$(BIN_DIR)/$(GO_BIN) --contract $(CONTRACT) --deployer $(DEPLOYER)
+	./$(BIN_DIR)/$(GO_DEPLOYER_BIN) --contract $(CONTRACT) --deployer $(DEPLOYER)
 
 test: go-test
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
 
-go-build: $(BIN_DIR)
-	cd $(GO_DIR) && go mod tidy && go build -o ../$(BIN_DIR)/$(GO_BIN) ./cmd/contract_deployer
+go-build-deployer: $(BIN_DIR)
+	cd $(GO_DIR) && go build -o ../$(BIN_DIR)/$(GO_DEPLOYER_BIN) ./cmd/contract_deployer
 
-go-run: go-build
-	./$(BIN_DIR)/$(GO_BIN)
+go-build-server: $(BIN_DIR)
+	cd $(GO_DIR) && go build -o ../$(BIN_DIR)/$(GO_SERVER_BIN) ./cmd/server
+
+go-build: go-build-deployer go-build-server
+
+server: go-build-server
+	./$(BIN_DIR)/$(GO_SERVER_BIN)
 
 go-test:
 	cd $(GO_DIR) && go test ./...

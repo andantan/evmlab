@@ -1,7 +1,7 @@
 services:
   geth-init:
     image: ethereum/client-go:v1.17.1
-    container_name: vault-lab-geth-init
+    container_name: evmlab-geth-init
     volumes:
       - ./deploy/geth/genesis.json:/genesis.json:ro
       - geth-data:/root/.ethereum
@@ -14,7 +14,7 @@ services:
 
   geth:
     image: ethereum/client-go:v1.17.1
-    container_name: vault-lab-geth
+    container_name: evmlab-geth
     depends_on:
       geth-init:
         condition: service_completed_successfully
@@ -54,7 +54,7 @@ services:
 
   blockscout-db:
     image: postgres:16-alpine
-    container_name: vault-lab-blockscout-db
+    container_name: evmlab-blockscout-db
     environment:
       POSTGRES_DB: blockscout
       POSTGRES_USER: blockscout
@@ -70,12 +70,12 @@ services:
 
   blockscout-redis:
     image: redis:7-alpine
-    container_name: vault-lab-blockscout-redis
+    container_name: evmlab-blockscout-redis
     restart: unless-stopped
 
   blockscout:
     image: blockscout/blockscout:latest
-    container_name: vault-lab-blockscout
+    container_name: evmlab-blockscout
     depends_on:
       geth:
         condition: service_healthy
@@ -109,7 +109,7 @@ services:
 
   blockscout-frontend:
     image: ghcr.io/blockscout/frontend:latest
-    container_name: vault-lab-blockscout-frontend
+    container_name: evmlab-blockscout-frontend
     depends_on:
       - blockscout
     ports:
@@ -131,6 +131,6 @@ services:
 
 volumes:
   geth-data:
-    name: vault-lab-geth-data
+    name: evmlab-geth-data
   blockscout-db-data:
-    name: vault-lab-blockscout-db-data
+    name: evmlab-blockscout-db-data

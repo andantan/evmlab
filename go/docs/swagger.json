@@ -1,0 +1,100 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Ethereum transaction API",
+        "title": "evmlab API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:33152",
+    "basePath": "/",
+    "paths": {
+        "/eth/transfers": {
+            "post": {
+                "description": "Signs and broadcasts a dynamic-fee ETH transfer transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "eth"
+                ],
+                "summary": "Send ETH (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.transferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.transferResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "504": {
+                        "description": "Gateway Timeout",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "handler.transferRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "description": "key alias",
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "description": "wei as decimal string",
+                    "type": "string"
+                }
+            }
+        },
+        "handler.transferResponse": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

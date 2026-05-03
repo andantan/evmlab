@@ -1,0 +1,66 @@
+basePath: /
+definitions:
+  handler.transferRequest:
+    properties:
+      from:
+        description: key alias
+        type: string
+      to:
+        type: string
+      value:
+        description: wei as decimal string
+        type: string
+    type: object
+  handler.transferResponse:
+    properties:
+      tx_hash:
+        type: string
+    type: object
+host: localhost:33152
+info:
+  contact: {}
+  description: Ethereum transaction API
+  title: evmlab API
+  version: "1.0"
+paths:
+  /eth/transfers:
+    post:
+      consumes:
+      - application/json
+      description: Signs and broadcasts a dynamic-fee ETH transfer transaction
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.transferRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.transferResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "504":
+          description: Gateway Timeout
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send ETH (EIP-1559)
+      tags:
+      - eth
+swagger: "2.0"

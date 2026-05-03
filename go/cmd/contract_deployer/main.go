@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/andantan/vault-lab/go/core"
-	coretypes "github.com/andantan/vault-lab/go/core/types"
-	"github.com/andantan/vault-lab/go/internal/config"
-	"github.com/andantan/vault-lab/go/internal/rpc"
-	"github.com/andantan/vault-lab/go/internal/util"
+	"github.com/andantan/evmlab/core"
+	"github.com/andantan/evmlab/core/types"
+	"github.com/andantan/evmlab/internal/config"
+	"github.com/andantan/evmlab/internal/rpc"
+	"github.com/andantan/evmlab/internal/util"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func run() error {
 		os.Exit(1)
 	}
 
-	root, err := findProjectRoot()
+	root, err := util.FindProjectRoot()
 	if err != nil {
 		return err
 	}
@@ -128,7 +128,7 @@ func run() error {
 	}
 	feeCap := new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), tipCap)
 
-	tx := &coretypes.DynamicFeeTx{
+	tx := &types.DynamicFeeTx{
 		ChainID:   chainID,
 		Nonce:     nonce,
 		GasTipCap: tipCap,
@@ -219,30 +219,4 @@ func loadBytecode(root, contractPath string) ([]byte, error) {
 	}
 
 	return bytecode, nil
-}
-
-func findProjectRoot() (string, error) {
-	wd, err := os.Getwd()
-	if err != nil {
-		return "", err
-	}
-
-	dir := wd
-	for {
-		if exists(filepath.Join(dir, "config.yaml")) && exists(filepath.Join(dir, "contracts")) {
-			return dir, nil
-		}
-
-		parent := filepath.Dir(dir)
-		if parent == dir {
-			return "", fmt.Errorf("project root not found from %s", wd)
-		}
-
-		dir = parent
-	}
-}
-
-func exists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
 }

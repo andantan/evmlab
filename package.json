@@ -1,5 +1,5 @@
 {
-    "name": "vault-lab",
+    "name": "evmlab",
     "version": "0.1.0",
     "description": "A multi-account Ethereum vault built with Solidity, with Go low-level RPC tooling and Rust high-safety client experiments.",
     "private": true,
@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@github-personal:andantan/vault-lab.git"
+        "url": "git@github-personal:andantan/evmlab.git"
     },
     "keywords": [
         "solidity",
