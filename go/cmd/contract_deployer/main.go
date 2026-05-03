@@ -175,8 +175,13 @@ func binFilename(solPath string) string {
 	return normalized + "_" + contractName + ".bin"
 }
 
+// contracts/vault/Foo.sol -> vault
+func contractSubdir(solPath string) string {
+	return strings.TrimPrefix(filepath.Dir(solPath), "contracts/")
+}
+
 func loadBytecode(root, contractPath string) ([]byte, error) {
-	binPath := filepath.Join(root, "build", binFilename(contractPath))
+	binPath := filepath.Join(root, "build", contractSubdir(contractPath), binFilename(contractPath))
 	binBytes, err := os.ReadFile(binPath)
 	if err != nil {
 		return nil, fmt.Errorf("read bytecode: %w", err)

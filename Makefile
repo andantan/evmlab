@@ -17,7 +17,7 @@ EXPLORER_URL ?= http://localhost:3000
 	up down logs reset \
 	geth-logs geth-attach geth-reset \
 	explorer \
-	compile deploy test \
+	compile standard-json deploy test \
 	go-build go-run go-test \
 	clean
 
@@ -36,6 +36,7 @@ help:
 	@echo "  make explorer        Print local Blockscout URL"
 	@echo ""
 	@echo "  make compile         Compile Solidity contract (CONTRACT=<path>)"
+	@echo "  make standard-json   Generate standard JSON input (CONTRACT=<path>)"
 	@echo "  make deploy          Compile and deploy to local geth (CONTRACT=<path>)"
 	@echo "  make test            Run all tests"
 	@echo ""
@@ -72,12 +73,22 @@ geth-reset:
 explorer:
 	@echo "$(EXPLORER_URL)"
 
+CONTRACT_DIR    = $(shell dirname $(CONTRACT))
+CONTRACT_SUBDIR = $(shell dirname $(CONTRACT) | sed 's|^contracts/||')
+CONTRACT_NAME   = $(shell basename $(CONTRACT) .sol)
+
 compile:
 	@[ -n "$(CONTRACT)" ] || (echo "error: CONTRACT is required (e.g. make compile CONTRACT=contracts/vault/MultiAccountVault.sol)" && exit 1)
-	mkdir -p $(BUILD_DIR)
-	npx solcjs --abi --bin --base-path . -o $(BUILD_DIR) $(CONTRACT)
+	mkdir -p $(BUILD_DIR)/$(CONTRACT_SUBDIR)
+	npx solcjs --abi --bin --base-path . -o $(BUILD_DIR)/$(CONTRACT_SUBDIR) $(CONTRACT)
 
-deploy: go-build compile
+standard-json:
+	@[ -n "$(CONTRACT)" ] || (echo "error: CONTRACT is required" && exit 1)
+	@[ -f "$(CONTRACT_DIR)/build-standard-json.sh" ] || (echo "error: $(CONTRACT_DIR)/build-standard-json.sh not found" && exit 1)
+	mkdir -p $(BUILD_DIR)/$(CONTRACT_SUBDIR)
+	bash $(CONTRACT_DIR)/build-standard-json.sh $(CONTRACT_NAME)
+
+deploy: go-build compile standard-json
 	@[ -n "$(DEPLOYER)" ] || (echo "error: DEPLOYER is required (e.g. make deploy CONTRACT=... DEPLOYER=key0)" && exit 1)
 	./$(BIN_DIR)/$(GO_BIN) --contract $(CONTRACT) --deployer $(DEPLOYER)
 

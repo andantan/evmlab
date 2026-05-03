@@ -24,6 +24,6 @@
     "type": "commonjs",
     "devDependencies": {
         "ethers": "^6.16.0",
-        "solc": "^0.8.35"
+        "solc": "^0.8.30"
     }
 }
