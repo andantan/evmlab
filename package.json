@@ -1,7 +1,7 @@
 {
     "name": "evmlab",
     "version": "0.1.0",
-    "description": "A multi-account Ethereum vault built with Solidity, with Go low-level RPC tooling and Rust high-safety client experiments.",
+    "description": "Local Ethereum development environment with a Go HTTP API for low-level EVM operations and a Solidity contract suite.",
     "private": true,
     "scripts": {
         "clean": "rm -rf build artifacts cache",
@@ -9,7 +9,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "git@github-personal:andantan/evmlab.git"
+        "url": "git@github.com:andantan/evmlab.git"
     },
     "keywords": [
         "solidity",
