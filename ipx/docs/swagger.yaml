@@ -22,6 +22,19 @@ definitions:
       wei:
         type: string
     type: object
+  v1.BaseFeePerGasResponse:
+    properties:
+      base_fee_per_gas:
+        type: string
+      base_fee_per_gas_hex:
+        type: string
+      ether:
+        type: string
+      gwei:
+        type: string
+      wei:
+        type: string
+    type: object
   v1.BlockNumberResponse:
     properties:
       block_number:
@@ -92,6 +105,22 @@ definitions:
     properties:
       address:
         type: string
+    type: object
+  v1.CodeRequest:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+      block:
+        example: latest
+        type: string
+    type: object
+  v1.CodeResponse:
+    properties:
+      code:
+        type: string
+      is_contract:
+        type: boolean
     type: object
   v1.DeriveKeyRequest:
     properties:
@@ -174,6 +203,32 @@ definitions:
       digest:
         type: string
     type: object
+  v1.MaxFeePerGasResponse:
+    properties:
+      ether:
+        type: string
+      gwei:
+        type: string
+      max_fee_per_gas:
+        type: string
+      max_fee_per_gas_hex:
+        type: string
+      wei:
+        type: string
+    type: object
+  v1.MaxPriorityFeePerGasResponse:
+    properties:
+      ether:
+        type: string
+      gwei:
+        type: string
+      max_priority_fee_per_gas:
+        type: string
+      max_priority_fee_per_gas_hex:
+        type: string
+      wei:
+        type: string
+    type: object
   v1.NonceRequest:
     properties:
       address:
@@ -188,6 +243,17 @@ definitions:
       nonce:
         type: integer
       nonce_hex:
+        type: string
+    type: object
+  v1.SendTransactionRequest:
+    properties:
+      raw_tx:
+        example: 0x02f8...
+        type: string
+    type: object
+  v1.SendTransactionResponse:
+    properties:
+      tx_hash:
         type: string
     type: object
   v1.SignLegacyNativeTransferRequest:
@@ -224,6 +290,44 @@ definitions:
     properties:
       tx_hash:
         example: 0xabc123...
+        type: string
+    type: object
+  v1.UnitConvertDecimalRequest:
+    properties:
+      amount:
+        example: "1"
+        type: string
+      from:
+        example: ether
+        type: string
+      to:
+        example: wei
+        type: string
+    type: object
+  v1.UnitConvertDecimalResponse:
+    properties:
+      amount:
+        type: string
+      unit:
+        type: string
+    type: object
+  v1.UnitConvertHexRequest:
+    properties:
+      amount:
+        example: "0xde0b6b3a7640000"
+        type: string
+      from:
+        example: wei
+        type: string
+      to:
+        example: ether
+        type: string
+    type: object
+  v1.UnitConvertHexResponse:
+    properties:
+      amount:
+        type: string
+      unit:
         type: string
     type: object
   v1.VerifyByAddressRequest:
@@ -392,7 +496,99 @@ paths:
       summary: Get chain ID
       tags:
       - rpc
-  /evm/rpc/estimate-gas:
+  /evm/rpc/code:
+    post:
+      consumes:
+      - application/json
+      description: Returns the deployed code for the given address and whether it
+        is a contract
+      parameters:
+      - description: Address and block
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.CodeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.CodeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get code for address
+      tags:
+      - rpc
+  /evm/rpc/fee/base:
+    post:
+      description: Returns the latest block baseFeePerGas in decimal and hex
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.BaseFeePerGasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get base fee per gas
+      tags:
+      - rpc
+  /evm/rpc/fee/max:
+    post:
+      description: Returns max_fee_per_gas calculated as base_fee_per_gas * 2 + max_priority_fee_per_gas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.MaxFeePerGasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get max fee per gas
+      tags:
+      - rpc
+  /evm/rpc/fee/priority:
+    post:
+      description: Returns the recommended priority fee per gas in decimal and hex
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.MaxPriorityFeePerGasResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get max priority fee per gas
+      tags:
+      - rpc
+  /evm/rpc/gas/estimate:
     post:
       consumes:
       - application/json
@@ -426,7 +622,7 @@ paths:
       summary: Estimate gas for a transaction
       tags:
       - rpc
-  /evm/rpc/gas-price:
+  /evm/rpc/gas/price:
     post:
       description: Returns the current gas price in decimal and hex
       produces:
@@ -550,6 +746,40 @@ paths:
       summary: Get transaction receipt by hash
       tags:
       - rpc
+  /evm/rpc/transaction/send:
+    post:
+      consumes:
+      - application/json
+      description: Broadcasts a signed raw transaction with eth_sendRawTransaction
+      parameters:
+      - description: Signed raw transaction
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SendTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.SendTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send signed raw transaction
+      tags:
+      - rpc
   /evm/tool/address/checksum/eip55:
     post:
       consumes:
@@ -605,6 +835,63 @@ paths:
               type: string
             type: object
       summary: Derive key set from private key
+      tags:
+      - tool
+  /evm/tool/unit/convert/decimal:
+    post:
+      consumes:
+      - application/json
+      description: Converts a decimal amount from one Ethereum unit to another
+      parameters:
+      - description: Unit conversion
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UnitConvertDecimalRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UnitConvertDecimalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Convert amount between wei, gwei, and ether
+      tags:
+      - tool
+  /evm/tool/unit/convert/hex:
+    post:
+      consumes:
+      - application/json
+      description: Converts a hex integer amount from one Ethereum unit to another
+        and returns a hex integer result
+      parameters:
+      - description: Hex unit conversion
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.UnitConvertHexRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.UnitConvertHexResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Convert hex amount between wei, gwei, and ether
       tags:
       - tool
   /evm/v1/hash/keccak256/legacy:

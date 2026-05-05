@@ -7,6 +7,7 @@ import (
 
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
+	"github.com/andantan/evmlab/core/types"
 )
 
 type ToolHandler struct{}
@@ -67,4 +68,64 @@ func (h *ToolHandler) DeriveKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, NewDeriveKeyResponse(key))
+}
+
+// ConvertUnitDecimal godoc
+// @Summary      Convert amount between wei, gwei, and ether
+// @Description  Converts a decimal amount from one Ethereum unit to another
+// @Tags         tool
+// @Accept       json
+// @Produce      json
+// @Param        body  body      UnitConvertDecimalRequest   true  "Unit conversion"
+// @Success      200   {object}  UnitConvertDecimalResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/tool/unit/convert/decimal [post]
+func (h *ToolHandler) ConvertUnitDecimal(w http.ResponseWriter, r *http.Request) {
+	req := new(UnitConvertDecimalRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	amount, err := types.ConvertUnitDecimal(req.ToAmount(), req.From, req.To)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewUnitConvertDecimalResponse(amount, req.To))
+}
+
+// ConvertUnitHex godoc
+// @Summary      Convert hex amount between wei, gwei, and ether
+// @Description  Converts a hex integer amount from one Ethereum unit to another and returns a hex integer result
+// @Tags         tool
+// @Accept       json
+// @Produce      json
+// @Param        body  body      UnitConvertHexRequest  true  "Hex unit conversion"
+// @Success      200   {object}  UnitConvertHexResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/tool/unit/convert/hex [post]
+func (h *ToolHandler) ConvertUnitHex(w http.ResponseWriter, r *http.Request) {
+	req := new(UnitConvertHexRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	amount, err := types.ConvertUnitHex(req.ToAmount(), req.From, req.To)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewUnitConvertHexResponse(amount, req.To))
 }

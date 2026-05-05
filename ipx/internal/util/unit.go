@@ -5,21 +5,16 @@ import (
 	"strings"
 )
 
-// MultiplyUnit multiplies an integer unit value by its scale factor and returns
-// the exact base-10 integer representation.
 func MultiplyUnit(value *big.Int, multiplier *big.Int) string {
 	if value == nil {
 		return "0"
 	}
-
 	return new(big.Int).Mul(value, multiplier).String()
 }
 
-// FormatScaledInt formats an integer as a fixed-point decimal string by placing
-// the decimal point `scale` digits from the right.
 func FormatScaledInt(value *big.Int, scale int) string {
 	if value == nil {
-		return "0." + strings.Repeat("0", scale)
+		return "0"
 	}
 
 	sign := ""
@@ -35,9 +30,32 @@ func FormatScaledInt(value *big.Int, scale int) string {
 	}
 
 	if len(digits) <= scale {
-		return sign + "0." + strings.Repeat("0", scale-len(digits)) + digits
+		return trimTrailingFractionZeros(sign + "0." + strings.Repeat("0", scale-len(digits)) + digits)
 	}
 
 	split := len(digits) - scale
-	return sign + digits[:split] + "." + digits[split:]
+	return trimTrailingFractionZeros(sign + digits[:split] + "." + digits[split:])
+}
+
+// IsSupportedEthereumUnit reports whether the given unit is one of the
+// supported Ethereum denominations used by the conversion helpers.
+func IsSupportedEthereumUnit(unit string) bool {
+	switch strings.ToLower(strings.TrimSpace(unit)) {
+	case "wei", "gwei", "ether":
+		return true
+	default:
+		return false
+	}
+}
+
+func trimTrailingFractionZeros(s string) string {
+	if !strings.Contains(s, ".") {
+		return s
+	}
+	s = strings.TrimRight(s, "0")
+	s = strings.TrimRight(s, ".")
+	if s == "" || s == "-" {
+		return "0"
+	}
+	return s
 }

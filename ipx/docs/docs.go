@@ -180,7 +180,146 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/rpc/estimate-gas": {
+        "/evm/rpc/code": {
+            "post": {
+                "description": "Returns the deployed code for the given address and whether it is a contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get code for address",
+                "parameters": [
+                    {
+                        "description": "Address and block",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.CodeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.CodeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc/fee/base": {
+            "post": {
+                "description": "Returns the latest block baseFeePerGas in decimal and hex",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get base fee per gas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.BaseFeePerGasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc/fee/max": {
+            "post": {
+                "description": "Returns max_fee_per_gas calculated as base_fee_per_gas * 2 + max_priority_fee_per_gas",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get max fee per gas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.MaxFeePerGasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc/fee/priority": {
+            "post": {
+                "description": "Returns the recommended priority fee per gas in decimal and hex",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get max priority fee per gas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.MaxPriorityFeePerGasResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc/gas/estimate": {
             "post": {
                 "description": "Returns the estimated gas limit for the given transaction parameters",
                 "consumes": [
@@ -232,7 +371,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/rpc/gas-price": {
+        "/evm/rpc/gas/price": {
             "post": {
                 "description": "Returns the current gas price in decimal and hex",
                 "produces": [
@@ -419,6 +558,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/rpc/transaction/send": {
+            "post": {
+                "description": "Broadcasts a signed raw transaction with eth_sendRawTransaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Send signed raw transaction",
+                "parameters": [
+                    {
+                        "description": "Signed raw transaction",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.SendTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.SendTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/tool/address/checksum/eip55": {
             "post": {
                 "description": "Returns the EIP-55 mixed-case checksum encoding for the given address",
@@ -491,6 +682,92 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/v1.DeriveKeyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/tool/unit/convert/decimal": {
+            "post": {
+                "description": "Converts a decimal amount from one Ethereum unit to another",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tool"
+                ],
+                "summary": "Convert amount between wei, gwei, and ether",
+                "parameters": [
+                    {
+                        "description": "Unit conversion",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.UnitConvertDecimalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UnitConvertDecimalResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/tool/unit/convert/hex": {
+            "post": {
+                "description": "Converts a hex integer amount from one Ethereum unit to another and returns a hex integer result",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tool"
+                ],
+                "summary": "Convert hex amount between wei, gwei, and ether",
+                "parameters": [
+                    {
+                        "description": "Hex unit conversion",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.UnitConvertHexRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.UnitConvertHexResponse"
                         }
                     },
                     "400": {
@@ -911,6 +1188,26 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.BaseFeePerGasResponse": {
+            "type": "object",
+            "properties": {
+                "base_fee_per_gas": {
+                    "type": "string"
+                },
+                "base_fee_per_gas_hex": {
+                    "type": "string"
+                },
+                "ether": {
+                    "type": "string"
+                },
+                "gwei": {
+                    "type": "string"
+                },
+                "wei": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.BlockNumberResponse": {
             "type": "object",
             "properties": {
@@ -1012,6 +1309,30 @@ const docTemplate = `{
             "properties": {
                 "address": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.CodeRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                },
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                }
+            }
+        },
+        "v1.CodeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "is_contract": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1137,6 +1458,46 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.MaxFeePerGasResponse": {
+            "type": "object",
+            "properties": {
+                "ether": {
+                    "type": "string"
+                },
+                "gwei": {
+                    "type": "string"
+                },
+                "max_fee_per_gas": {
+                    "type": "string"
+                },
+                "max_fee_per_gas_hex": {
+                    "type": "string"
+                },
+                "wei": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.MaxPriorityFeePerGasResponse": {
+            "type": "object",
+            "properties": {
+                "ether": {
+                    "type": "string"
+                },
+                "gwei": {
+                    "type": "string"
+                },
+                "max_priority_fee_per_gas": {
+                    "type": "string"
+                },
+                "max_priority_fee_per_gas_hex": {
+                    "type": "string"
+                },
+                "wei": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.NonceRequest": {
             "type": "object",
             "properties": {
@@ -1157,6 +1518,23 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "nonce_hex": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.SendTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "raw_tx": {
+                    "type": "string",
+                    "example": "0x02f8..."
+                }
+            }
+        },
+        "v1.SendTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {
                     "type": "string"
                 }
             }
@@ -1212,6 +1590,62 @@ const docTemplate = `{
                 "tx_hash": {
                     "type": "string",
                     "example": "0xabc123..."
+                }
+            }
+        },
+        "v1.UnitConvertDecimalRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "ether"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "wei"
+                }
+            }
+        },
+        "v1.UnitConvertDecimalResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.UnitConvertHexRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "0xde0b6b3a7640000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "wei"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "ether"
+                }
+            }
+        },
+        "v1.UnitConvertHexResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string"
+                },
+                "unit": {
+                    "type": "string"
                 }
             }
         },

@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
 
 	"github.com/andantan/evmlab/api/handler"
@@ -49,7 +50,7 @@ func (h *RPCHandler) ChainID(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Success      200  {object}  GasPriceResponse
 // @Failure      500  {object}  map[string]string
-// @Router       /evm/rpc/gas-price [post]
+// @Router       /evm/rpc/gas/price [post]
 func (h *RPCHandler) GasPrice(w http.ResponseWriter, r *http.Request) {
 	hex, err := h.client.GasPrice(r.Context())
 	if err != nil {
@@ -64,6 +65,90 @@ func (h *RPCHandler) GasPrice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, NewGasPriceResponse(gasPrice, hex))
+}
+
+// BaseFeePerGas godoc
+// @Summary      Get base fee per gas
+// @Description  Returns the latest block baseFeePerGas in decimal and hex
+// @Tags         rpc
+// @Produce      json
+// @Success      200  {object}  BaseFeePerGasResponse
+// @Failure      500  {object}  map[string]string
+// @Router       /evm/rpc/fee/base [post]
+func (h *RPCHandler) BaseFeePerGas(w http.ResponseWriter, r *http.Request) {
+	baseFeeHex, err := h.client.BaseFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get base fee per gas: %s", err))
+		return
+	}
+	baseFee, err := util.HexToBigInt(baseFeeHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse base fee per gas: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewBaseFeePerGasResponse(baseFee, baseFeeHex))
+}
+
+// MaxPriorityFeePerGas godoc
+// @Summary      Get max priority fee per gas
+// @Description  Returns the recommended priority fee per gas in decimal and hex
+// @Tags         rpc
+// @Produce      json
+// @Success      200  {object}  MaxPriorityFeePerGasResponse
+// @Failure      500  {object}  map[string]string
+// @Router       /evm/rpc/fee/priority [post]
+func (h *RPCHandler) MaxPriorityFeePerGas(w http.ResponseWriter, r *http.Request) {
+	priorityFeeHex, err := h.client.MaxPriorityFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get max priority fee per gas: %s", err))
+		return
+	}
+
+	priorityFee, err := util.HexToBigInt(priorityFeeHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse max priority fee per gas: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewMaxPriorityFeePerGasResponse(priorityFee, priorityFeeHex))
+}
+
+// MaxFeePerGas godoc
+// @Summary      Get max fee per gas
+// @Description  Returns max_fee_per_gas calculated as base_fee_per_gas * 2 + max_priority_fee_per_gas
+// @Tags         rpc
+// @Produce      json
+// @Success      200  {object}  MaxFeePerGasResponse
+// @Failure      500  {object}  map[string]string
+// @Router       /evm/rpc/fee/max [post]
+func (h *RPCHandler) MaxFeePerGas(w http.ResponseWriter, r *http.Request) {
+	baseFeeHex, err := h.client.BaseFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get base fee per gas: %s", err))
+		return
+	}
+	baseFee, err := util.HexToBigInt(baseFeeHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse base fee per gas: %s", err))
+		return
+	}
+
+	priorityFeeHex, err := h.client.MaxPriorityFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get max priority fee per gas: %s", err))
+		return
+	}
+	priorityFee, err := util.HexToBigInt(priorityFeeHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse max priority fee per gas: %s", err))
+		return
+	}
+
+	maxFee := new(big.Int).Mul(baseFee, big.NewInt(2))
+	maxFee.Add(maxFee, priorityFee)
+
+	handler.WriteJSON(w, http.StatusOK, NewMaxFeePerGasResponse(maxFee, "0x"+maxFee.Text(16)))
 }
 
 // BlockNumber godoc
@@ -164,6 +249,37 @@ func (h *RPCHandler) Balance(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJSON(w, http.StatusOK, NewBalanceResponse(wei, balanceHex))
 }
 
+// Code godoc
+// @Summary      Get code for address
+// @Description  Returns the deployed code for the given address and whether it is a contract
+// @Tags         rpc
+// @Accept       json
+// @Produce      json
+// @Param        body  body      CodeRequest  true  "Address and block"
+// @Success      200   {object}  CodeResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/rpc/code [post]
+func (h *RPCHandler) Code(w http.ResponseWriter, r *http.Request) {
+	req := new(CodeRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	code, err := h.client.GetCode(r.Context(), req.Address, req.Block)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get code: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewCodeResponse(code))
+}
+
 // Transaction godoc
 // @Summary      Get transaction by hash
 // @Description  Returns transaction details for the given tx hash
@@ -236,7 +352,7 @@ func (h *RPCHandler) TransactionReceipt(w http.ResponseWriter, r *http.Request) 
 // @Success      200   {object}  EstimateGasResponse
 // @Failure      400   {object}  map[string]string
 // @Failure      500   {object}  map[string]string
-// @Router       /evm/rpc/estimate-gas [post]
+// @Router       /evm/rpc/gas/estimate [post]
 func (h *RPCHandler) EstimateGas(w http.ResponseWriter, r *http.Request) {
 	req := new(EstimateGasRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -292,4 +408,35 @@ func (h *RPCHandler) Call(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, map[string]string{"result": result})
+}
+
+// SendTransaction godoc
+// @Summary      Send signed raw transaction
+// @Description  Broadcasts a signed raw transaction with eth_sendRawTransaction
+// @Tags         rpc
+// @Accept       json
+// @Produce      json
+// @Param        body  body      SendTransactionRequest  true  "Signed raw transaction"
+// @Success      200   {object}  SendTransactionResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/rpc/transaction/send [post]
+func (h *RPCHandler) SendTransaction(w http.ResponseWriter, r *http.Request) {
+	req := new(SendTransactionRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	txHash, err := h.client.SendRawTransaction(r.Context(), req.RawTx)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to send raw transaction: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewSendTransactionResponse(txHash))
 }

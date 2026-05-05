@@ -51,24 +51,27 @@ func run() error {
 	r.Route("/evm/rpc", func(r chi.Router) {
 		rpcHandler := v1.NewRPCHandler(client)
 		r.Post("/chain-id", rpcHandler.ChainID)
-		r.Post("/gas-price", rpcHandler.GasPrice)
 		r.Post("/block-number", rpcHandler.BlockNumber)
 		r.Post("/nonce", rpcHandler.Nonce)
 		r.Post("/balance", rpcHandler.Balance)
+		r.Post("/code", rpcHandler.Code)
 		r.Post("/transaction", rpcHandler.Transaction)
 		r.Post("/transaction/receipt", rpcHandler.TransactionReceipt)
-		r.Post("/estimate-gas", rpcHandler.EstimateGas)
+		r.Post("/transaction/send", rpcHandler.SendTransaction)
+		r.Post("/fee/base", rpcHandler.BaseFeePerGas)
+		r.Post("/fee/priority", rpcHandler.MaxPriorityFeePerGas)
+		r.Post("/fee/max", rpcHandler.MaxFeePerGas)
+		r.Post("/gas/price", rpcHandler.GasPrice)
+		r.Post("/gas/estimate", rpcHandler.EstimateGas)
 		r.Post("/call", rpcHandler.Call)
-
-		tool := v1.NewToolHandler()
-		r.Post("/tool/address/checksum/eip55", tool.ChecksumEIP55)
-		r.Post("/tool/crypto/derive", tool.DeriveKey)
 	})
 
 	r.Route("/evm/tool", func(r chi.Router) {
 		tool := v1.NewToolHandler()
 		r.Post("/address/checksum/eip55", tool.ChecksumEIP55)
 		r.Post("/crypto/derive", tool.DeriveKey)
+		r.Post("/unit/convert/decimal", tool.ConvertUnitDecimal)
+		r.Post("/unit/convert/hex", tool.ConvertUnitHex)
 	})
 
 	r.Route("/evm/v1", func(r chi.Router) {

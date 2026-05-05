@@ -40,6 +40,60 @@ func NewGasPriceResponse(gasPrice *big.Int, hex string) *GasPriceResponse {
 	}
 }
 
+type BaseFeePerGasResponse struct {
+	BaseFeePerGas    string `json:"base_fee_per_gas"`
+	BaseFeePerGasHex string `json:"base_fee_per_gas_hex"`
+	Wei              string `json:"wei"`
+	Gwei             string `json:"gwei"`
+	Ether            string `json:"ether"`
+}
+
+func NewBaseFeePerGasResponse(baseFee *big.Int, hex string) *BaseFeePerGasResponse {
+	return &BaseFeePerGasResponse{
+		BaseFeePerGas:    baseFee.String(),
+		BaseFeePerGasHex: hex,
+		Wei:              baseFee.String(),
+		Gwei:             types.WeiToGwei(baseFee),
+		Ether:            types.WeiToEther(baseFee),
+	}
+}
+
+type MaxPriorityFeePerGasResponse struct {
+	MaxPriorityFeePerGas    string `json:"max_priority_fee_per_gas"`
+	MaxPriorityFeePerGasHex string `json:"max_priority_fee_per_gas_hex"`
+	Wei                     string `json:"wei"`
+	Gwei                    string `json:"gwei"`
+	Ether                   string `json:"ether"`
+}
+
+func NewMaxPriorityFeePerGasResponse(priorityFee *big.Int, hex string) *MaxPriorityFeePerGasResponse {
+	return &MaxPriorityFeePerGasResponse{
+		MaxPriorityFeePerGas:    priorityFee.String(),
+		MaxPriorityFeePerGasHex: hex,
+		Wei:                     priorityFee.String(),
+		Gwei:                    types.WeiToGwei(priorityFee),
+		Ether:                   types.WeiToEther(priorityFee),
+	}
+}
+
+type MaxFeePerGasResponse struct {
+	MaxFeePerGas    string `json:"max_fee_per_gas"`
+	MaxFeePerGasHex string `json:"max_fee_per_gas_hex"`
+	Wei             string `json:"wei"`
+	Gwei            string `json:"gwei"`
+	Ether           string `json:"ether"`
+}
+
+func NewMaxFeePerGasResponse(maxFee *big.Int, hex string) *MaxFeePerGasResponse {
+	return &MaxFeePerGasResponse{
+		MaxFeePerGas:    maxFee.String(),
+		MaxFeePerGasHex: hex,
+		Wei:             maxFee.String(),
+		Gwei:            types.WeiToGwei(maxFee),
+		Ether:           types.WeiToEther(maxFee),
+	}
+}
+
 type BlockNumberResponse struct {
 	BlockNumber    uint64 `json:"block_number"`
 	BlockNumberHex string `json:"block_number_hex"`
@@ -112,6 +166,40 @@ func NewBalanceResponse(wei *big.Int, hex string) *BalanceResponse {
 		Wei:        wei.String(),
 		Gwei:       types.WeiToGwei(wei),
 		Ether:      types.WeiToEther(wei),
+	}
+}
+
+type CodeRequest struct {
+	Address string `json:"address" example:"0xEbD69375..."`
+	Block   string `json:"block"   example:"latest"`
+}
+
+func (r *CodeRequest) ValidateRequest() error {
+	r.Address = strings.TrimSpace(r.Address)
+	if r.Address == "" {
+		return errors.New("address is required")
+	}
+	if _, err := util.ParseHex(r.Address); err != nil {
+		return errors.New("address: " + err.Error())
+	}
+
+	r.Block = strings.TrimSpace(r.Block)
+	if r.Block == "" {
+		r.Block = "latest"
+	}
+
+	return nil
+}
+
+type CodeResponse struct {
+	Code       string `json:"code"`
+	IsContract bool   `json:"is_contract"`
+}
+
+func NewCodeResponse(code string) *CodeResponse {
+	return &CodeResponse{
+		Code:       code,
+		IsContract: code != "" && code != "0x" && code != "0x0",
 	}
 }
 
@@ -235,4 +323,29 @@ func (r *CallRequest) ValidateRequest() error {
 
 func (r *CallRequest) Params() map[string]string {
 	return r.p
+}
+
+type SendTransactionRequest struct {
+	RawTx string `json:"raw_tx" example:"0x02f8..."`
+}
+
+func (r *SendTransactionRequest) ValidateRequest() error {
+	r.RawTx = strings.TrimSpace(r.RawTx)
+	if r.RawTx == "" {
+		return errors.New("raw_tx is required")
+	}
+	if _, err := util.ParseHex(r.RawTx); err != nil {
+		return errors.New("raw_tx: " + err.Error())
+	}
+	return nil
+}
+
+type SendTransactionResponse struct {
+	TxHash string `json:"tx_hash"`
+}
+
+func NewSendTransactionResponse(txHash string) *SendTransactionResponse {
+	return &SendTransactionResponse{
+		TxHash: txHash,
+	}
 }

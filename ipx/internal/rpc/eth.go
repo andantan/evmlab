@@ -72,6 +72,20 @@ func (c *Client) BlockByNumber(ctx context.Context, block string) (map[string]an
 	return result, err
 }
 
+func (c *Client) BaseFeePerGas(ctx context.Context) (string, error) {
+	var result map[string]any
+	if err := c.Call(ctx, "eth_getBlockByNumber", []any{"latest", false}, &result); err != nil {
+		return "", err
+	}
+
+	baseFee, ok := result["baseFeePerGas"].(string)
+	if !ok || baseFee == "" {
+		return "", fmt.Errorf("baseFeePerGas not found in latest block")
+	}
+
+	return baseFee, nil
+}
+
 func (c *Client) GetTransactionByHash(ctx context.Context, txHash string) (map[string]any, error) {
 	var result map[string]any
 	err := c.Call(ctx, "eth_getTransactionByHash", []any{txHash}, &result)
