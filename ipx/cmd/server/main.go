@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/andantan/evmlab/api/handler/misc"
 	"github.com/andantan/evmlab/api/handler/v1"
 	"github.com/andantan/evmlab/api/handler/v2"
 	_ "github.com/andantan/evmlab/docs"
@@ -49,7 +50,7 @@ func run() error {
 	r.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	r.Route("/evm/rpc", func(r chi.Router) {
-		rpcHandler := v1.NewRPCHandler(client)
+		rpcHandler := misc.NewRPCHandler(client)
 		r.Post("/chain-id", rpcHandler.ChainID)
 		r.Post("/block-number", rpcHandler.BlockNumber)
 		r.Post("/nonce", rpcHandler.Nonce)
@@ -67,11 +68,10 @@ func run() error {
 	})
 
 	r.Route("/evm/tool", func(r chi.Router) {
-		tool := v1.NewToolHandler()
+		tool := misc.NewToolHandler()
 		r.Post("/address/checksum/eip55", tool.ChecksumEIP55)
 		r.Post("/crypto/derive", tool.DeriveKey)
 		r.Post("/unit/convert/decimal", tool.ConvertUnitDecimal)
-		r.Post("/unit/convert/hex", tool.ConvertUnitHex)
 	})
 
 	r.Route("/evm/v1", func(r chi.Router) {
@@ -85,8 +85,10 @@ func run() error {
 		r.Post("/sign/verify/by-address", sign.VerifyByAddress)
 
 		tx := v1.NewTransactionHandler(cfg)
-		r.Post("/transaction/legacy/build", tx.BuildLegacyNativeTransfer)
-		r.Post("/transaction/legacy/sign", tx.SignLegacyNativeTransfer)
+		r.Post("/transaction/legacy/build", tx.BuildLegacyTransaction)
+		r.Post("/transaction/legacy/sign", tx.SignLegacyTransaction)
+		r.Post("/transaction/dynamic-fee/build", tx.BuildDynamicFeeTransaction)
+		r.Post("/transaction/dynamic-fee/sign", tx.SignDynamicFeeTransaction)
 	})
 
 	r.Route("/evm/v2", func(r chi.Router) {

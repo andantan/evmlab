@@ -739,49 +739,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/tool/unit/convert/hex": {
-            "post": {
-                "description": "Converts a hex integer amount from one Ethereum unit to another and returns a hex integer result",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tool"
-                ],
-                "summary": "Convert hex amount between wei, gwei, and ether",
-                "parameters": [
-                    {
-                        "description": "Hex unit conversion",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.UnitConvertHexRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.UnitConvertHexResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/evm/v1/hash/keccak256/legacy": {
             "post": {
                 "description": "Computes the Keccak256 hash of the given message with no prefix applied (no EIP standard)",
@@ -997,6 +954,101 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/v1/transaction/dynamic-fee/build": {
+            "post": {
+                "description": "Constructs an unsigned EIP-1559 transaction for native ETH transfer and returns the encoded signing payload and signing hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build an unsigned dynamic fee native transfer transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction fields",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.BuildDynamicFeeTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.BuildDynamicFeeTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v1/transaction/dynamic-fee/sign": {
+            "post": {
+                "description": "Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Sign an unsigned dynamic fee native transfer transaction",
+                "parameters": [
+                    {
+                        "description": "Address and unsigned RLP",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.SignDynamicFeeTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.SignDynamicFeeTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/v1/transaction/legacy/build": {
             "post": {
                 "description": "Constructs an unsigned EIP-155 legacy transaction for native ETH transfer and returns the RLP encoding and signing hash",
@@ -1017,7 +1069,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.BuildLegacyNativeTransferRequest"
+                            "$ref": "#/definitions/v1.BuildLegacyTransactionRequest"
                         }
                     }
                 ],
@@ -1025,7 +1077,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.BuildLegacyNativeTransferResponse"
+                            "$ref": "#/definitions/v1.BuildLegacyTransactionResponse"
                         }
                     },
                     "400": {
@@ -1060,7 +1112,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.SignLegacyNativeTransferRequest"
+                            "$ref": "#/definitions/v1.SignLegacyTransactionRequest"
                         }
                     }
                 ],
@@ -1068,7 +1120,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.SignLegacyNativeTransferResponse"
+                            "$ref": "#/definitions/v1.SignLegacyTransactionResponse"
                         }
                     },
                     "400": {
@@ -1219,7 +1271,55 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.BuildLegacyNativeTransferRequest": {
+        "v1.BuildDynamicFeeTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "chain_id": {
+                    "type": "string",
+                    "example": "20001209"
+                },
+                "data": {
+                    "type": "string",
+                    "example": "0x"
+                },
+                "gas_limit": {
+                    "type": "integer",
+                    "example": 21000
+                },
+                "max_fee_per_gas": {
+                    "type": "string",
+                    "example": "3000000000"
+                },
+                "max_priority_fee_per_gas": {
+                    "type": "string",
+                    "example": "1500000000"
+                },
+                "nonce": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0x8336c196ABb9E7092C879C28D352b39d3f2f3D7A"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                }
+            }
+        },
+        "v1.BuildDynamicFeeTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "signing_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.BuildLegacyTransactionRequest": {
             "type": "object",
             "properties": {
                 "chain_id": {
@@ -1252,7 +1352,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.BuildLegacyNativeTransferResponse": {
+        "v1.BuildLegacyTransactionResponse": {
             "type": "object",
             "properties": {
                 "signing_hash": {
@@ -1539,7 +1639,31 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.SignLegacyNativeTransferRequest": {
+        "v1.SignDynamicFeeTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                },
+                "unsigned_rlp": {
+                    "type": "string",
+                    "example": "0x02f8..."
+                }
+            }
+        },
+        "v1.SignDynamicFeeTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "raw_transaction": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.SignLegacyTransactionRequest": {
             "type": "object",
             "properties": {
                 "address": {
@@ -1552,7 +1676,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.SignLegacyNativeTransferResponse": {
+        "v1.SignLegacyTransactionResponse": {
             "type": "object",
             "properties": {
                 "raw_transaction": {
@@ -1611,34 +1735,6 @@ const docTemplate = `{
             }
         },
         "v1.UnitConvertDecimalResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "string"
-                },
-                "unit": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.UnitConvertHexRequest": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "string",
-                    "example": "0xde0b6b3a7640000"
-                },
-                "from": {
-                    "type": "string",
-                    "example": "wei"
-                },
-                "to": {
-                    "type": "string",
-                    "example": "ether"
-                }
-            }
-        },
-        "v1.UnitConvertHexResponse": {
             "type": "object",
             "properties": {
                 "amount": {

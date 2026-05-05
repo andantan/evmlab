@@ -42,7 +42,41 @@ definitions:
       block_number_hex:
         type: string
     type: object
-  v1.BuildLegacyNativeTransferRequest:
+  v1.BuildDynamicFeeTransactionRequest:
+    properties:
+      chain_id:
+        example: "20001209"
+        type: string
+      data:
+        example: 0x
+        type: string
+      gas_limit:
+        example: 21000
+        type: integer
+      max_fee_per_gas:
+        example: "3000000000"
+        type: string
+      max_priority_fee_per_gas:
+        example: "1500000000"
+        type: string
+      nonce:
+        example: 0
+        type: integer
+      to:
+        example: 0x8336c196ABb9E7092C879C28D352b39d3f2f3D7A
+        type: string
+      value:
+        example: "1000000000000000000"
+        type: string
+    type: object
+  v1.BuildDynamicFeeTransactionResponse:
+    properties:
+      signing_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+    type: object
+  v1.BuildLegacyTransactionRequest:
     properties:
       chain_id:
         example: "20001209"
@@ -66,7 +100,7 @@ definitions:
         example: "1000000000000000000"
         type: string
     type: object
-  v1.BuildLegacyNativeTransferResponse:
+  v1.BuildLegacyTransactionResponse:
     properties:
       signing_hash:
         type: string
@@ -256,7 +290,23 @@ definitions:
       tx_hash:
         type: string
     type: object
-  v1.SignLegacyNativeTransferRequest:
+  v1.SignDynamicFeeTransactionRequest:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+      unsigned_rlp:
+        example: 0x02f8...
+        type: string
+    type: object
+  v1.SignDynamicFeeTransactionResponse:
+    properties:
+      raw_transaction:
+        type: string
+      tx_hash:
+        type: string
+    type: object
+  v1.SignLegacyTransactionRequest:
     properties:
       address:
         example: 0xEbD69375...
@@ -265,7 +315,7 @@ definitions:
         example: 0xec8085...
         type: string
     type: object
-  v1.SignLegacyNativeTransferResponse:
+  v1.SignLegacyTransactionResponse:
     properties:
       raw_transaction:
         type: string
@@ -305,25 +355,6 @@ definitions:
         type: string
     type: object
   v1.UnitConvertDecimalResponse:
-    properties:
-      amount:
-        type: string
-      unit:
-        type: string
-    type: object
-  v1.UnitConvertHexRequest:
-    properties:
-      amount:
-        example: "0xde0b6b3a7640000"
-        type: string
-      from:
-        example: wei
-        type: string
-      to:
-        example: ether
-        type: string
-    type: object
-  v1.UnitConvertHexResponse:
     properties:
       amount:
         type: string
@@ -865,35 +896,6 @@ paths:
       summary: Convert amount between wei, gwei, and ether
       tags:
       - tool
-  /evm/tool/unit/convert/hex:
-    post:
-      consumes:
-      - application/json
-      description: Converts a hex integer amount from one Ethereum unit to another
-        and returns a hex integer result
-      parameters:
-      - description: Hex unit conversion
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.UnitConvertHexRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.UnitConvertHexResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Convert hex amount between wei, gwei, and ether
-      tags:
-      - tool
   /evm/v1/hash/keccak256/legacy:
     post:
       consumes:
@@ -1041,6 +1043,70 @@ paths:
       summary: Verify a signature against a public key
       tags:
       - sign
+  /evm/v1/transaction/dynamic-fee/build:
+    post:
+      consumes:
+      - application/json
+      description: Constructs an unsigned EIP-1559 transaction for native ETH transfer
+        and returns the encoded signing payload and signing hash
+      parameters:
+      - description: Transaction fields
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.BuildDynamicFeeTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.BuildDynamicFeeTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build an unsigned dynamic fee native transfer transaction
+      tags:
+      - transaction
+  /evm/v1/transaction/dynamic-fee/sign:
+    post:
+      consumes:
+      - application/json
+      description: Decodes an unsigned EIP-1559 payload, signs it with the key for
+        the given address, and returns the signed raw transaction and tx hash
+      parameters:
+      - description: Address and unsigned RLP
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.SignDynamicFeeTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.SignDynamicFeeTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign an unsigned dynamic fee native transfer transaction
+      tags:
+      - transaction
   /evm/v1/transaction/legacy/build:
     post:
       consumes:
@@ -1053,14 +1119,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/v1.BuildLegacyNativeTransferRequest'
+          $ref: '#/definitions/v1.BuildLegacyTransactionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.BuildLegacyNativeTransferResponse'
+            $ref: '#/definitions/v1.BuildLegacyTransactionResponse'
         "400":
           description: Bad Request
           schema:
@@ -1082,14 +1148,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/v1.SignLegacyNativeTransferRequest'
+          $ref: '#/definitions/v1.SignLegacyTransactionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.SignLegacyNativeTransferResponse'
+            $ref: '#/definitions/v1.SignLegacyTransactionResponse'
         "400":
           description: Bad Request
           schema:

@@ -1,8 +1,7 @@
-package v1
+package misc
 
 import (
 	"errors"
-	"math/big"
 	"strings"
 
 	"github.com/andantan/evmlab/core"
@@ -79,8 +78,6 @@ type UnitConvertDecimalRequest struct {
 	Amount string `json:"amount" example:"1"`
 	From   string `json:"from"   example:"ether"`
 	To     string `json:"to"     example:"wei"`
-
-	amount *big.Int
 }
 
 func (r *UnitConvertDecimalRequest) ValidateRequest() error {
@@ -104,59 +101,7 @@ func (r *UnitConvertDecimalRequest) ValidateRequest() error {
 		return errors.New("to: unsupported unit")
 	}
 
-	n, ok := new(big.Int).SetString(r.Amount, 10)
-	if !ok {
-		return errors.New("amount: invalid integer")
-	}
-	r.amount = n
-
 	return nil
-}
-
-func (r *UnitConvertDecimalRequest) ToAmount() *big.Int {
-	return new(big.Int).Set(r.amount)
-}
-
-type UnitConvertHexRequest struct {
-	Amount string `json:"amount" example:"0xde0b6b3a7640000"`
-	From   string `json:"from"   example:"wei"`
-	To     string `json:"to"     example:"ether"`
-
-	amount *big.Int
-}
-
-func (r *UnitConvertHexRequest) ValidateRequest() error {
-	r.Amount = strings.TrimSpace(r.Amount)
-	r.From = strings.ToLower(strings.TrimSpace(r.From))
-	r.To = strings.ToLower(strings.TrimSpace(r.To))
-
-	if r.Amount == "" {
-		return errors.New("amount is required")
-	}
-	if r.From == "" {
-		return errors.New("from is required")
-	}
-	if r.To == "" {
-		return errors.New("to is required")
-	}
-	if !util.IsSupportedEthereumUnit(r.From) {
-		return errors.New("from: unsupported unit")
-	}
-	if !util.IsSupportedEthereumUnit(r.To) {
-		return errors.New("to: unsupported unit")
-	}
-
-	n, err := util.HexToBigInt(r.Amount)
-	if err != nil {
-		return errors.New("amount: " + err.Error())
-	}
-	r.amount = n
-
-	return nil
-}
-
-func (r *UnitConvertHexRequest) ToAmount() *big.Int {
-	return new(big.Int).Set(r.amount)
 }
 
 type UnitConvertDecimalResponse struct {
@@ -166,18 +111,6 @@ type UnitConvertDecimalResponse struct {
 
 func NewUnitConvertDecimalResponse(amount string, unit string) *UnitConvertDecimalResponse {
 	return &UnitConvertDecimalResponse{
-		Amount: amount,
-		Unit:   unit,
-	}
-}
-
-type UnitConvertHexResponse struct {
-	Amount string `json:"amount"`
-	Unit   string `json:"unit"`
-}
-
-func NewUnitConvertHexResponse(amount string, unit string) *UnitConvertHexResponse {
-	return &UnitConvertHexResponse{
 		Amount: amount,
 		Unit:   unit,
 	}
