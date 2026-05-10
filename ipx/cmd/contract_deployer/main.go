@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"math/big"
@@ -25,17 +26,24 @@ func main() {
 	}
 }
 
+type ctorArgs struct {
+	Types []string `json:"types"`
+	Args  []string `json:"args"`
+}
+
 func run() error {
 	var (
 		configPath   string
 		contractPath string
 		alias        string
+		ctorJSON     string
 	)
 	flag.StringVar(&configPath, "config", "config.yaml", "path to config file")
 	flag.StringVar(&contractPath, "contract", "", "path to the .sol file to deploy (relative to project root)")
 	flag.StringVar(&contractPath, "c", "", "path to the .sol file to deploy (relative to project root)")
 	flag.StringVar(&alias, "deployer", "", "deployer address")
 	flag.StringVar(&alias, "d", "", "deployer address")
+	flag.StringVar(&ctorJSON, "ctor", "", `constructor args as JSON: {"types":["string","uint256",...],"args":["value1","value2",...]}`)
 	flag.Parse()
 
 	if contractPath == "" {
@@ -85,6 +93,19 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
+	if ctorJSON != "" {
+		var ctor ctorArgs
+		if err := json.Unmarshal([]byte(ctorJSON), &ctor); err != nil {
+			return fmt.Errorf("parse -ctor: %w", err)
+		}
+		encoded, err := core.ABI.EncodeArgs(ctor.Types, ctor.Args)
+		if err != nil {
+			return fmt.Errorf("encode constructor args: %w", err)
+		}
+		bytecode = append(bytecode, encoded...)
+	}
+
 	fmt.Println("Bytecode size:", len(bytecode))
 
 	nonceHex, err := client.GetTransactionCount(ctx, deployerAddr, "pending")
@@ -175,7 +196,16 @@ func run() error {
 
 	contractAddr := receipt["contractAddress"].(string)
 	blockNumber := receipt["blockNumber"].(string)
-	gasUsed := receipt["gasUsed"].(string)
+
+	gasUsed, err := util.HexToBigInt(receipt["gasUsed"].(string))
+	if err != nil {
+		return fmt.Errorf("parse gasUsed: %w", err)
+	}
+	effectiveGasPrice, err := util.HexToBigInt(receipt["effectiveGasPrice"].(string))
+	if err != nil {
+		return fmt.Errorf("parse effectiveGasPrice: %w", err)
+	}
+	feeWei := new(big.Int).Mul(gasUsed, effectiveGasPrice)
 
 	codeHex, err := client.GetCode(ctx, contractAddr, "latest")
 	if err != nil {
@@ -185,7 +215,7 @@ func run() error {
 
 	fmt.Println("Contract address:", contractAddr)
 	fmt.Println("Block number:", blockNumber)
-	fmt.Println("Gas used:", gasUsed)
+	fmt.Println("Fee paid:", types.WeiToEther(feeWei), "ETH")
 	fmt.Println("Runtime code size:", codeSize, "bytes")
 
 	return nil
@@ -200,9 +230,9 @@ func binFilename(solPath string) string {
 	return normalized + "_" + contractName + ".bin"
 }
 
-// contracts/vault/Foo.sol -> vault
+// contracts/vault/MultiAccountVault.sol -> MultiAccountVault
 func contractSubdir(solPath string) string {
-	return strings.TrimPrefix(filepath.Dir(solPath), "contracts/")
+	return strings.TrimSuffix(filepath.Base(solPath), ".sol")
 }
 
 func loadBytecode(root, contractPath string) ([]byte, error) {

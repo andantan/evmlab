@@ -1,5 +1,33 @@
 basePath: /
 definitions:
+  misc.AllowanceCalldataRequest:
+    properties:
+      owner:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+      spender:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+    type: object
+  misc.AllowanceCalldataResponse:
+    properties:
+      data:
+        type: string
+    type: object
+  misc.ApproveCalldataRequest:
+    properties:
+      amount:
+        example: "1000000000000000000"
+        type: string
+      spender:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+    type: object
+  misc.ApproveCalldataResponse:
+    properties:
+      data:
+        type: string
+    type: object
   misc.BalanceRequest:
     properties:
       address:
@@ -414,6 +442,37 @@ definitions:
         example: 0xabc123...
         type: string
     type: object
+  misc.TransferCalldataRequest:
+    properties:
+      amount:
+        example: "1000000000000000000"
+        type: string
+      to:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+    type: object
+  misc.TransferCalldataResponse:
+    properties:
+      data:
+        type: string
+    type: object
+  misc.TransferFromCalldataRequest:
+    properties:
+      amount:
+        example: "1000000000000000000"
+        type: string
+      from:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+      to:
+        example: 0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3
+        type: string
+    type: object
+  misc.TransferFromCalldataResponse:
+    properties:
+      data:
+        type: string
+    type: object
   misc.UnitConvertRequest:
     properties:
       amount:
@@ -754,6 +813,118 @@ paths:
               type: string
             type: object
       summary: ABI-encode a function call
+      tags:
+      - abi
+  /evm/abi/encode/allowance:
+    post:
+      consumes:
+      - application/json
+      description: Returns ABI-encoded calldata for allowance(address,address)
+      parameters:
+      - description: Owner and spender addresses
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.AllowanceCalldataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.AllowanceCalldataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build allowance calldata
+      tags:
+      - abi
+  /evm/abi/encode/approve:
+    post:
+      consumes:
+      - application/json
+      description: Returns ABI-encoded calldata for approve(address,uint256)
+      parameters:
+      - description: Spender address and amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.ApproveCalldataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.ApproveCalldataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build approve calldata
+      tags:
+      - abi
+  /evm/abi/encode/transfer:
+    post:
+      consumes:
+      - application/json
+      description: Returns ABI-encoded calldata for transfer(address,uint256)
+      parameters:
+      - description: Recipient address and amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.TransferCalldataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.TransferCalldataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build transfer calldata
+      tags:
+      - abi
+  /evm/abi/encode/transfer-from:
+    post:
+      consumes:
+      - application/json
+      description: Returns ABI-encoded calldata for transferFrom(address,address,uint256)
+      parameters:
+      - description: From, to addresses and amount
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.TransferFromCalldataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.TransferFromCalldataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build transferFrom calldata
       tags:
       - abi
   /evm/abi/selector:

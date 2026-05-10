@@ -1,5 +1,13 @@
 package types
 
+var (
+	ApproveSelector      = []byte{0x09, 0x5e, 0xa7, 0xb3} // approve(address,uint256)
+	TransferSelector     = []byte{0xa9, 0x05, 0x9c, 0xbb} // transfer(address,uint256)
+	AllowanceSelector    = []byte{0xdd, 0x62, 0xed, 0x3e} // allowance(address,address)
+	TransferFromSelector = []byte{0x23, 0xb8, 0x72, 0xdd} // transferFrom(address,address,uint256)
+
+)
+
 // Parameter represents a single ABI function parameter with its name and type.
 type Parameter struct {
 	Name string

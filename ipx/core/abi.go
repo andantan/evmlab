@@ -68,6 +68,33 @@ func (c *abiCodec) ParseFunctionSignature(sig string) (*types.Function, error) {
 	return fn, nil
 }
 
+// EncodeArgs ABI-encodes arguments only (no selector). Used for constructor calldata.
+func (c *abiCodec) EncodeArgs(typeStrs []string, args []string) ([]byte, error) {
+	if len(typeStrs) != len(args) {
+		return nil, fmt.Errorf("type count (%d) does not match arg count (%d)", len(typeStrs), len(args))
+	}
+
+	abiArgs := make(abi.Arguments, len(typeStrs))
+	for i, ts := range typeStrs {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		abiArgs[i] = abi.Argument{Type: t}
+	}
+
+	goArgs := make([]any, len(args))
+	for i, arg := range args {
+		v, err := convertArg(abiArgs[i].Type, arg)
+		if err != nil {
+			return nil, fmt.Errorf("arg[%d] (%s): %s", i, typeStrs[i], err)
+		}
+		goArgs[i] = v
+	}
+
+	return abiArgs.Pack(goArgs...)
+}
+
 // EncodeCall ABI-encodes a function call: 4-byte selector + packed arguments.
 // TODO: tuple, array, slice types are not yet supported.
 func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error) {

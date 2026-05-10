@@ -8,6 +8,7 @@ import (
 
 	"github.com/andantan/evmlab/core/types"
 	"github.com/andantan/evmlab/internal/util"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type RawRPCRequest struct {
@@ -276,8 +277,16 @@ func (r *EstimateGasRequest) ValidateRequest() error {
 	if r.To != "" {
 		r.p["to"] = r.To
 	}
-	if r.Value != "" {
-		r.p["value"] = r.Value
+	if r.Value != "" && r.Value != "0x" {
+		if strings.HasPrefix(r.Value, "0x") {
+			r.p["value"] = r.Value
+		} else {
+			n, ok := new(big.Int).SetString(r.Value, 10)
+			if !ok {
+				return errors.New("value: invalid integer")
+			}
+			r.p["value"] = hexutil.EncodeBig(n)
+		}
 	}
 	if r.Data != "" {
 		r.p["data"] = r.Data

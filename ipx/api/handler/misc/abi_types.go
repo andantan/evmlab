@@ -3,8 +3,11 @@ package misc
 import (
 	"encoding/hex"
 	"errors"
+	"math/big"
 	"strings"
 
+	"github.com/andantan/evmlab/core/types"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
@@ -106,4 +109,159 @@ func NewDecodeCallResponse(data []byte, values map[string]string) *DecodeCallRes
 		Selector: "0x" + hex.EncodeToString(data[:4]),
 		Values:   values,
 	}
+}
+
+type ApproveCalldataRequest struct {
+	Spender string `json:"spender" example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+	Amount  string `json:"amount"  example:"1000000000000000000"`
+
+	s *types.Address
+	a *big.Int
+}
+
+func (r *ApproveCalldataRequest) ValidateRequest() error {
+	r.Spender = strings.TrimSpace(r.Spender)
+	if !common.IsHexAddress(r.Spender) {
+		return errors.New("spender: invalid address")
+	}
+	r.s = types.NewAddress(common.HexToAddress(r.Spender))
+
+	r.Amount = strings.TrimSpace(r.Amount)
+	var ok bool
+	r.a, ok = new(big.Int).SetString(r.Amount, 10)
+	if !ok {
+		return errors.New("amount: invalid integer")
+	}
+	return nil
+}
+
+func (r *ApproveCalldataRequest) ToSpender() *types.Address { return r.s }
+func (r *ApproveCalldataRequest) ToAmount() *big.Int        { return r.a }
+
+type ApproveCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewApproveCalldataResponse(data []byte) *ApproveCalldataResponse {
+	return &ApproveCalldataResponse{
+		Data: "0x" + hex.EncodeToString(data),
+	}
+}
+
+type TransferCalldataRequest struct {
+	To     string `json:"to"     example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+	Amount string `json:"amount" example:"1000000000000000000"`
+
+	t *types.Address
+	a *big.Int
+}
+
+func (r *TransferCalldataRequest) ValidateRequest() error {
+	r.To = strings.TrimSpace(r.To)
+	if !common.IsHexAddress(r.To) {
+		return errors.New("to: invalid address")
+	}
+	r.t = types.NewAddress(common.HexToAddress(r.To))
+
+	r.Amount = strings.TrimSpace(r.Amount)
+	var ok bool
+	r.a, ok = new(big.Int).SetString(r.Amount, 10)
+	if !ok {
+		return errors.New("amount: invalid integer")
+	}
+	return nil
+}
+
+func (r *TransferCalldataRequest) ToAddress() *types.Address { return r.t }
+func (r *TransferCalldataRequest) ToAmount() *big.Int        { return r.a }
+
+type TransferCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewTransferCalldataResponse(data []byte) *TransferCalldataResponse {
+	return &TransferCalldataResponse{
+		Data: "0x" + hex.EncodeToString(data),
+	}
+}
+
+type AllowanceCalldataRequest struct {
+	Owner   string `json:"owner"   example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+	Spender string `json:"spender" example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+
+	o *types.Address
+	s *types.Address
+}
+
+func (r *AllowanceCalldataRequest) ValidateRequest() error {
+	r.Owner = strings.TrimSpace(r.Owner)
+	if !common.IsHexAddress(r.Owner) {
+		return errors.New("owner: invalid address")
+	}
+	r.o = types.NewAddress(common.HexToAddress(r.Owner))
+
+	r.Spender = strings.TrimSpace(r.Spender)
+	if !common.IsHexAddress(r.Spender) {
+		return errors.New("spender: invalid address")
+	}
+	r.s = types.NewAddress(common.HexToAddress(r.Spender))
+
+	return nil
+}
+
+func (r *AllowanceCalldataRequest) ToOwner() *types.Address   { return r.o }
+func (r *AllowanceCalldataRequest) ToSpender() *types.Address { return r.s }
+
+type AllowanceCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewAllowanceCalldataResponse(data []byte) *AllowanceCalldataResponse {
+	return &AllowanceCalldataResponse{
+		Data: "0x" + hex.EncodeToString(data),
+	}
+}
+
+type TransferFromCalldataRequest struct {
+	From   string `json:"from"   example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+	To     string `json:"to"     example:"0xDa70aA79f1a329719b9cf9d334b0a82b1d5269f3"`
+	Amount string `json:"amount" example:"1000000000000000000"`
+
+	f *types.Address
+	t *types.Address
+	a *big.Int
+}
+
+func (r *TransferFromCalldataRequest) ValidateRequest() error {
+	r.From = strings.TrimSpace(r.From)
+	if !common.IsHexAddress(r.From) {
+		return errors.New("from: invalid address")
+	}
+	r.f = types.NewAddress(common.HexToAddress(r.From))
+
+	r.To = strings.TrimSpace(r.To)
+	if !common.IsHexAddress(r.To) {
+		return errors.New("to: invalid address")
+	}
+	r.t = types.NewAddress(common.HexToAddress(r.To))
+
+	r.Amount = strings.TrimSpace(r.Amount)
+	var ok bool
+	r.a, ok = new(big.Int).SetString(r.Amount, 10)
+	if !ok {
+		return errors.New("amount: invalid integer")
+	}
+	return nil
+}
+
+func (r *TransferFromCalldataRequest) ToFrom() *types.Address { return r.f }
+func (r *TransferFromCalldataRequest) ToTo() *types.Address   { return r.t }
+func (r *TransferFromCalldataRequest) ToAmount() *big.Int     { return r.a }
+
+type TransferFromCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewTransferFromCalldataResponse(data []byte) *TransferFromCalldataResponse {
+	return &TransferFromCalldataResponse{Data: "0x" + hex.EncodeToString(data)}
 }

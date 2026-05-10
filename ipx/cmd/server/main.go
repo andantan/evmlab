@@ -73,9 +73,13 @@ func run() error {
 	r.Route("/evm/abi", func(r chi.Router) {
 		abi := misc.NewAbiHandler()
 		r.Post("/selector", abi.Selector)
-		r.Post("/encode", abi.Encode)
 		r.Post("/decode/result", abi.DecodeResult)
 		r.Post("/decode/call", abi.DecodeCall)
+		r.Post("/encode", abi.Encode)
+		r.Post("/encode/approve", abi.ApproveCalldata)
+		r.Post("/encode/transfer", abi.TransferCalldata)
+		r.Post("/encode/allowance", abi.AllowanceCalldata)
+		r.Post("/encode/transfer-from", abi.TransferFromCalldata)
 	})
 
 	r.Route("/evm/tool", func(r chi.Router) {

@@ -4,6 +4,8 @@
     "description": "Local Ethereum development environment with a Go HTTP API for low-level EVM operations and a Solidity contract suite.",
     "private": true,
     "scripts": {
+        "compile": "solcjs --abi --bin --base-path .",
+        "standard-json": "node scripts/gen-standard-json.js",
         "clean": "rm -rf build artifacts cache",
         "test": "echo \"No JavaScript tests configured\""
     },

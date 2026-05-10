@@ -9,10 +9,10 @@ import (
 	"github.com/andantan/evmlab/core"
 )
 
-type AbiHandler struct{}
+type ABIHandler struct{}
 
-func NewAbiHandler() *AbiHandler {
-	return &AbiHandler{}
+func NewAbiHandler() *ABIHandler {
+	return &ABIHandler{}
 }
 
 // Selector godoc
@@ -25,7 +25,7 @@ func NewAbiHandler() *AbiHandler {
 // @Success      200   {object}  SelectorResponse
 // @Failure      400   {object}  map[string]string
 // @Router       /evm/abi/selector [post]
-func (h *AbiHandler) Selector(w http.ResponseWriter, r *http.Request) {
+func (h *ABIHandler) Selector(w http.ResponseWriter, r *http.Request) {
 	req := new(SelectorRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
@@ -58,7 +58,7 @@ func (h *AbiHandler) Selector(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  EncodeResponse
 // @Failure      400   {object}  map[string]string
 // @Router       /evm/abi/encode [post]
-func (h *AbiHandler) Encode(w http.ResponseWriter, r *http.Request) {
+func (h *ABIHandler) Encode(w http.ResponseWriter, r *http.Request) {
 	req := new(EncodeRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
@@ -94,7 +94,7 @@ func (h *AbiHandler) Encode(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  DecodeResultResponse
 // @Failure      400   {object}  map[string]string
 // @Router       /evm/abi/decode/result [post]
-func (h *AbiHandler) DecodeResult(w http.ResponseWriter, r *http.Request) {
+func (h *ABIHandler) DecodeResult(w http.ResponseWriter, r *http.Request) {
 	req := new(DecodeResultRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
@@ -125,7 +125,7 @@ func (h *AbiHandler) DecodeResult(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  DecodeCallResponse
 // @Failure      400   {object}  map[string]string
 // @Router       /evm/abi/decode/call [post]
-func (h *AbiHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
+func (h *ABIHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
 	req := new(DecodeCallRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
@@ -150,4 +150,104 @@ func (h *AbiHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, NewDecodeCallResponse(data, values))
+}
+
+// ApproveCalldata godoc
+// @Summary      Build approve calldata
+// @Description  Returns ABI-encoded calldata for approve(address,uint256)
+// @Tags         abi
+// @Accept       json
+// @Produce      json
+// @Param        body  body      ApproveCalldataRequest   true  "Spender address and amount"
+// @Success      200   {object}  ApproveCalldataResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/abi/encode/approve [post]
+func (h *ABIHandler) ApproveCalldata(w http.ResponseWriter, r *http.Request) {
+	req := new(ApproveCalldataRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data := core.ApproveCalldata(req.ToSpender(), req.ToAmount())
+	handler.WriteJSON(w, http.StatusOK, NewApproveCalldataResponse(data))
+}
+
+// TransferCalldata godoc
+// @Summary      Build transfer calldata
+// @Description  Returns ABI-encoded calldata for transfer(address,uint256)
+// @Tags         abi
+// @Accept       json
+// @Produce      json
+// @Param        body  body      TransferCalldataRequest   true  "Recipient address and amount"
+// @Success      200   {object}  TransferCalldataResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/abi/encode/transfer [post]
+func (h *ABIHandler) TransferCalldata(w http.ResponseWriter, r *http.Request) {
+	req := new(TransferCalldataRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data := core.TransferCalldata(req.ToAddress(), req.ToAmount())
+	handler.WriteJSON(w, http.StatusOK, NewTransferCalldataResponse(data))
+}
+
+// AllowanceCalldata godoc
+// @Summary      Build allowance calldata
+// @Description  Returns ABI-encoded calldata for allowance(address,address)
+// @Tags         abi
+// @Accept       json
+// @Produce      json
+// @Param        body  body      AllowanceCalldataRequest   true  "Owner and spender addresses"
+// @Success      200   {object}  AllowanceCalldataResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/abi/encode/allowance [post]
+func (h *ABIHandler) AllowanceCalldata(w http.ResponseWriter, r *http.Request) {
+	req := new(AllowanceCalldataRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data := core.AllowanceCalldata(req.ToOwner(), req.ToSpender())
+	handler.WriteJSON(w, http.StatusOK, NewAllowanceCalldataResponse(data))
+}
+
+// TransferFromCalldata godoc
+// @Summary      Build transferFrom calldata
+// @Description  Returns ABI-encoded calldata for transferFrom(address,address,uint256)
+// @Tags         abi
+// @Accept       json
+// @Produce      json
+// @Param        body  body      TransferFromCalldataRequest   true  "From, to addresses and amount"
+// @Success      200   {object}  TransferFromCalldataResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/abi/encode/transfer-from [post]
+func (h *ABIHandler) TransferFromCalldata(w http.ResponseWriter, r *http.Request) {
+	req := new(TransferFromCalldataRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data := core.TransferFromCalldata(req.ToFrom(), req.ToTo(), req.ToAmount())
+	handler.WriteJSON(w, http.StatusOK, NewTransferFromCalldataResponse(data))
 }
