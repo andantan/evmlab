@@ -60,6 +60,37 @@ func (h *SignHandler) Sign(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJSON(w, http.StatusOK, NewSignResponse(sig))
 }
 
+// Ecrecover godoc
+// @Summary      Recover public key and address from a signature
+// @Description  Recovers the uncompressed secp256k1 public key and Ethereum address from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format
+// @Tags         sign
+// @Accept       json
+// @Produce      json
+// @Param        body  body      EcrecoverRequest   true  "Hash and signature"
+// @Success      200   {object}  EcrecoverResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/v1/sign/ecrecover [post]
+func (h *SignHandler) Ecrecover(w http.ResponseWriter, r *http.Request) {
+	req := new(EcrecoverRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	pk, err := core.Signer.EcrecoverPubKey(req.ToHash(), req.ToSignature())
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to ecrecover: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewEcrecoverResponse(pk))
+}
+
 // VerifyByPublicKey godoc
 // @Summary      Verify a signature against a public key
 // @Description  Recovers the signer's public key from the signature via ecrecover and compares it against the provided public key

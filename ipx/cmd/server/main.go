@@ -75,26 +75,28 @@ func run() error {
 
 	r.Route("/evm/tool", func(r chi.Router) {
 		tool := misc.NewToolHandler()
-		r.Post("/address/checksum/eip55", tool.ChecksumEIP55)
+		r.Post("/address/eip55", tool.EIP55)
 		r.Post("/crypto/derive", tool.DeriveKey)
-		r.Post("/unit/convert/decimal", tool.ConvertUnitDecimal)
+		r.Post("/unit/convert", tool.ConvertUnit)
 	})
 
 	r.Route("/evm/v1", func(r chi.Router) {
 		hash := v1.NewHashHandler()
 		r.Post("/hash/keccak256/legacy", hash.Keccak256Legacy)
-		r.Post("/hash/keccak256/personal", hash.Keccak256Personal)
+		r.Post("/hash/keccak256/eip191", hash.Keccak256EIP191)
+		r.Post("/hash/keccak256/eip712", hash.Keccak256EIP712)
 
 		sign := v1.NewSignHandler(cfg)
 		r.Post("/sign", sign.Sign)
+		r.Post("/sign/ecrecover", sign.Ecrecover)
 		r.Post("/sign/verify/by-public-key", sign.VerifyByPublicKey)
 		r.Post("/sign/verify/by-address", sign.VerifyByAddress)
 
 		tx := v1.NewTransactionHandler(cfg)
 		r.Post("/transaction/legacy/build", tx.BuildLegacyTransaction)
 		r.Post("/transaction/legacy/sign", tx.SignLegacyTransaction)
-		r.Post("/transaction/dynamic-fee/build", tx.BuildDynamicFeeTransaction)
-		r.Post("/transaction/dynamic-fee/sign", tx.SignDynamicFeeTransaction)
+		r.Post("/transaction/eip1559/build", tx.BuildEIP1559Transaction)
+		r.Post("/transaction/eip1559/sign", tx.SignEIP1559Transaction)
 	})
 
 	r.Route("/evm/v2", func(r chi.Router) {

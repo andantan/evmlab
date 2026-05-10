@@ -9,13 +9,13 @@ import (
 	"github.com/andantan/evmlab/internal/util"
 )
 
-type ChecksumEIP55Request struct {
+type EIP55Request struct {
 	Address string `json:"address" example:"0xEbD69375..."`
 
 	addr *types.Address
 }
 
-func (r *ChecksumEIP55Request) ValidateRequest() error {
+func (r *EIP55Request) ValidateRequest() error {
 	r.Address = strings.TrimSpace(r.Address)
 	if r.Address == "" {
 		return errors.New("address is required")
@@ -34,16 +34,16 @@ func (r *ChecksumEIP55Request) ValidateRequest() error {
 	return nil
 }
 
-func (r *ChecksumEIP55Request) ToAddress() *types.Address {
+func (r *EIP55Request) ToAddress() *types.Address {
 	return r.addr
 }
 
-type ChecksumEIP55Response struct {
+type EIP55Response struct {
 	Address string `json:"address"`
 }
 
-func NewChecksumEIP55Response(addr *types.Address) *ChecksumEIP55Response {
-	return &ChecksumEIP55Response{
+func NewEIP55Response(addr *types.Address) *EIP55Response {
+	return &EIP55Response{
 		Address: addr.Checksum(),
 	}
 }
@@ -74,13 +74,13 @@ func NewDeriveKeyResponse(key *core.EVMSecp256k1Key) *DeriveKeyResponse {
 	}
 }
 
-type UnitConvertDecimalRequest struct {
+type UnitConvertRequest struct {
 	Amount string `json:"amount" example:"1"`
 	From   string `json:"from"   example:"ether"`
 	To     string `json:"to"     example:"wei"`
 }
 
-func (r *UnitConvertDecimalRequest) ValidateRequest() error {
+func (r *UnitConvertRequest) ValidateRequest() error {
 	r.Amount = strings.TrimSpace(r.Amount)
 	r.From = strings.ToLower(strings.TrimSpace(r.From))
 	r.To = strings.ToLower(strings.TrimSpace(r.To))
@@ -104,13 +104,13 @@ func (r *UnitConvertDecimalRequest) ValidateRequest() error {
 	return nil
 }
 
-type UnitConvertDecimalResponse struct {
+type UnitConvertResponse struct {
 	Amount string `json:"amount"`
 	Unit   string `json:"unit"`
 }
 
-func NewUnitConvertDecimalResponse(amount string, unit string) *UnitConvertDecimalResponse {
-	return &UnitConvertDecimalResponse{
+func NewUnitConvertResponse(amount string, unit string) *UnitConvertResponse {
+	return &UnitConvertResponse{
 		Amount: amount,
 		Unit:   unit,
 	}

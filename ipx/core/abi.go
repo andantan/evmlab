@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/andantan/evmlab/core/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -15,39 +16,66 @@ type abiCodec struct{}
 
 var ABI = new(abiCodec)
 
-// Selector returns the 4-byte ABI selector for the given canonical function signature.
-func (c *abiCodec) Selector(signature string) []byte {
-	return Hasher.Hash([]byte(signature)).Bytes()[:4]
-}
-
-// EncodeCall ABI-encodes a function call: 4-byte selector + packed arguments.
-// Signature must be in canonical form (no spaces, no parameter names) e.g. "transfer(address,uint256)".
-// TODO: tuple, array, slice types are not yet supported in signature parsing or argument conversion.
-func (c *abiCodec) EncodeCall(signature string, args []string) ([]byte, error) {
-	idx := strings.Index(signature, "(")
-	if idx < 0 || !strings.HasSuffix(signature, ")") {
-		return nil, fmt.Errorf("invalid signature: expected name(type,...)")
+// ParseFunctionSignature parses a function signature with or without parameter names.
+// Accepts both "approve(address,uint256)" and "approve(address spender,uint256 amount)".
+// Returns the function name, parameter types, and parameter names.
+// names is empty (len 0) when the signature contains no parameter names.
+func (c *abiCodec) ParseFunctionSignature(sig string) (*types.Function, error) {
+	sig = strings.TrimSpace(sig)
+	idx := strings.Index(sig, "(")
+	if idx < 0 || !strings.HasSuffix(sig, ")") {
+		return nil, fmt.Errorf("invalid signature: expected name(...)")
 	}
 
-	name := strings.TrimSpace(signature[:idx])
+	name := strings.TrimSpace(sig[:idx])
 	if name == "" {
 		return nil, fmt.Errorf("invalid signature: missing function name")
 	}
 
-	var typeStrs []string
-	if inner := signature[idx+1 : len(signature)-1]; inner != "" {
-		typeStrs = strings.Split(inner, ",")
-		for i := range typeStrs {
-			typeStrs[i] = strings.TrimSpace(typeStrs[i])
+	inner := strings.TrimSpace(sig[idx+1 : len(sig)-1])
+	if inner == "" {
+		signature := name + "()"
+		return types.NewFunction(signature, Hasher.HashString(signature), name), nil
+	}
+
+	params := strings.Split(inner, ",")
+	paramTypes := make([]string, len(params))
+	paramNames := make([]string, len(params))
+	hasNames := false
+
+	for i, p := range params {
+		fields := strings.Fields(p)
+
+		switch len(fields) {
+		case 1:
+			paramTypes[i] = fields[0]
+		case 2:
+			paramTypes[i], paramNames[i], hasNames = fields[0], fields[1], true
+		default:
+			return nil, fmt.Errorf("invalid param %q", strings.TrimSpace(p))
 		}
 	}
 
-	if len(typeStrs) != len(args) {
-		return nil, fmt.Errorf("signature has %d param(s) but got %d arg(s)", len(typeStrs), len(args))
+	if !hasNames {
+		paramNames = []string{}
 	}
 
-	abiArgs := make(abi.Arguments, len(typeStrs))
-	for i, ts := range typeStrs {
+	signature := name + "(" + strings.Join(paramTypes, ",") + ")"
+	fn := types.NewFunction(signature, Hasher.HashString(signature), name)
+	fn.Types = paramTypes
+	fn.Names = paramNames
+	return fn, nil
+}
+
+// EncodeCall ABI-encodes a function call: 4-byte selector + packed arguments.
+// TODO: tuple, array, slice types are not yet supported.
+func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error) {
+	if len(fn.Types) != len(args) {
+		return nil, fmt.Errorf("signature has %d param(s) but got %d arg(s)", len(fn.Types), len(args))
+	}
+
+	abiArgs := make(abi.Arguments, len(fn.Types))
+	for i, ts := range fn.Types {
 		t, err := abi.NewType(ts, "", nil)
 		if err != nil {
 			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
@@ -55,11 +83,11 @@ func (c *abiCodec) EncodeCall(signature string, args []string) ([]byte, error) {
 		abiArgs[i] = abi.Argument{Type: t}
 	}
 
-	goArgs := make([]interface{}, len(args))
+	goArgs := make([]any, len(args))
 	for i, arg := range args {
 		v, err := convertArg(abiArgs[i].Type, arg)
 		if err != nil {
-			return nil, fmt.Errorf("arg[%d] (%s): %s", i, typeStrs[i], err)
+			return nil, fmt.Errorf("arg[%d] (%s): %s", i, fn.Types[i], err)
 		}
 		goArgs[i] = v
 	}
@@ -69,9 +97,7 @@ func (c *abiCodec) EncodeCall(signature string, args []string) ([]byte, error) {
 		return nil, fmt.Errorf("pack: %s", err)
 	}
 
-	canonical := name + "(" + strings.Join(typeStrs, ",") + ")"
-	sel := c.Selector(canonical)
-	return append(sel, packed...), nil
+	return append(fn.Selector(), packed...), nil
 }
 
 func convertArg(t abi.Type, arg string) (any, error) {

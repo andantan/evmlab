@@ -49,18 +49,18 @@ func (h *TransactionHandler) BuildLegacyTransaction(w http.ResponseWriter, r *ht
 	handler.WriteJSON(w, http.StatusOK, NewBuildLegacyNativeTransferResponse(raw, signingHash))
 }
 
-// BuildDynamicFeeTransaction godoc
+// BuildEIP1559Transaction godoc
 // @Summary      Build an unsigned dynamic fee native transfer transaction
 // @Description  Constructs an unsigned EIP-1559 transaction for native ETH transfer and returns the encoded signing payload and signing hash
 // @Tags         transaction
 // @Accept       json
 // @Produce      json
-// @Param        body  body      BuildDynamicFeeTransactionRequest  true  "Transaction fields"
-// @Success      200   {object}  BuildDynamicFeeTransactionResponse
+// @Param        body  body      BuildEIP1559TransactionRequest  true  "Transaction fields"
+// @Success      200   {object}  BuildEIP1559TransactionResponse
 // @Failure      400   {object}  map[string]string
 // @Router       /evm/v1/transaction/dynamic-fee/build [post]
-func (h *TransactionHandler) BuildDynamicFeeTransaction(w http.ResponseWriter, r *http.Request) {
-	req := new(BuildDynamicFeeTransactionRequest)
+func (h *TransactionHandler) BuildEIP1559Transaction(w http.ResponseWriter, r *http.Request) {
+	req := new(BuildEIP1559TransactionRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
@@ -77,7 +77,7 @@ func (h *TransactionHandler) BuildDynamicFeeTransaction(w http.ResponseWriter, r
 	}
 
 	signingHash := core.Hasher.Hash(raw)
-	handler.WriteJSON(w, http.StatusOK, NewBuildDynamicFeeTransactionResponse(raw, signingHash))
+	handler.WriteJSON(w, http.StatusOK, NewBuildEIP1559TransactionResponse(raw, signingHash))
 }
 
 // SignLegacyTransaction godoc
@@ -135,22 +135,22 @@ func (h *TransactionHandler) SignLegacyTransaction(w http.ResponseWriter, r *htt
 	}
 
 	txHash := core.Hasher.Hash(signedRaw)
-	handler.WriteJSON(w, http.StatusOK, NewSignLegacyNativeTransferResponse(signedRaw, txHash))
+	handler.WriteJSON(w, http.StatusOK, NewSignLegacyNativeTransferResponse(signedRaw, txHash, sig))
 }
 
-// SignDynamicFeeTransaction godoc
+// SignEIP1559Transaction godoc
 // @Summary      Sign an unsigned dynamic fee native transfer transaction
 // @Description  Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash
 // @Tags         transaction
 // @Accept       json
 // @Produce      json
-// @Param        body  body      SignDynamicFeeTransactionRequest  true  "Address and unsigned RLP"
-// @Success      200   {object}  SignDynamicFeeTransactionResponse
+// @Param        body  body      SignEIP1559TransactionRequest  true  "Address and unsigned RLP"
+// @Success      200   {object}  SignEIP1559TransactionResponse
 // @Failure      400   {object}  map[string]string
 // @Failure      500   {object}  map[string]string
 // @Router       /evm/v1/transaction/dynamic-fee/sign [post]
-func (h *TransactionHandler) SignDynamicFeeTransaction(w http.ResponseWriter, r *http.Request) {
-	req := new(SignDynamicFeeTransactionRequest)
+func (h *TransactionHandler) SignEIP1559Transaction(w http.ResponseWriter, r *http.Request) {
+	req := new(SignEIP1559TransactionRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
@@ -193,5 +193,5 @@ func (h *TransactionHandler) SignDynamicFeeTransaction(w http.ResponseWriter, r 
 	}
 
 	txHash := core.Hasher.Hash(signedRaw)
-	handler.WriteJSON(w, http.StatusOK, NewSignDynamicFeeTransactionResponse(signedRaw, txHash))
+	handler.WriteJSON(w, http.StatusOK, NewSignEIP1559TransactionResponse(signedRaw, txHash, sig))
 }

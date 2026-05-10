@@ -64,17 +64,6 @@ definitions:
       chain_id_hex:
         type: string
     type: object
-  misc.ChecksumEIP55Request:
-    properties:
-      address:
-        example: 0xEbD69375...
-        type: string
-    type: object
-  misc.ChecksumEIP55Response:
-    properties:
-      address:
-        type: string
-    type: object
   misc.CodeRequest:
     properties:
       address:
@@ -104,6 +93,17 @@ definitions:
       private_key:
         type: string
       public_key:
+        type: string
+    type: object
+  misc.EIP55Request:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+    type: object
+  misc.EIP55Response:
+    properties:
+      address:
         type: string
     type: object
   misc.EncodeRequest:
@@ -238,7 +238,7 @@ definitions:
         example: 0xabc123...
         type: string
     type: object
-  misc.UnitConvertDecimalRequest:
+  misc.UnitConvertRequest:
     properties:
       amount:
         example: "1"
@@ -250,14 +250,14 @@ definitions:
         example: wei
         type: string
     type: object
-  misc.UnitConvertDecimalResponse:
+  misc.UnitConvertResponse:
     properties:
       amount:
         type: string
       unit:
         type: string
     type: object
-  v1.BuildDynamicFeeTransactionRequest:
+  v1.BuildEIP1559TransactionRequest:
     properties:
       chain_id:
         example: "20001209"
@@ -284,7 +284,7 @@ definitions:
         example: "1000000000000000000"
         type: string
     type: object
-  v1.BuildDynamicFeeTransactionResponse:
+  v1.BuildEIP1559TransactionResponse:
     properties:
       signing_hash:
         type: string
@@ -322,6 +322,59 @@ definitions:
       unsigned_rlp:
         type: string
     type: object
+  v1.EcrecoverRequest:
+    properties:
+      hash:
+        example: 0xa1b2c3d4...
+        type: string
+      signature:
+        example: 0xa1b2c3d4...
+        type: string
+    type: object
+  v1.EcrecoverResponse:
+    properties:
+      address:
+        type: string
+      public_key:
+        type: string
+    type: object
+  v1.Keccak256EIP191Request:
+    properties:
+      message:
+        example: hello world!
+        type: string
+    type: object
+  v1.Keccak256EIP191Response:
+    properties:
+      digest:
+        type: string
+    type: object
+  v1.Keccak256EIP712Request:
+    properties:
+      args:
+        items:
+          type: string
+        type: array
+      chain_id:
+        type: string
+      contract:
+        type: string
+      name:
+        type: string
+      signature:
+        type: string
+      version:
+        type: string
+    type: object
+  v1.Keccak256EIP712Response:
+    properties:
+      digest:
+        type: string
+      domain_separator:
+        type: string
+      message_hash:
+        type: string
+    type: object
   v1.Keccak256LegacyRequest:
     properties:
       message:
@@ -333,18 +386,7 @@ definitions:
       digest:
         type: string
     type: object
-  v1.Keccak256PersonalRequest:
-    properties:
-      message:
-        example: hello world!
-        type: string
-    type: object
-  v1.Keccak256PersonalResponse:
-    properties:
-      digest:
-        type: string
-    type: object
-  v1.SignDynamicFeeTransactionRequest:
+  v1.SignEIP1559TransactionRequest:
     properties:
       address:
         example: 0xEbD69375...
@@ -353,11 +395,17 @@ definitions:
         example: 0x02f8...
         type: string
     type: object
-  v1.SignDynamicFeeTransactionResponse:
+  v1.SignEIP1559TransactionResponse:
     properties:
+      r:
+        type: string
       raw_transaction:
         type: string
+      s:
+        type: string
       tx_hash:
+        type: string
+      v:
         type: string
     type: object
   v1.SignLegacyTransactionRequest:
@@ -371,9 +419,15 @@ definitions:
     type: object
   v1.SignLegacyTransactionResponse:
     properties:
+      r:
+        type: string
       raw_transaction:
         type: string
+      s:
+        type: string
       tx_hash:
+        type: string
+      v:
         type: string
     type: object
   v1.SignRequest:
@@ -387,7 +441,13 @@ definitions:
     type: object
   v1.SignResponse:
     properties:
+      r:
+        type: string
+      s:
+        type: string
       signature:
+        type: string
+      v:
         type: string
     type: object
   v1.VerifyByAddressRequest:
@@ -900,7 +960,7 @@ paths:
       summary: Send signed raw transaction
       tags:
       - rpc
-  /evm/tool/address/checksum/eip55:
+  /evm/tool/address/eip55:
     post:
       consumes:
       - application/json
@@ -911,14 +971,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/misc.ChecksumEIP55Request'
+          $ref: '#/definitions/misc.EIP55Request'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/misc.ChecksumEIP55Response'
+            $ref: '#/definitions/misc.EIP55Response'
         "400":
           description: Bad Request
           schema:
@@ -957,7 +1017,7 @@ paths:
       summary: Derive key set from private key
       tags:
       - tool
-  /evm/tool/unit/convert/decimal:
+  /evm/tool/unit/convert:
     post:
       consumes:
       - application/json
@@ -968,14 +1028,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/misc.UnitConvertDecimalRequest'
+          $ref: '#/definitions/misc.UnitConvertRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/misc.UnitConvertDecimalResponse'
+            $ref: '#/definitions/misc.UnitConvertResponse'
         "400":
           description: Bad Request
           schema:
@@ -985,6 +1045,66 @@ paths:
       summary: Convert amount between wei, gwei, and ether
       tags:
       - tool
+  /evm/v1/hash/keccak256/eip191:
+    post:
+      consumes:
+      - application/json
+      description: Prepends the EIP-191 personal sign prefix ("\x19Ethereum Signed
+        Message:\n" + length) to the message and returns the Keccak256 hash — matches
+        the digest produced by eth_sign / personal_sign
+      parameters:
+      - description: Message to hash
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Keccak256EIP191Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Keccak256EIP191Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Compute Keccak256 hash with EIP-191 prefix
+      tags:
+      - hash
+  /evm/v1/hash/keccak256/eip712:
+    post:
+      consumes:
+      - application/json
+      description: Parses the function signature to derive the type schema, builds
+        the EIP-712 typed data from domain and args, and returns the digest (\x19\x01
+        || domainSeparator || hashStruct(message))
+      parameters:
+      - description: EIP-712 domain, signature and args
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Keccak256EIP712Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Keccak256EIP712Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Compute EIP-712 typed data hash
+      tags:
+      - hash
   /evm/v1/hash/keccak256/legacy:
     post:
       consumes:
@@ -1012,36 +1132,6 @@ paths:
               type: string
             type: object
       summary: Compute raw Keccak256 hash
-      tags:
-      - hash
-  /evm/v1/hash/keccak256/personal:
-    post:
-      consumes:
-      - application/json
-      description: Prepends the EIP-191 personal sign prefix ("\x19Ethereum Signed
-        Message:\n" + length) to the message and returns the Keccak256 hash — matches
-        the digest produced by eth_sign / personal_sign
-      parameters:
-      - description: Message to hash
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.Keccak256PersonalRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.Keccak256PersonalResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Compute Keccak256 hash with EIP-191 prefix
       tags:
       - hash
   /evm/v1/sign:
@@ -1072,6 +1162,41 @@ paths:
               type: string
             type: object
       summary: Sign a pre-computed hash
+      tags:
+      - sign
+  /evm/v1/sign/ecrecover:
+    post:
+      consumes:
+      - application/json
+      description: Recovers the uncompressed secp256k1 public key and Ethereum address
+        from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format
+      parameters:
+      - description: Hash and signature
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v1.EcrecoverRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.EcrecoverResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Recover public key and address from a signature
       tags:
       - sign
   /evm/v1/sign/verify/by-address:
@@ -1144,14 +1269,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/v1.BuildDynamicFeeTransactionRequest'
+          $ref: '#/definitions/v1.BuildEIP1559TransactionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.BuildDynamicFeeTransactionResponse'
+            $ref: '#/definitions/v1.BuildEIP1559TransactionResponse'
         "400":
           description: Bad Request
           schema:
@@ -1173,14 +1298,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/v1.SignDynamicFeeTransactionRequest'
+          $ref: '#/definitions/v1.SignEIP1559TransactionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v1.SignDynamicFeeTransactionResponse'
+            $ref: '#/definitions/v1.SignEIP1559TransactionResponse'
         "400":
           description: Bad Request
           schema:

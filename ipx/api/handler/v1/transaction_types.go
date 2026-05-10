@@ -3,6 +3,7 @@ package v1
 import (
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 
@@ -43,23 +44,29 @@ func (r *SignLegacyTransactionRequest) UnsignedRaw() []byte {
 type SignLegacyTransactionResponse struct {
 	RawTransaction string `json:"raw_transaction"`
 	TxHash         string `json:"tx_hash"`
+	R              string `json:"r"`
+	S              string `json:"s"`
+	V              string `json:"v"`
 }
 
-func NewSignLegacyNativeTransferResponse(raw []byte, hash *types.Hash) *SignLegacyTransactionResponse {
+func NewSignLegacyNativeTransferResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignLegacyTransactionResponse {
 	return &SignLegacyTransactionResponse{
 		RawTransaction: "0x" + hex.EncodeToString(raw),
 		TxHash:         hash.String(),
+		R:              "0x" + sig.R().Text(16),
+		S:              "0x" + sig.S().Text(16),
+		V:              fmt.Sprintf("0x%x", sig.V()),
 	}
 }
 
-type SignDynamicFeeTransactionRequest struct {
+type SignEIP1559TransactionRequest struct {
 	Address     string `json:"address"      example:"0xEbD69375..."`
 	UnsignedRLP string `json:"unsigned_rlp" example:"0x02f8..."`
 
 	unsignedRaw []byte
 }
 
-func (r *SignDynamicFeeTransactionRequest) ValidateRequest() error {
+func (r *SignEIP1559TransactionRequest) ValidateRequest() error {
 	r.Address = strings.TrimSpace(r.Address)
 	if r.Address == "" {
 		return errors.New("address is required")
@@ -77,19 +84,25 @@ func (r *SignDynamicFeeTransactionRequest) ValidateRequest() error {
 	return nil
 }
 
-func (r *SignDynamicFeeTransactionRequest) UnsignedRaw() []byte {
+func (r *SignEIP1559TransactionRequest) UnsignedRaw() []byte {
 	return r.unsignedRaw
 }
 
-type SignDynamicFeeTransactionResponse struct {
+type SignEIP1559TransactionResponse struct {
 	RawTransaction string `json:"raw_transaction"`
 	TxHash         string `json:"tx_hash"`
+	R              string `json:"r"`
+	S              string `json:"s"`
+	V              string `json:"v"`
 }
 
-func NewSignDynamicFeeTransactionResponse(raw []byte, hash *types.Hash) *SignDynamicFeeTransactionResponse {
-	return &SignDynamicFeeTransactionResponse{
+func NewSignEIP1559TransactionResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignEIP1559TransactionResponse {
+	return &SignEIP1559TransactionResponse{
 		RawTransaction: "0x" + hex.EncodeToString(raw),
 		TxHash:         hash.String(),
+		R:              "0x" + sig.R().Text(16),
+		S:              "0x" + sig.S().Text(16),
+		V:              fmt.Sprintf("0x%x", sig.V()),
 	}
 }
 
@@ -185,7 +198,7 @@ func NewBuildLegacyNativeTransferResponse(raw []byte, hash *types.Hash) *BuildLe
 	}
 }
 
-type BuildDynamicFeeTransactionRequest struct {
+type BuildEIP1559TransactionRequest struct {
 	ChainID              string `json:"chain_id"                 example:"20001209"`
 	Nonce                uint64 `json:"nonce"                    example:"0"`
 	MaxPriorityFeePerGas string `json:"max_priority_fee_per_gas" example:"1500000000"`
@@ -203,7 +216,7 @@ type BuildDynamicFeeTransactionRequest struct {
 	data      []byte
 }
 
-func (r *BuildDynamicFeeTransactionRequest) ValidateRequest() error {
+func (r *BuildEIP1559TransactionRequest) ValidateRequest() error {
 	var ok bool
 
 	r.chainID, ok = new(big.Int).SetString(strings.TrimSpace(r.ChainID), 10)
@@ -263,7 +276,7 @@ func (r *BuildDynamicFeeTransactionRequest) ValidateRequest() error {
 	return nil
 }
 
-func (r *BuildDynamicFeeTransactionRequest) ToDynamicFeeTx() *types.DynamicFeeTx {
+func (r *BuildEIP1559TransactionRequest) ToDynamicFeeTx() *types.DynamicFeeTx {
 	return &types.DynamicFeeTx{
 		ChainID:   r.chainID,
 		Nonce:     r.Nonce,
@@ -276,13 +289,13 @@ func (r *BuildDynamicFeeTransactionRequest) ToDynamicFeeTx() *types.DynamicFeeTx
 	}
 }
 
-type BuildDynamicFeeTransactionResponse struct {
+type BuildEIP1559TransactionResponse struct {
 	UnsignedRLP string `json:"unsigned_rlp"`
 	SigningHash string `json:"signing_hash"`
 }
 
-func NewBuildDynamicFeeTransactionResponse(raw []byte, hash *types.Hash) *BuildDynamicFeeTransactionResponse {
-	return &BuildDynamicFeeTransactionResponse{
+func NewBuildEIP1559TransactionResponse(raw []byte, hash *types.Hash) *BuildEIP1559TransactionResponse {
+	return &BuildEIP1559TransactionResponse{
 		UnsignedRLP: "0x" + hex.EncodeToString(raw),
 		SigningHash: hash.String(),
 	}

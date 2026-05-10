@@ -16,18 +16,18 @@ func NewToolHandler() *ToolHandler {
 	return &ToolHandler{}
 }
 
-// ChecksumEIP55 godoc
+// EIP55 godoc
 // @Summary      Convert address to EIP-55 checksum format
 // @Description  Returns the EIP-55 mixed-case checksum encoding for the given address
 // @Tags         tool
 // @Accept       json
 // @Produce      json
-// @Param        body  body      ChecksumEIP55Request  true  "Address"
-// @Success      200   {object}  ChecksumEIP55Response
+// @Param        body  body      EIP55Request  true  "Address"
+// @Success      200   {object}  EIP55Response
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/tool/address/checksum/eip55 [post]
-func (h *ToolHandler) ChecksumEIP55(w http.ResponseWriter, r *http.Request) {
-	req := new(ChecksumEIP55Request)
+// @Router       /evm/tool/address/eip55 [post]
+func (h *ToolHandler) EIP55(w http.ResponseWriter, r *http.Request) {
+	req := new(EIP55Request)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
@@ -37,7 +37,7 @@ func (h *ToolHandler) ChecksumEIP55(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewChecksumEIP55Response(req.ToAddress()))
+	handler.WriteJSON(w, http.StatusOK, NewEIP55Response(req.ToAddress()))
 }
 
 // DeriveKey godoc
@@ -70,18 +70,18 @@ func (h *ToolHandler) DeriveKey(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJSON(w, http.StatusOK, NewDeriveKeyResponse(key))
 }
 
-// ConvertUnitDecimal godoc
+// ConvertUnit godoc
 // @Summary      Convert amount between wei, gwei, and ether
 // @Description  Converts a decimal amount from one Ethereum unit to another
 // @Tags         tool
 // @Accept       json
 // @Produce      json
-// @Param        body  body      UnitConvertDecimalRequest   true  "Unit conversion"
-// @Success      200   {object}  UnitConvertDecimalResponse
+// @Param        body  body      UnitConvertRequest   true  "Unit conversion"
+// @Success      200   {object}  UnitConvertResponse
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/tool/unit/convert/decimal [post]
-func (h *ToolHandler) ConvertUnitDecimal(w http.ResponseWriter, r *http.Request) {
-	req := new(UnitConvertDecimalRequest)
+// @Router       /evm/tool/unit/convert [post]
+func (h *ToolHandler) ConvertUnit(w http.ResponseWriter, r *http.Request) {
+	req := new(UnitConvertRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
@@ -97,5 +97,5 @@ func (h *ToolHandler) ConvertUnitDecimal(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewUnitConvertDecimalResponse(amount, req.To))
+	handler.WriteJSON(w, http.StatusOK, NewUnitConvertResponse(amount, req.To))
 }

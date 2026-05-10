@@ -36,8 +36,13 @@ func (h *AbiHandler) Selector(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sel := core.ABI.Selector(req.Signature)
-	handler.WriteJSON(w, http.StatusOK, NewSelectorResponse(sel))
+	fn, err := core.ABI.ParseFunctionSignature(req.Signature)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewSelectorResponse(fn.Selector()))
 }
 
 // Encode godoc
@@ -64,7 +69,13 @@ func (h *AbiHandler) Encode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := core.ABI.EncodeCall(req.Signature, req.Args)
+	fn, err := core.ABI.ParseFunctionSignature(req.Signature)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data, err := core.ABI.EncodeCall(fn, req.Args)
 	if err != nil {
 		handler.WriteError(w, http.StatusBadRequest, err.Error())
 		return

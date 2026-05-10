@@ -696,7 +696,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/tool/address/checksum/eip55": {
+        "/evm/tool/address/eip55": {
             "post": {
                 "description": "Returns the EIP-55 mixed-case checksum encoding for the given address",
                 "consumes": [
@@ -716,7 +716,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/misc.ChecksumEIP55Request"
+                            "$ref": "#/definitions/misc.EIP55Request"
                         }
                     }
                 ],
@@ -724,7 +724,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/misc.ChecksumEIP55Response"
+                            "$ref": "#/definitions/misc.EIP55Response"
                         }
                     },
                     "400": {
@@ -782,7 +782,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/tool/unit/convert/decimal": {
+        "/evm/tool/unit/convert": {
             "post": {
                 "description": "Converts a decimal amount from one Ethereum unit to another",
                 "consumes": [
@@ -802,7 +802,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/misc.UnitConvertDecimalRequest"
+                            "$ref": "#/definitions/misc.UnitConvertRequest"
                         }
                     }
                 ],
@@ -810,7 +810,93 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/misc.UnitConvertDecimalResponse"
+                            "$ref": "#/definitions/misc.UnitConvertResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v1/hash/keccak256/eip191": {
+            "post": {
+                "description": "Prepends the EIP-191 personal sign prefix (\"\\x19Ethereum Signed Message:\\n\" + length) to the message and returns the Keccak256 hash — matches the digest produced by eth_sign / personal_sign",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hash"
+                ],
+                "summary": "Compute Keccak256 hash with EIP-191 prefix",
+                "parameters": [
+                    {
+                        "description": "Message to hash",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.Keccak256EIP191Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Keccak256EIP191Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v1/hash/keccak256/eip712": {
+            "post": {
+                "description": "Parses the function signature to derive the type schema, builds the EIP-712 typed data from domain and args, and returns the digest (\\x19\\x01 || domainSeparator || hashStruct(message))",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hash"
+                ],
+                "summary": "Compute EIP-712 typed data hash",
+                "parameters": [
+                    {
+                        "description": "EIP-712 domain, signature and args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.Keccak256EIP712Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Keccak256EIP712Response"
                         }
                     },
                     "400": {
@@ -868,49 +954,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/v1/hash/keccak256/personal": {
-            "post": {
-                "description": "Prepends the EIP-191 personal sign prefix (\"\\x19Ethereum Signed Message:\\n\" + length) to the message and returns the Keccak256 hash — matches the digest produced by eth_sign / personal_sign",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "hash"
-                ],
-                "summary": "Compute Keccak256 hash with EIP-191 prefix",
-                "parameters": [
-                    {
-                        "description": "Message to hash",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256PersonalRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256PersonalResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/evm/v1/sign": {
             "post": {
                 "description": "Signs a hex-encoded 32-byte digest with the given private key using raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash endpoints to produce the digest before calling this.",
@@ -944,6 +987,58 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v1/sign/ecrecover": {
+            "post": {
+                "description": "Recovers the uncompressed secp256k1 public key and Ethereum address from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Recover public key and address from a signature",
+                "parameters": [
+                    {
+                        "description": "Hash and signature",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.EcrecoverRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.EcrecoverResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1060,7 +1155,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.BuildDynamicFeeTransactionRequest"
+                            "$ref": "#/definitions/v1.BuildEIP1559TransactionRequest"
                         }
                     }
                 ],
@@ -1068,7 +1163,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.BuildDynamicFeeTransactionResponse"
+                            "$ref": "#/definitions/v1.BuildEIP1559TransactionResponse"
                         }
                     },
                     "400": {
@@ -1103,7 +1198,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v1.SignDynamicFeeTransactionRequest"
+                            "$ref": "#/definitions/v1.SignEIP1559TransactionRequest"
                         }
                     }
                 ],
@@ -1111,7 +1206,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v1.SignDynamicFeeTransactionResponse"
+                            "$ref": "#/definitions/v1.SignEIP1559TransactionResponse"
                         }
                     },
                     "400": {
@@ -1389,23 +1484,6 @@ const docTemplate = `{
                 }
             }
         },
-        "misc.ChecksumEIP55Request": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "0xEbD69375..."
-                }
-            }
-        },
-        "misc.ChecksumEIP55Response": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                }
-            }
-        },
         "misc.CodeRequest": {
             "type": "object",
             "properties": {
@@ -1449,6 +1527,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "public_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.EIP55Request": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                }
+            }
+        },
+        "misc.EIP55Response": {
+            "type": "object",
+            "properties": {
+                "address": {
                     "type": "string"
                 }
             }
@@ -1652,7 +1747,7 @@ const docTemplate = `{
                 }
             }
         },
-        "misc.UnitConvertDecimalRequest": {
+        "misc.UnitConvertRequest": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1669,7 +1764,7 @@ const docTemplate = `{
                 }
             }
         },
-        "misc.UnitConvertDecimalResponse": {
+        "misc.UnitConvertResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -1680,7 +1775,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.BuildDynamicFeeTransactionRequest": {
+        "v1.BuildEIP1559TransactionRequest": {
             "type": "object",
             "properties": {
                 "chain_id": {
@@ -1717,7 +1812,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.BuildDynamicFeeTransactionResponse": {
+        "v1.BuildEIP1559TransactionResponse": {
             "type": "object",
             "properties": {
                 "signing_hash": {
@@ -1772,6 +1867,87 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.EcrecoverRequest": {
+            "type": "object",
+            "properties": {
+                "hash": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                }
+            }
+        },
+        "v1.EcrecoverResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "public_key": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Keccak256EIP191Request": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "hello world!"
+                }
+            }
+        },
+        "v1.Keccak256EIP191Response": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Keccak256EIP712Request": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "chain_id": {
+                    "type": "string"
+                },
+                "contract": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Keccak256EIP712Response": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                },
+                "domain_separator": {
+                    "type": "string"
+                },
+                "message_hash": {
+                    "type": "string"
+                }
+            }
+        },
         "v1.Keccak256LegacyRequest": {
             "type": "object",
             "properties": {
@@ -1789,24 +1965,7 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.Keccak256PersonalRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "hello world!"
-                }
-            }
-        },
-        "v1.Keccak256PersonalResponse": {
-            "type": "object",
-            "properties": {
-                "digest": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.SignDynamicFeeTransactionRequest": {
+        "v1.SignEIP1559TransactionRequest": {
             "type": "object",
             "properties": {
                 "address": {
@@ -1819,13 +1978,22 @@ const docTemplate = `{
                 }
             }
         },
-        "v1.SignDynamicFeeTransactionResponse": {
+        "v1.SignEIP1559TransactionResponse": {
             "type": "object",
             "properties": {
+                "r": {
+                    "type": "string"
+                },
                 "raw_transaction": {
                     "type": "string"
                 },
+                "s": {
+                    "type": "string"
+                },
                 "tx_hash": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }
@@ -1846,10 +2014,19 @@ const docTemplate = `{
         "v1.SignLegacyTransactionResponse": {
             "type": "object",
             "properties": {
+                "r": {
+                    "type": "string"
+                },
                 "raw_transaction": {
                     "type": "string"
                 },
+                "s": {
+                    "type": "string"
+                },
                 "tx_hash": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }
@@ -1870,7 +2047,16 @@ const docTemplate = `{
         "v1.SignResponse": {
             "type": "object",
             "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
                 "signature": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }

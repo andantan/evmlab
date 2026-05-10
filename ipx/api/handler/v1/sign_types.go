@@ -2,6 +2,7 @@ package v1
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/andantan/evmlab/core/types"
@@ -39,10 +40,63 @@ func (r *SignRequest) Hash() *types.Hash {
 
 type SignResponse struct {
 	Signature string `json:"signature"`
+	R         string `json:"r"`
+	S         string `json:"s"`
+	V         string `json:"v"`
 }
 
 func NewSignResponse(s *types.Signature) *SignResponse {
-	return &SignResponse{Signature: "0x" + s.Hex()}
+	return &SignResponse{
+		Signature: "0x" + s.Hex(),
+		R:         "0x" + s.R().Text(16),
+		S:         "0x" + s.S().Text(16),
+		V:         fmt.Sprintf("0x%x", s.V()),
+	}
+}
+
+type EcrecoverRequest struct {
+	Hash      string `json:"hash"      example:"0xa1b2c3d4..."`
+	Signature string `json:"signature" example:"0xa1b2c3d4..."`
+
+	hash *types.Hash
+	sig  *types.Signature
+}
+
+func (r *EcrecoverRequest) ValidateRequest() error {
+	b, err := util.ParseHex(r.Hash)
+	if err != nil {
+		return errors.New("hash: " + err.Error())
+	}
+	r.hash, err = types.NewHashFromBytes(b)
+	if err != nil {
+		return errors.New("hash: " + err.Error())
+	}
+
+	b, err = util.ParseHex(r.Signature)
+	if err != nil {
+		return errors.New("signature: " + err.Error())
+	}
+	r.sig, err = types.NewSignature(b)
+	if err != nil {
+		return errors.New("signature: " + err.Error())
+	}
+
+	return nil
+}
+
+func (r *EcrecoverRequest) ToHash() *types.Hash           { return r.hash }
+func (r *EcrecoverRequest) ToSignature() *types.Signature { return r.sig }
+
+type EcrecoverResponse struct {
+	PublicKey string `json:"public_key"`
+	Address   string `json:"address"`
+}
+
+func NewEcrecoverResponse(pk *types.PublicKey) *EcrecoverResponse {
+	return &EcrecoverResponse{
+		PublicKey: pk.Hex(),
+		Address:   pk.Address().String(),
+	}
 }
 
 type VerifyByPublicKeyRequest struct {
