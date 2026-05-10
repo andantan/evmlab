@@ -1,37 +1,50 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
 "use strict";
 
-const fs   = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 const contractPath = process.argv[2];
 if (!contractPath) {
-  console.error("usage: gen-standard-json.js <contract-path>");
+  console.error("usage: gen-standard-json.ts <contract-path>");
   process.exit(1);
 }
 
-const root    = process.cwd();
-const visited = new Set();
-const sources = {};
+interface SourceEntry {
+  content: string;
+}
 
-function resolveImport(importPath, fromDir) {
+interface StandardInput {
+  language: string;
+  sources: Record<string, SourceEntry>;
+  settings: {
+    optimizer: { enabled: boolean; runs: number };
+    outputSelection: Record<string, Record<string, string[]>>;
+  };
+}
+
+const root = process.cwd();
+const visited = new Set<string>();
+const sources: Record<string, SourceEntry> = {};
+
+function resolveImport(importPath: string, fromDir: string): string {
   if (importPath.startsWith(".")) {
     return path.resolve(fromDir, importPath);
   }
   return path.resolve(root, importPath);
 }
 
-function collect(filePath) {
+function collect(filePath: string): void {
   const rel = path.relative(root, path.resolve(filePath));
   if (visited.has(rel)) return;
   visited.add(rel);
 
   const content = fs.readFileSync(filePath, "utf8");
-  sources[rel]  = { content };
+  sources[rel] = { content };
 
-  const dir         = path.dirname(filePath);
+  const dir = path.dirname(filePath);
   const importRegex = /import\s+(?:\{[^}]*\}\s+from\s+)?["']([^"']+)["']/g;
-  let match;
+  let match: RegExpExecArray | null;
   while ((match = importRegex.exec(content)) !== null) {
     collect(resolveImport(match[1], dir));
   }
@@ -40,14 +53,14 @@ function collect(filePath) {
 collect(contractPath);
 
 const contractName = path.basename(contractPath, ".sol");
-const outDir       = path.join(root, "build", contractName);
+const outDir = path.join(root, "build", contractName);
 fs.mkdirSync(outDir, { recursive: true });
 
-const input = {
+const input: StandardInput = {
   language: "Solidity",
   sources,
   settings: {
-    optimizer:       { enabled: false, runs: 200 },
+    optimizer: { enabled: false, runs: 200 },
     outputSelection: { "*": { "*": ["abi", "evm.bytecode", "evm.deployedBytecode", "metadata"] } },
   },
 };
