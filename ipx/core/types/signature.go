@@ -17,7 +17,7 @@ type Signature struct {
 	bytes []byte
 	r     *big.Int
 	s     *big.Int
-	v     byte
+	v     *big.Int
 	hex   string
 }
 
@@ -33,7 +33,7 @@ func NewSignature(b []byte) (*Signature, error) {
 		bytes: cp,
 		r:     new(big.Int).SetBytes(cp[:32]),
 		s:     new(big.Int).SetBytes(cp[32:64]),
-		v:     cp[64],
+		v:     new(big.Int).SetUint64(uint64(cp[64])),
 	}, nil
 }
 
@@ -81,10 +81,16 @@ func (s *Signature) S() *big.Int {
 	return s.s
 }
 
-func (s *Signature) V() byte {
+func (s *Signature) V() *big.Int {
 	return s.v
 }
 
-func (s *Signature) LegacyV() byte {
-	return s.V() + 27
+func (s *Signature) LegacyV() *big.Int {
+	return new(big.Int).Add(s.v, big.NewInt(27))
+}
+
+func (s *Signature) EIP155V(chainID *big.Int) {
+	s.v.Mul(chainID, big.NewInt(2))
+	s.v.Add(s.v, big.NewInt(35))
+	s.v.Add(s.v, new(big.Int).SetUint64(uint64(s.bytes[64])))
 }

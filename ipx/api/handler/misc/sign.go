@@ -1,4 +1,4 @@
-package v1
+package misc
 
 import (
 	"encoding/json"
@@ -27,7 +27,7 @@ func NewSignHandler(cfg *config.Config) *SignHandler {
 // @Param        body  body      SignRequest   true  "Address and digest"
 // @Success      200   {object}  SignResponse
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/sign [post]
+// @Router       /evm/sign [post]
 func (h *SignHandler) Sign(w http.ResponseWriter, r *http.Request) {
 	req := new(SignRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -70,7 +70,7 @@ func (h *SignHandler) Sign(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  EcrecoverResponse
 // @Failure      400   {object}  map[string]string
 // @Failure      500   {object}  map[string]string
-// @Router       /evm/v1/sign/ecrecover [post]
+// @Router       /evm/sign/ecrecover [post]
 func (h *SignHandler) Ecrecover(w http.ResponseWriter, r *http.Request) {
 	req := new(EcrecoverRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -100,7 +100,7 @@ func (h *SignHandler) Ecrecover(w http.ResponseWriter, r *http.Request) {
 // @Param        body  body      VerifyByPublicKeyRequest   true  "Hash, public key, and signature"
 // @Success      200   {object}  VerifyByPublicKeyResponse
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/sign/verify/by-public-key [post]
+// @Router       /evm/sign/verify/by-public-key [post]
 func (h *SignHandler) VerifyByPublicKey(w http.ResponseWriter, r *http.Request) {
 	req := new(VerifyByPublicKeyRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -125,7 +125,7 @@ func (h *SignHandler) VerifyByPublicKey(w http.ResponseWriter, r *http.Request) 
 // @Param        body  body      VerifyByAddressRequest   true  "Hash, address, and signature"
 // @Success      200   {object}  VerifyByAddressResponse
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/sign/verify/by-address [post]
+// @Router       /evm/sign/verify/by-address [post]
 func (h *SignHandler) VerifyByAddress(w http.ResponseWriter, r *http.Request) {
 	req := new(VerifyByAddressRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -139,4 +139,118 @@ func (h *SignHandler) VerifyByAddress(w http.ResponseWriter, r *http.Request) {
 
 	result := core.Signer.VerifyByAddress(req.ToHash(), req.ToAddress(), req.ToSignature()) == nil
 	handler.WriteJSON(w, http.StatusOK, NewVerifyByAddressResponse(result))
+}
+
+// SignLegacyTransaction godoc
+// @Summary      Sign an unsigned legacy transaction
+// @Description  Decodes an unsigned EIP-155 legacy RLP, signs it with the key for the given address, and returns the signed raw transaction and tx hash
+// @Tags         sign
+// @Accept       json
+// @Produce      json
+// @Param        body  body      SignLegacyTransactionRequest   true  "Address and unsigned RLP"
+// @Success      200   {object}  SignLegacyTransactionResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/sign/transaction/legacy [post]
+func (h *SignHandler) SignLegacyTransaction(w http.ResponseWriter, r *http.Request) {
+	req := new(SignLegacyTransactionRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	key, err := h.cfg.KeyByAddress(req.Address)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("address: %s", err))
+		return
+	}
+	priv, err := core.DeriveKeyFromHex(key.PrivateKey, key.PublicKey, key.Address)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to derive key: %s", err))
+		return
+	}
+
+	tx, err := core.RLP.DecodeLegacyUnsigned(req.UnsignedRaw())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("failed to decode unsigned_rlp: %s", err))
+		return
+	}
+
+	signingHash := core.Hasher.Hash(req.UnsignedRaw())
+	sig, err := core.Signer.Sign(signingHash, *priv.PrivateKey)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to sign: %s", err))
+		return
+	}
+
+	signedRaw, err := core.RLP.EncodeLegacySigned(tx, sig)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to encode signed tx: %s", err))
+		return
+	}
+
+	txHash := core.Hasher.Hash(signedRaw)
+	handler.WriteJSON(w, http.StatusOK, NewSignLegacyTransactionResponse(signedRaw, txHash, sig))
+}
+
+// SignEIP1559Transaction godoc
+// @Summary      Sign an unsigned dynamic fee native transfer transaction
+// @Description  Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash
+// @Tags         transaction
+// @Accept       json
+// @Produce      json
+// @Param        body  body      SignEIP1559TransactionRequest  true  "Address and unsigned RLP"
+// @Success      200   {object}  SignEIP1559TransactionResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/sign/transaction/eip1559 [post]
+func (h *SignHandler) SignEIP1559Transaction(w http.ResponseWriter, r *http.Request) {
+	req := new(SignEIP1559TransactionRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	key, err := h.cfg.KeyByAddress(req.Address)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("address: %s", err))
+		return
+	}
+
+	priv, err := core.DeriveKeyFromHex(key.PrivateKey, key.PublicKey, key.Address)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to derive key: %s", err))
+		return
+	}
+
+	tx, err := core.RLP.DecodeDynamicFeeUnsigned(req.UnsignedRaw())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("failed to decode unsigned_rlp: %s", err))
+		return
+	}
+
+	signingHash := core.Hasher.Hash(req.UnsignedRaw())
+
+	sig, err := core.Signer.Sign(signingHash, *priv.PrivateKey)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to sign: %s", err))
+		return
+	}
+
+	signedRaw, err := core.RLP.EncodeDynamicFeeSigned(tx, sig)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to encode signed tx: %s", err))
+		return
+	}
+
+	txHash := core.Hasher.Hash(signedRaw)
+	handler.WriteJSON(w, http.StatusOK, NewSignEIP1559TransactionResponse(signedRaw, txHash, sig))
 }

@@ -19,6 +19,37 @@ func NewRPCHandler(client *rpc.Client) *RPCHandler {
 	return &RPCHandler{client: client}
 }
 
+// Raw godoc
+// @Summary      Call any JSON-RPC method
+// @Description  Proxies a raw JSON-RPC call to the connected node and returns the result as-is
+// @Tags         rpc
+// @Accept       json
+// @Produce      json
+// @Param        body  body      RawRPCRequest  true  "JSON-RPC method and params"
+// @Success      200   {object}  RawRPCResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/rpc [post]
+func (h *RPCHandler) Raw(w http.ResponseWriter, r *http.Request) {
+	req := new(RawRPCRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var result any
+	if err := h.client.Call(r.Context(), req.Method, req.Params, &result); err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, &RawRPCResponse{Result: result})
+}
+
 // ChainID godoc
 // @Summary      Get chain ID
 // @Description  Returns the chain ID of the connected network as a decimal integer

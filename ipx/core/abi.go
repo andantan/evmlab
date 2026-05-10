@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/andantan/evmlab/core/types"
@@ -98,6 +99,113 @@ func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error)
 	}
 
 	return append(fn.Selector(), packed...), nil
+}
+
+// DecodeResult ABI-decodes raw return data from an eth_call into string values.
+func (c *abiCodec) DecodeResult(typeStrs []string, data []byte) ([]string, error) {
+	abiArgs := make(abi.Arguments, len(typeStrs))
+	for i, ts := range typeStrs {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		abiArgs[i] = abi.Argument{Type: t}
+	}
+
+	values, err := abiArgs.Unpack(data)
+	if err != nil {
+		return nil, fmt.Errorf("unpack: %s", err)
+	}
+
+	result := make([]string, len(values))
+	for i, v := range values {
+		s, err := formatValue(v)
+		if err != nil {
+			return nil, fmt.Errorf("value[%d]: %s", i, err)
+		}
+		result[i] = s
+	}
+	return result, nil
+}
+
+// DecodeCall ABI-decodes calldata (selector + args) into a name→value map.
+// If the signature contains no parameter names, keys are "arg0", "arg1", etc.
+func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]string, error) {
+	if len(data) < 4 {
+		return nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
+	}
+
+	abiArgs := make(abi.Arguments, len(fn.Types))
+	for i, ts := range fn.Types {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		abiArgs[i] = abi.Argument{Type: t}
+	}
+
+	values, err := abiArgs.Unpack(data[4:])
+	if err != nil {
+		return nil, fmt.Errorf("unpack: %s", err)
+	}
+
+	result := make(map[string]string, len(values))
+	for i, v := range values {
+		key := fmt.Sprintf("arg%d", i)
+		if i < len(fn.Names) && fn.Names[i] != "" {
+			key = fn.Names[i]
+		}
+		s, err := formatValue(v)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %s", key, err)
+		}
+		result[key] = s
+	}
+	return result, nil
+}
+
+func formatValue(v any) (string, error) {
+	switch val := v.(type) {
+	case common.Address:
+		return val.Hex(), nil
+	case *big.Int:
+		return val.String(), nil
+	case uint8:
+		return strconv.FormatUint(uint64(val), 10), nil
+	case uint16:
+		return strconv.FormatUint(uint64(val), 10), nil
+	case uint32:
+		return strconv.FormatUint(uint64(val), 10), nil
+	case uint64:
+		return strconv.FormatUint(val, 10), nil
+	case int8:
+		return strconv.FormatInt(int64(val), 10), nil
+	case int16:
+		return strconv.FormatInt(int64(val), 10), nil
+	case int32:
+		return strconv.FormatInt(int64(val), 10), nil
+	case int64:
+		return strconv.FormatInt(val, 10), nil
+	case bool:
+		if val {
+			return "true", nil
+		}
+		return "false", nil
+	case string:
+		return val, nil
+	case []byte:
+		return hexutil.Encode(val), nil
+	default:
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.Array && rv.Type().Elem().Kind() == reflect.Uint8 {
+			b := make([]byte, rv.Len())
+			for i := range b {
+				b[i] = rv.Index(i).Interface().(byte)
+			}
+			return hexutil.Encode(b), nil
+		}
+		return "", fmt.Errorf("unsupported type: %T", v)
+	}
 }
 
 func convertArg(t abi.Type, arg string) (any, error) {

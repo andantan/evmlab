@@ -80,6 +80,43 @@ definitions:
       is_contract:
         type: boolean
     type: object
+  misc.DecodeCallRequest:
+    properties:
+      data:
+        example: 0xa9059cbb000000000000000000000000da70aa79f1a329719b9cf9d334b0a82b1d5269f300000000000000000000000000000000000000000000000000000000000003e8
+        type: string
+      signature:
+        example: transfer(address,uint256)
+        type: string
+    type: object
+  misc.DecodeCallResponse:
+    properties:
+      selector:
+        type: string
+      values:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  misc.DecodeResultRequest:
+    properties:
+      data:
+        example: "0x000000000000000000000000000000000000000000000000000000000001cf1d"
+        type: string
+      types:
+        example:
+        - '["uint256"]'
+        items:
+          type: string
+        type: array
+    type: object
+  misc.DecodeResultResponse:
+    properties:
+      values:
+        items:
+          type: string
+        type: array
+    type: object
   misc.DeriveKeyRequest:
     properties:
       private_key:
@@ -104,6 +141,22 @@ definitions:
   misc.EIP55Response:
     properties:
       address:
+        type: string
+    type: object
+  misc.EcrecoverRequest:
+    properties:
+      hash:
+        example: 0xa1b2c3d4...
+        type: string
+      signature:
+        example: 0xa1b2c3d4...
+        type: string
+    type: object
+  misc.EcrecoverResponse:
+    properties:
+      address:
+        type: string
+      public_key:
         type: string
     type: object
   misc.EncodeRequest:
@@ -168,6 +221,53 @@ definitions:
       wei:
         type: string
     type: object
+  misc.Keccak256EIP191Request:
+    properties:
+      message:
+        example: hello world!
+        type: string
+    type: object
+  misc.Keccak256EIP191Response:
+    properties:
+      digest:
+        type: string
+    type: object
+  misc.Keccak256EIP712Request:
+    properties:
+      args:
+        items: {}
+        type: array
+      chain_id:
+        type: string
+      contract:
+        type: string
+      name:
+        type: string
+      signature:
+        type: string
+      version:
+        type: string
+    type: object
+  misc.Keccak256EIP712Response:
+    properties:
+      digest:
+        type: string
+      domain_separator:
+        type: string
+      message_hash:
+        type: string
+    type: object
+  misc.Keccak256LegacyRequest:
+    properties:
+      message:
+        example: hello world!
+        type: string
+    type: object
+  misc.Keccak256LegacyResponse:
+    properties:
+      digest:
+        type: string
+    type: object
   misc.MaxFeePerGasResponse:
     properties:
       ether:
@@ -210,6 +310,18 @@ definitions:
       nonce_hex:
         type: string
     type: object
+  misc.RawRPCRequest:
+    properties:
+      method:
+        type: string
+      params:
+        items: {}
+        type: array
+    type: object
+  misc.RawRPCResponse:
+    properties:
+      result: {}
+    type: object
   misc.SelectorRequest:
     properties:
       signature:
@@ -230,6 +342,70 @@ definitions:
   misc.SendTransactionResponse:
     properties:
       tx_hash:
+        type: string
+    type: object
+  misc.SignEIP1559TransactionRequest:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+      unsigned_rlp:
+        example: 0x02f8...
+        type: string
+    type: object
+  misc.SignEIP1559TransactionResponse:
+    properties:
+      r:
+        type: string
+      raw_transaction:
+        type: string
+      s:
+        type: string
+      tx_hash:
+        type: string
+      v:
+        type: string
+    type: object
+  misc.SignLegacyTransactionRequest:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+      unsigned_rlp:
+        example: 0xec8085...
+        type: string
+    type: object
+  misc.SignLegacyTransactionResponse:
+    properties:
+      r:
+        type: string
+      raw_transaction:
+        type: string
+      s:
+        type: string
+      tx_hash:
+        type: string
+      v:
+        type: string
+    type: object
+  misc.SignRequest:
+    properties:
+      address:
+        example: 0xEbD69375...
+        type: string
+      digest:
+        example: 0xa1b2c3d4...
+        type: string
+    type: object
+  misc.SignResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signature:
+        type: string
+      v:
         type: string
     type: object
   misc.TransactionRequest:
@@ -256,6 +432,40 @@ definitions:
         type: string
       unit:
         type: string
+    type: object
+  misc.VerifyByAddressRequest:
+    properties:
+      address:
+        example: 0xAbCd1234...
+        type: string
+      hash:
+        example: 0xa1b2c3d4...
+        type: string
+      signature:
+        example: 0xa1b2c3d4...
+        type: string
+    type: object
+  misc.VerifyByAddressResponse:
+    properties:
+      result:
+        type: boolean
+    type: object
+  misc.VerifyByPublicKeyRequest:
+    properties:
+      hash:
+        example: 0xa1b2c3d4...
+        type: string
+      public_key:
+        example: 0x04a1b2c3...
+        type: string
+      signature:
+        example: 0xa1b2c3d4...
+        type: string
+    type: object
+  misc.VerifyByPublicKeyResponse:
+    properties:
+      result:
+        type: boolean
     type: object
   v1.BuildEIP1559TransactionRequest:
     properties:
@@ -322,172 +532,37 @@ definitions:
       unsigned_rlp:
         type: string
     type: object
-  v1.EcrecoverRequest:
-    properties:
-      hash:
-        example: 0xa1b2c3d4...
-        type: string
-      signature:
-        example: 0xa1b2c3d4...
-        type: string
-    type: object
-  v1.EcrecoverResponse:
-    properties:
-      address:
-        type: string
-      public_key:
-        type: string
-    type: object
-  v1.Keccak256EIP191Request:
-    properties:
-      message:
-        example: hello world!
-        type: string
-    type: object
-  v1.Keccak256EIP191Response:
-    properties:
-      digest:
-        type: string
-    type: object
-  v1.Keccak256EIP712Request:
-    properties:
-      args:
-        items:
-          type: string
-        type: array
-      chain_id:
-        type: string
-      contract:
-        type: string
-      name:
-        type: string
-      signature:
-        type: string
-      version:
-        type: string
-    type: object
-  v1.Keccak256EIP712Response:
-    properties:
-      digest:
-        type: string
-      domain_separator:
-        type: string
-      message_hash:
-        type: string
-    type: object
-  v1.Keccak256LegacyRequest:
-    properties:
-      message:
-        example: hello world!
-        type: string
-    type: object
-  v1.Keccak256LegacyResponse:
-    properties:
-      digest:
-        type: string
-    type: object
-  v1.SignEIP1559TransactionRequest:
-    properties:
-      address:
-        example: 0xEbD69375...
-        type: string
-      unsigned_rlp:
-        example: 0x02f8...
-        type: string
-    type: object
-  v1.SignEIP1559TransactionResponse:
-    properties:
-      r:
-        type: string
-      raw_transaction:
-        type: string
-      s:
-        type: string
-      tx_hash:
-        type: string
-      v:
-        type: string
-    type: object
-  v1.SignLegacyTransactionRequest:
-    properties:
-      address:
-        example: 0xEbD69375...
-        type: string
-      unsigned_rlp:
-        example: 0xec8085...
-        type: string
-    type: object
-  v1.SignLegacyTransactionResponse:
-    properties:
-      r:
-        type: string
-      raw_transaction:
-        type: string
-      s:
-        type: string
-      tx_hash:
-        type: string
-      v:
-        type: string
-    type: object
-  v1.SignRequest:
-    properties:
-      address:
-        example: 0xEbD69375...
-        type: string
-      digest:
-        example: 0xa1b2c3d4...
-        type: string
-    type: object
-  v1.SignResponse:
-    properties:
-      r:
-        type: string
-      s:
-        type: string
-      signature:
-        type: string
-      v:
-        type: string
-    type: object
-  v1.VerifyByAddressRequest:
-    properties:
-      address:
-        example: 0xAbCd1234...
-        type: string
-      hash:
-        example: 0xa1b2c3d4...
-        type: string
-      signature:
-        example: 0xa1b2c3d4...
-        type: string
-    type: object
-  v1.VerifyByAddressResponse:
-    properties:
-      result:
-        type: boolean
-    type: object
-  v1.VerifyByPublicKeyRequest:
-    properties:
-      hash:
-        example: 0xa1b2c3d4...
-        type: string
-      public_key:
-        example: 0x04a1b2c3...
-        type: string
-      signature:
-        example: 0xa1b2c3d4...
-        type: string
-    type: object
-  v1.VerifyByPublicKeyResponse:
-    properties:
-      result:
-        type: boolean
-    type: object
-  v2.transferRequest:
+  v2.BuildNativeEIP1559TransactionRequest:
     properties:
       from:
-        description: sender address
+        type: string
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+  v2.BuildNativeEIP1559TransactionResponse:
+    properties:
+      unsigned_rlp:
+        type: string
+    type: object
+  v2.BuildNativeLegacyTransactionRequest:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+  v2.BuildNativeLegacyTransactionResponse:
+    properties:
+      unsigned_rlp:
+        type: string
+    type: object
+  v3.BuildNativeEIP1559TransactionRequest:
+    properties:
+      from:
         type: string
       to:
         type: string
@@ -495,9 +570,92 @@ definitions:
         description: wei as decimal string
         type: string
     type: object
-  v2.transferResponse:
+  v3.BuildNativeEIP1559TransactionResponse:
     properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
       tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v3.BuildNativeLegacyTransactionRequest:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      value:
+        description: wei as decimal string
+        type: string
+    type: object
+  v3.BuildNativeLegacyTransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v4.BuildNativeEIP1559TransactionRequest:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+  v4.BuildNativeEIP1559TransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v4.BuildNativeLegacyTransactionRequest:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+      value:
+        type: string
+    type: object
+  v4.BuildNativeLegacyTransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
         type: string
     type: object
 host: localhost:33152
@@ -507,6 +665,65 @@ info:
   title: evmlab API
   version: "1.0"
 paths:
+  /evm/abi/decode/call:
+    post:
+      consumes:
+      - application/json
+      description: Decodes calldata (4-byte selector + args) into a name→value map
+        using the given function signature. Parameter names are used as keys; falls
+        back to "arg0", "arg1", … when the signature has no names.
+      parameters:
+      - description: Function signature and hex-encoded calldata
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.DecodeCallRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.DecodeCallResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Decode ABI-encoded function calldata
+      tags:
+      - abi
+  /evm/abi/decode/result:
+    post:
+      consumes:
+      - application/json
+      description: Decodes the raw hex output of an eth_call into human-readable values
+        given a list of ABI types
+      parameters:
+      - description: ABI types and hex-encoded return data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.DecodeResultRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.DecodeResultResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Decode ABI-encoded return data
+      tags:
+      - abi
   /evm/abi/encode:
     post:
       consumes:
@@ -567,6 +784,130 @@ paths:
       summary: Compute ABI function selector
       tags:
       - abi
+  /evm/hash/keccak256/eip191:
+    post:
+      consumes:
+      - application/json
+      description: Prepends the EIP-191 personal sign prefix ("\x19Ethereum Signed
+        Message:\n" + length) to the message and returns the Keccak256 hash — matches
+        the digest produced by eth_sign / personal_sign
+      parameters:
+      - description: Message to hash
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.Keccak256EIP191Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.Keccak256EIP191Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Compute Keccak256 hash with EIP-191 prefix
+      tags:
+      - hash
+  /evm/hash/keccak256/eip712:
+    post:
+      consumes:
+      - application/json
+      description: Parses the function signature to derive the type schema, builds
+        the EIP-712 typed data from domain and args, and returns the digest (\x19\x01
+        || domainSeparator || hashStruct(message))
+      parameters:
+      - description: EIP-712 domain, signature and args
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.Keccak256EIP712Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.Keccak256EIP712Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Compute EIP-712 typed data hash
+      tags:
+      - hash
+  /evm/hash/keccak256/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Computes the Keccak256 hash of the given message with no prefix
+        applied (no EIP standard)
+      parameters:
+      - description: Message to hash
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.Keccak256LegacyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.Keccak256LegacyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Compute raw Keccak256 hash
+      tags:
+      - hash
+  /evm/rpc:
+    post:
+      consumes:
+      - application/json
+      description: Proxies a raw JSON-RPC call to the connected node and returns the
+        result as-is
+      parameters:
+      - description: JSON-RPC method and params
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.RawRPCRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.RawRPCResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Call any JSON-RPC method
+      tags:
+      - rpc
   /evm/rpc/balance:
     post:
       consumes:
@@ -960,6 +1301,199 @@ paths:
       summary: Send signed raw transaction
       tags:
       - rpc
+  /evm/sign:
+    post:
+      consumes:
+      - application/json
+      description: Signs a hex-encoded 32-byte digest with the given private key using
+        raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash
+        endpoints to produce the digest before calling this.
+      parameters:
+      - description: Address and digest
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.SignRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.SignResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign a pre-computed hash
+      tags:
+      - sign
+  /evm/sign/ecrecover:
+    post:
+      consumes:
+      - application/json
+      description: Recovers the uncompressed secp256k1 public key and Ethereum address
+        from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format
+      parameters:
+      - description: Hash and signature
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.EcrecoverRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.EcrecoverResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Recover public key and address from a signature
+      tags:
+      - sign
+  /evm/sign/transaction/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Decodes an unsigned EIP-1559 payload, signs it with the key for
+        the given address, and returns the signed raw transaction and tx hash
+      parameters:
+      - description: Address and unsigned RLP
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.SignEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.SignEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign an unsigned dynamic fee native transfer transaction
+      tags:
+      - transaction
+  /evm/sign/transaction/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Decodes an unsigned EIP-155 legacy RLP, signs it with the key for
+        the given address, and returns the signed raw transaction and tx hash
+      parameters:
+      - description: Address and unsigned RLP
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.SignLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.SignLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Sign an unsigned legacy transaction
+      tags:
+      - sign
+  /evm/sign/verify/by-address:
+    post:
+      consumes:
+      - application/json
+      description: Recovers the signer's address from the signature via ecrecover
+        and compares it against the provided address
+      parameters:
+      - description: Hash, address, and signature
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.VerifyByAddressRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.VerifyByAddressResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify a signature against an address
+      tags:
+      - sign
+  /evm/sign/verify/by-public-key:
+    post:
+      consumes:
+      - application/json
+      description: Recovers the signer's public key from the signature via ecrecover
+        and compares it against the provided public key
+      parameters:
+      - description: Hash, public key, and signature
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.VerifyByPublicKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.VerifyByPublicKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Verify a signature against a public key
+      tags:
+      - sign
   /evm/tool/address/eip55:
     post:
       consumes:
@@ -1045,219 +1579,7 @@ paths:
       summary: Convert amount between wei, gwei, and ether
       tags:
       - tool
-  /evm/v1/hash/keccak256/eip191:
-    post:
-      consumes:
-      - application/json
-      description: Prepends the EIP-191 personal sign prefix ("\x19Ethereum Signed
-        Message:\n" + length) to the message and returns the Keccak256 hash — matches
-        the digest produced by eth_sign / personal_sign
-      parameters:
-      - description: Message to hash
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.Keccak256EIP191Request'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.Keccak256EIP191Response'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Compute Keccak256 hash with EIP-191 prefix
-      tags:
-      - hash
-  /evm/v1/hash/keccak256/eip712:
-    post:
-      consumes:
-      - application/json
-      description: Parses the function signature to derive the type schema, builds
-        the EIP-712 typed data from domain and args, and returns the digest (\x19\x01
-        || domainSeparator || hashStruct(message))
-      parameters:
-      - description: EIP-712 domain, signature and args
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.Keccak256EIP712Request'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.Keccak256EIP712Response'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Compute EIP-712 typed data hash
-      tags:
-      - hash
-  /evm/v1/hash/keccak256/legacy:
-    post:
-      consumes:
-      - application/json
-      description: Computes the Keccak256 hash of the given message with no prefix
-        applied (no EIP standard)
-      parameters:
-      - description: Message to hash
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.Keccak256LegacyRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.Keccak256LegacyResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Compute raw Keccak256 hash
-      tags:
-      - hash
-  /evm/v1/sign:
-    post:
-      consumes:
-      - application/json
-      description: Signs a hex-encoded 32-byte digest with the given private key using
-        raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash
-        endpoints to produce the digest before calling this.
-      parameters:
-      - description: Address and digest
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.SignRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.SignResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Sign a pre-computed hash
-      tags:
-      - sign
-  /evm/v1/sign/ecrecover:
-    post:
-      consumes:
-      - application/json
-      description: Recovers the uncompressed secp256k1 public key and Ethereum address
-        from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format
-      parameters:
-      - description: Hash and signature
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.EcrecoverRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.EcrecoverResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Recover public key and address from a signature
-      tags:
-      - sign
-  /evm/v1/sign/verify/by-address:
-    post:
-      consumes:
-      - application/json
-      description: Recovers the signer's address from the signature via ecrecover
-        and compares it against the provided address
-      parameters:
-      - description: Hash, address, and signature
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.VerifyByAddressRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.VerifyByAddressResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Verify a signature against an address
-      tags:
-      - sign
-  /evm/v1/sign/verify/by-public-key:
-    post:
-      consumes:
-      - application/json
-      description: Recovers the signer's public key from the signature via ecrecover
-        and compares it against the provided public key
-      parameters:
-      - description: Hash, public key, and signature
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.VerifyByPublicKeyRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.VerifyByPublicKeyResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Verify a signature against a public key
-      tags:
-      - sign
-  /evm/v1/transaction/dynamic-fee/build:
+  /evm/v1/transaction/eip1559/build:
     post:
       consumes:
       - application/json
@@ -1284,41 +1606,6 @@ paths:
               type: string
             type: object
       summary: Build an unsigned dynamic fee native transfer transaction
-      tags:
-      - transaction
-  /evm/v1/transaction/dynamic-fee/sign:
-    post:
-      consumes:
-      - application/json
-      description: Decodes an unsigned EIP-1559 payload, signs it with the key for
-        the given address, and returns the signed raw transaction and tx hash
-      parameters:
-      - description: Address and unsigned RLP
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.SignEIP1559TransactionRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.SignEIP1559TransactionResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Sign an unsigned dynamic fee native transfer transaction
       tags:
       - transaction
   /evm/v1/transaction/legacy/build:
@@ -1350,60 +1637,26 @@ paths:
       summary: Build an unsigned legacy native transfer transaction
       tags:
       - transaction
-  /evm/v1/transaction/legacy/sign:
-    post:
-      consumes:
-      - application/json
-      description: Decodes an unsigned legacy RLP, signs it with the key for the given
-        address, and returns the signed raw transaction and tx hash
-      parameters:
-      - description: Address and unsigned RLP
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/v1.SignLegacyTransactionRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/v1.SignLegacyTransactionResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Sign an unsigned legacy native transfer transaction
-      tags:
-      - transaction
   /evm/v2/transfers/native/eip1559:
     post:
       consumes:
       - application/json
-      description: Signs and broadcasts a dynamic-fee ETH transfer transaction
+      description: Fetches chain state (chainID, nonce, fees) and returns the unsigned
+        RLP-encoded EIP-1559 transfer transaction
       parameters:
-      - description: Transfer request
+      - description: BuildNativeEIP1559Transaction request
         in: body
         name: body
         required: true
         schema:
-          $ref: '#/definitions/v2.transferRequest'
+          $ref: '#/definitions/v2.BuildNativeEIP1559TransactionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/v2.transferResponse'
+            $ref: '#/definitions/v2.BuildNativeEIP1559TransactionResponse'
         "400":
           description: Bad Request
           schema:
@@ -1416,13 +1669,183 @@ paths:
             additionalProperties:
               type: string
             type: object
-        "504":
-          description: Gateway Timeout
+      summary: Build unsigned EIP-1559 transfer tx
+      tags:
+      - transfer
+  /evm/v2/transfers/native/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state (chainID, nonce, gas price) and returns the
+        unsigned RLP-encoded EIP-155 legacy transfer transaction
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v2.BuildNativeLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v2.BuildNativeLegacyTransactionResponse'
+        "400":
+          description: Bad Request
           schema:
             additionalProperties:
               type: string
             type: object
-      summary: Send ETH (EIP-1559)
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build unsigned legacy transfer tx
       tags:
       - transfer
+  /evm/v3/transactions/native/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, builds and signs an EIP-1559 native transfer,
+        returns unsigned_rlp, signed_rlp, and tx_hash
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v3.BuildNativeEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v3.BuildNativeEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build and sign EIP-1559 transfer tx
+      tags:
+      - transaction
+  /evm/v3/transactions/native/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, builds and signs an EIP-155 legacy native
+        transfer, returns unsigned_rlp, signed_rlp, and tx_hash
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v3.BuildNativeLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v3.BuildNativeLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build and sign legacy transfer tx
+      tags:
+      - transaction
+  /evm/v4/transaction/native/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, builds and signs an EIP-1559 native transfer,
+        broadcasts it, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v4.BuildNativeEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v4.BuildNativeEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build, sign, and send EIP-1559 transfer tx
+      tags:
+      - transaction
+  /evm/v4/transaction/native/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, builds and signs an EIP-155 legacy native
+        transfer, broadcasts it, and returns unsigned_rlp, signed_rlp, tx_hash, r,
+        s, v
+      parameters:
+      - description: Transfer request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v4.BuildNativeLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v4.BuildNativeLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build, sign, and send legacy transfer tx
+      tags:
+      - transaction
 swagger: "2.0"

@@ -12,7 +12,7 @@ type LegacyTx struct {
 	Nonce    uint64
 	GasPrice *big.Int
 	GasLimit uint64
-	To       common.Address
+	To       *common.Address
 	Value    *big.Int
 	Data     []byte
 }

@@ -3,7 +3,6 @@ package v1
 import (
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"math/big"
 	"strings"
 
@@ -11,100 +10,6 @@ import (
 	"github.com/andantan/evmlab/internal/util"
 	"github.com/ethereum/go-ethereum/common"
 )
-
-type SignLegacyTransactionRequest struct {
-	Address     string `json:"address"      example:"0xEbD69375..."`
-	UnsignedRLP string `json:"unsigned_rlp" example:"0xec8085..."`
-
-	unsignedRaw []byte
-}
-
-func (r *SignLegacyTransactionRequest) ValidateRequest() error {
-	r.Address = strings.TrimSpace(r.Address)
-	if r.Address == "" {
-		return errors.New("address is required")
-	}
-
-	b, err := util.ParseHex(r.UnsignedRLP)
-	if err != nil {
-		return errors.New("unsigned_rlp: " + err.Error())
-	}
-	if len(b) == 0 {
-		return errors.New("unsigned_rlp: must not be empty")
-	}
-	r.unsignedRaw = b
-
-	return nil
-}
-
-func (r *SignLegacyTransactionRequest) UnsignedRaw() []byte {
-	return r.unsignedRaw
-}
-
-type SignLegacyTransactionResponse struct {
-	RawTransaction string `json:"raw_transaction"`
-	TxHash         string `json:"tx_hash"`
-	R              string `json:"r"`
-	S              string `json:"s"`
-	V              string `json:"v"`
-}
-
-func NewSignLegacyNativeTransferResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignLegacyTransactionResponse {
-	return &SignLegacyTransactionResponse{
-		RawTransaction: "0x" + hex.EncodeToString(raw),
-		TxHash:         hash.String(),
-		R:              "0x" + sig.R().Text(16),
-		S:              "0x" + sig.S().Text(16),
-		V:              fmt.Sprintf("0x%x", sig.V()),
-	}
-}
-
-type SignEIP1559TransactionRequest struct {
-	Address     string `json:"address"      example:"0xEbD69375..."`
-	UnsignedRLP string `json:"unsigned_rlp" example:"0x02f8..."`
-
-	unsignedRaw []byte
-}
-
-func (r *SignEIP1559TransactionRequest) ValidateRequest() error {
-	r.Address = strings.TrimSpace(r.Address)
-	if r.Address == "" {
-		return errors.New("address is required")
-	}
-
-	b, err := util.ParseHex(r.UnsignedRLP)
-	if err != nil {
-		return errors.New("unsigned_rlp: " + err.Error())
-	}
-	if len(b) == 0 {
-		return errors.New("unsigned_rlp: must not be empty")
-	}
-	r.unsignedRaw = b
-
-	return nil
-}
-
-func (r *SignEIP1559TransactionRequest) UnsignedRaw() []byte {
-	return r.unsignedRaw
-}
-
-type SignEIP1559TransactionResponse struct {
-	RawTransaction string `json:"raw_transaction"`
-	TxHash         string `json:"tx_hash"`
-	R              string `json:"r"`
-	S              string `json:"s"`
-	V              string `json:"v"`
-}
-
-func NewSignEIP1559TransactionResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignEIP1559TransactionResponse {
-	return &SignEIP1559TransactionResponse{
-		RawTransaction: "0x" + hex.EncodeToString(raw),
-		TxHash:         hash.String(),
-		R:              "0x" + sig.R().Text(16),
-		S:              "0x" + sig.S().Text(16),
-		V:              fmt.Sprintf("0x%x", sig.V()),
-	}
-}
 
 type BuildLegacyTransactionRequest struct {
 	ChainID  string `json:"chain_id"  example:"20001209"`
@@ -180,7 +85,7 @@ func (r *BuildLegacyTransactionRequest) ToLegacyTx() *types.LegacyTx {
 		Nonce:    r.Nonce,
 		GasPrice: r.gasPrice,
 		GasLimit: r.GasLimit,
-		To:       r.to,
+		To:       &r.to,
 		Value:    r.value,
 		Data:     r.data,
 	}

@@ -1,4 +1,4 @@
-package v1
+package misc
 
 import (
 	"errors"
@@ -57,12 +57,12 @@ func NewKeccak256EIP191Response(h *types.Hash) *Keccak256EIP191Response {
 }
 
 type Keccak256EIP712Request struct {
-	Name      string   `json:"name"`
-	Version   string   `json:"version"`
-	ChainID   string   `json:"chain_id"`
-	Contract  string   `json:"contract"`
-	Signature string   `json:"signature"`
-	Args      []string `json:"args"`
+	Name      string `json:"name"`
+	Version   string `json:"version"`
+	ChainID   string `json:"chain_id"`
+	Contract  string `json:"contract"`
+	Signature string `json:"signature"`
+	Args      []any  `json:"args"`
 
 	fn     *types.Function
 	domain *types.EIP712Domain

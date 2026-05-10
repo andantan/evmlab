@@ -1,4 +1,4 @@
-package v1
+package misc
 
 import (
 	"encoding/json"
@@ -24,7 +24,7 @@ func NewHashHandler() *HashHandler {
 // @Param        body  body      Keccak256LegacyRequest   true  "Message to hash"
 // @Success      200   {object}  Keccak256LegacyResponse
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/hash/keccak256/legacy [post]
+// @Router       /evm/hash/keccak256/legacy [post]
 func (h *HashHandler) Keccak256Legacy(w http.ResponseWriter, r *http.Request) {
 	req := new(Keccak256LegacyRequest)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -49,7 +49,7 @@ func (h *HashHandler) Keccak256Legacy(w http.ResponseWriter, r *http.Request) {
 // @Param        body  body      Keccak256EIP191Request   true  "Message to hash"
 // @Success      200   {object}  Keccak256EIP191Response
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/hash/keccak256/eip191 [post]
+// @Router       /evm/hash/keccak256/eip191 [post]
 func (h *HashHandler) Keccak256EIP191(w http.ResponseWriter, r *http.Request) {
 	req := new(Keccak256EIP191Request)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
@@ -74,7 +74,7 @@ func (h *HashHandler) Keccak256EIP191(w http.ResponseWriter, r *http.Request) {
 // @Param        body  body      Keccak256EIP712Request   true  "EIP-712 domain, signature and args"
 // @Success      200   {object}  Keccak256EIP712Response
 // @Failure      400   {object}  map[string]string
-// @Router       /evm/v1/hash/keccak256/eip712 [post]
+// @Router       /evm/hash/keccak256/eip712 [post]
 func (h *HashHandler) Keccak256EIP712(w http.ResponseWriter, r *http.Request) {
 	req := new(Keccak256EIP712Request)
 	if err := json.NewDecoder(r.Body).Decode(req); err != nil {

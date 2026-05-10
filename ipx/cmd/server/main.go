@@ -14,6 +14,8 @@ import (
 	"github.com/andantan/evmlab/api/handler/misc"
 	"github.com/andantan/evmlab/api/handler/v1"
 	"github.com/andantan/evmlab/api/handler/v2"
+	"github.com/andantan/evmlab/api/handler/v3"
+	"github.com/andantan/evmlab/api/handler/v4"
 	_ "github.com/andantan/evmlab/docs"
 	"github.com/andantan/evmlab/internal/config"
 	"github.com/andantan/evmlab/internal/rpc"
@@ -51,6 +53,7 @@ func run() error {
 
 	r.Route("/evm/rpc", func(r chi.Router) {
 		rpcHandler := misc.NewRPCHandler(client)
+		r.Post("/", rpcHandler.Raw)
 		r.Post("/chain-id", rpcHandler.ChainID)
 		r.Post("/block-number", rpcHandler.BlockNumber)
 		r.Post("/nonce", rpcHandler.Nonce)
@@ -71,6 +74,8 @@ func run() error {
 		abi := misc.NewAbiHandler()
 		r.Post("/selector", abi.Selector)
 		r.Post("/encode", abi.Encode)
+		r.Post("/decode/result", abi.DecodeResult)
+		r.Post("/decode/call", abi.DecodeCall)
 	})
 
 	r.Route("/evm/tool", func(r chi.Router) {
@@ -80,29 +85,45 @@ func run() error {
 		r.Post("/unit/convert", tool.ConvertUnit)
 	})
 
+	r.Route("/evm/hash", func(r chi.Router) {
+		hash := misc.NewHashHandler()
+		r.Post("/keccak256/legacy", hash.Keccak256Legacy)
+		r.Post("/keccak256/eip191", hash.Keccak256EIP191)
+		r.Post("/keccak256/eip712", hash.Keccak256EIP712)
+	})
+
+	r.Route("/evm/sign", func(r chi.Router) {
+		sign := misc.NewSignHandler(cfg)
+		r.Post("/", sign.Sign)
+		r.Post("/ecrecover", sign.Ecrecover)
+		r.Post("/verify/by-public-key", sign.VerifyByPublicKey)
+		r.Post("/verify/by-address", sign.VerifyByAddress)
+		r.Post("/transaction/legacy", sign.SignLegacyTransaction)
+		r.Post("/transaction/eip1559", sign.SignEIP1559Transaction)
+	})
+
 	r.Route("/evm/v1", func(r chi.Router) {
-		hash := v1.NewHashHandler()
-		r.Post("/hash/keccak256/legacy", hash.Keccak256Legacy)
-		r.Post("/hash/keccak256/eip191", hash.Keccak256EIP191)
-		r.Post("/hash/keccak256/eip712", hash.Keccak256EIP712)
-
-		sign := v1.NewSignHandler(cfg)
-		r.Post("/sign", sign.Sign)
-		r.Post("/sign/ecrecover", sign.Ecrecover)
-		r.Post("/sign/verify/by-public-key", sign.VerifyByPublicKey)
-		r.Post("/sign/verify/by-address", sign.VerifyByAddress)
-
 		tx := v1.NewTransactionHandler(cfg)
 		r.Post("/transaction/legacy/build", tx.BuildLegacyTransaction)
-		r.Post("/transaction/legacy/sign", tx.SignLegacyTransaction)
 		r.Post("/transaction/eip1559/build", tx.BuildEIP1559Transaction)
-		r.Post("/transaction/eip1559/sign", tx.SignEIP1559Transaction)
 	})
 
 	r.Route("/evm/v2", func(r chi.Router) {
-		transfer := v2.NewTransferHandler(cfg, client)
+		transfer := v2.NewTransactionHandler(client)
+		r.Post("/transaction/native/legacy", transfer.BuildNativeLegacyTransaction)
+		r.Post("/transaction/native/eip1559", transfer.BuildNativeEIP1559Transaction)
+	})
 
-		r.Post("/transfers/native/eip1559", transfer.Transfer)
+	r.Route("/evm/v3", func(r chi.Router) {
+		tx := v3.NewTransactionHandler(cfg, client)
+		r.Post("/transaction/native/legacy", tx.BuildNativeLegacyTransaction)
+		r.Post("/transaction/native/eip1559", tx.BuildNativeEIP1559Transaction)
+	})
+
+	r.Route("/evm/v4", func(r chi.Router) {
+		tx := v4.NewTransactionHandler(cfg, client)
+		r.Post("/transaction/native/legacy", tx.BuildNativeLegacyTransaction)
+		r.Post("/transaction/native/eip1559", tx.BuildNativeEIP1559Transaction)
 	})
 
 	fmt.Println("Listening on", cfg.ServerAddr)

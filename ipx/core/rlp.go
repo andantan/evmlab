@@ -19,7 +19,7 @@ type legacyTxRLP struct {
 	Nonce    uint64
 	GasPrice *big.Int
 	GasLimit uint64
-	To       common.Address
+	To       *common.Address
 	Value    *big.Int
 	Data     []byte
 	V        *big.Int
@@ -50,10 +50,7 @@ func (c *rlpCodec) EncodeLegacyUnsigned(tx *types.LegacyTx) ([]byte, error) {
 
 // EncodeLegacySigned returns the signed RLP with EIP-155 v = chainId * 2 + 35 + recoveryId.
 func (c *rlpCodec) EncodeLegacySigned(tx *types.LegacyTx, sig *types.Signature) ([]byte, error) {
-	v := new(big.Int).Mul(tx.ChainID, big.NewInt(2))
-	v.Add(v, big.NewInt(35))
-	v.Add(v, new(big.Int).SetUint64(uint64(sig.V())))
-
+	sig.EIP155V(tx.ChainID)
 	raw, err := rlp.EncodeToBytes(&legacyTxRLP{
 		Nonce:    tx.Nonce,
 		GasPrice: tx.GasPrice,
@@ -61,7 +58,7 @@ func (c *rlpCodec) EncodeLegacySigned(tx *types.LegacyTx, sig *types.Signature) 
 		To:       tx.To,
 		Value:    tx.Value,
 		Data:     tx.Data,
-		V:        v,
+		V:        sig.V(),
 		R:        sig.R(),
 		S:        sig.S(),
 	})
@@ -161,7 +158,7 @@ func (c *rlpCodec) EncodeDynamicFeeSigned(tx *types.DynamicFeeTx, sig *types.Sig
 		Value:      tx.Value,
 		Data:       tx.Data,
 		AccessList: []accessTuple{},
-		V:          new(big.Int).SetUint64(uint64(sig.V())),
+		V:          sig.V(),
 		R:          sig.R(),
 		S:          sig.S(),
 	})

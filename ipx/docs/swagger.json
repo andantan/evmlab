@@ -9,6 +9,92 @@
     "host": "localhost:33152",
     "basePath": "/",
     "paths": {
+        "/evm/abi/decode/call": {
+            "post": {
+                "description": "Decodes calldata (4-byte selector + args) into a name→value map using the given function signature. Parameter names are used as keys; falls back to \"arg0\", \"arg1\", … when the signature has no names.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Decode ABI-encoded function calldata",
+                "parameters": [
+                    {
+                        "description": "Function signature and hex-encoded calldata",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeCallRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeCallResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/abi/decode/result": {
+            "post": {
+                "description": "Decodes the raw hex output of an eth_call into human-readable values given a list of ABI types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Decode ABI-encoded return data",
+                "parameters": [
+                    {
+                        "description": "ABI types and hex-encoded return data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeResultRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeResultResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/abi/encode": {
             "post": {
                 "description": "Returns the ABI-encoded calldata (4-byte selector + packed arguments) for the given signature and args.\nSignature must be in canonical form — no spaces, no parameter names (e.g. \"transfer(address,uint256)\").\nSupported types: address | bool | string | bytes | bytes1–bytes32 | uint8/16/32/64/128/256 | int8/16/32/64/128/256\nTuple, array, and slice types are not yet supported.",
@@ -85,6 +171,187 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/hash/keccak256/eip191": {
+            "post": {
+                "description": "Prepends the EIP-191 personal sign prefix (\"\\x19Ethereum Signed Message:\\n\" + length) to the message and returns the Keccak256 hash — matches the digest produced by eth_sign / personal_sign",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hash"
+                ],
+                "summary": "Compute Keccak256 hash with EIP-191 prefix",
+                "parameters": [
+                    {
+                        "description": "Message to hash",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256EIP191Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256EIP191Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/hash/keccak256/eip712": {
+            "post": {
+                "description": "Parses the function signature to derive the type schema, builds the EIP-712 typed data from domain and args, and returns the digest (\\x19\\x01 || domainSeparator || hashStruct(message))",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hash"
+                ],
+                "summary": "Compute EIP-712 typed data hash",
+                "parameters": [
+                    {
+                        "description": "EIP-712 domain, signature and args",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256EIP712Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256EIP712Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/hash/keccak256/legacy": {
+            "post": {
+                "description": "Computes the Keccak256 hash of the given message with no prefix applied (no EIP standard)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "hash"
+                ],
+                "summary": "Compute raw Keccak256 hash",
+                "parameters": [
+                    {
+                        "description": "Message to hash",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256LegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.Keccak256LegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc": {
+            "post": {
+                "description": "Proxies a raw JSON-RPC call to the connected node and returns the result as-is",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Call any JSON-RPC method",
+                "parameters": [
+                    {
+                        "description": "JSON-RPC method and params",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.RawRPCRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.RawRPCResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -690,6 +957,291 @@
                 }
             }
         },
+        "/evm/sign": {
+            "post": {
+                "description": "Signs a hex-encoded 32-byte digest with the given private key using raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash endpoints to produce the digest before calling this.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Sign a pre-computed hash",
+                "parameters": [
+                    {
+                        "description": "Address and digest",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sign/ecrecover": {
+            "post": {
+                "description": "Recovers the uncompressed secp256k1 public key and Ethereum address from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Recover public key and address from a signature",
+                "parameters": [
+                    {
+                        "description": "Hash and signature",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.EcrecoverRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.EcrecoverResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sign/transaction/eip1559": {
+            "post": {
+                "description": "Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Sign an unsigned dynamic fee native transfer transaction",
+                "parameters": [
+                    {
+                        "description": "Address and unsigned RLP",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sign/transaction/legacy": {
+            "post": {
+                "description": "Decodes an unsigned EIP-155 legacy RLP, signs it with the key for the given address, and returns the signed raw transaction and tx hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Sign an unsigned legacy transaction",
+                "parameters": [
+                    {
+                        "description": "Address and unsigned RLP",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.SignLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sign/verify/by-address": {
+            "post": {
+                "description": "Recovers the signer's address from the signature via ecrecover and compares it against the provided address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Verify a signature against an address",
+                "parameters": [
+                    {
+                        "description": "Hash, address, and signature",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.VerifyByAddressRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.VerifyByAddressResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sign/verify/by-public-key": {
+            "post": {
+                "description": "Recovers the signer's public key from the signature via ecrecover and compares it against the provided public key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sign"
+                ],
+                "summary": "Verify a signature against a public key",
+                "parameters": [
+                    {
+                        "description": "Hash, public key, and signature",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.VerifyByPublicKeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.VerifyByPublicKeyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/tool/address/eip55": {
             "post": {
                 "description": "Returns the EIP-55 mixed-case checksum encoding for the given address",
@@ -819,317 +1371,7 @@
                 }
             }
         },
-        "/evm/v1/hash/keccak256/eip191": {
-            "post": {
-                "description": "Prepends the EIP-191 personal sign prefix (\"\\x19Ethereum Signed Message:\\n\" + length) to the message and returns the Keccak256 hash — matches the digest produced by eth_sign / personal_sign",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "hash"
-                ],
-                "summary": "Compute Keccak256 hash with EIP-191 prefix",
-                "parameters": [
-                    {
-                        "description": "Message to hash",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256EIP191Request"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256EIP191Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/hash/keccak256/eip712": {
-            "post": {
-                "description": "Parses the function signature to derive the type schema, builds the EIP-712 typed data from domain and args, and returns the digest (\\x19\\x01 || domainSeparator || hashStruct(message))",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "hash"
-                ],
-                "summary": "Compute EIP-712 typed data hash",
-                "parameters": [
-                    {
-                        "description": "EIP-712 domain, signature and args",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256EIP712Request"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256EIP712Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/hash/keccak256/legacy": {
-            "post": {
-                "description": "Computes the Keccak256 hash of the given message with no prefix applied (no EIP standard)",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "hash"
-                ],
-                "summary": "Compute raw Keccak256 hash",
-                "parameters": [
-                    {
-                        "description": "Message to hash",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256LegacyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.Keccak256LegacyResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/sign": {
-            "post": {
-                "description": "Signs a hex-encoded 32-byte digest with the given private key using raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash endpoints to produce the digest before calling this.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sign"
-                ],
-                "summary": "Sign a pre-computed hash",
-                "parameters": [
-                    {
-                        "description": "Address and digest",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/sign/ecrecover": {
-            "post": {
-                "description": "Recovers the uncompressed secp256k1 public key and Ethereum address from a 32-byte hash and a recoverable ECDSA signature in [R || S || V] format",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sign"
-                ],
-                "summary": "Recover public key and address from a signature",
-                "parameters": [
-                    {
-                        "description": "Hash and signature",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.EcrecoverRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.EcrecoverResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/sign/verify/by-address": {
-            "post": {
-                "description": "Recovers the signer's address from the signature via ecrecover and compares it against the provided address",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sign"
-                ],
-                "summary": "Verify a signature against an address",
-                "parameters": [
-                    {
-                        "description": "Hash, address, and signature",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.VerifyByAddressRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.VerifyByAddressResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/sign/verify/by-public-key": {
-            "post": {
-                "description": "Recovers the signer's public key from the signature via ecrecover and compares it against the provided public key",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "sign"
-                ],
-                "summary": "Verify a signature against a public key",
-                "parameters": [
-                    {
-                        "description": "Hash, public key, and signature",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.VerifyByPublicKeyRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.VerifyByPublicKeyResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/transaction/dynamic-fee/build": {
+        "/evm/v1/transaction/eip1559/build": {
             "post": {
                 "description": "Constructs an unsigned EIP-1559 transaction for native ETH transfer and returns the encoded signing payload and signing hash",
                 "consumes": [
@@ -1162,58 +1404,6 @@
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/evm/v1/transaction/dynamic-fee/sign": {
-            "post": {
-                "description": "Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "transaction"
-                ],
-                "summary": "Sign an unsigned dynamic fee native transfer transaction",
-                "parameters": [
-                    {
-                        "description": "Address and unsigned RLP",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignEIP1559TransactionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignEIP1559TransactionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1267,61 +1457,9 @@
                 }
             }
         },
-        "/evm/v1/transaction/legacy/sign": {
-            "post": {
-                "description": "Decodes an unsigned legacy RLP, signs it with the key for the given address, and returns the signed raw transaction and tx hash",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "transaction"
-                ],
-                "summary": "Sign an unsigned legacy native transfer transaction",
-                "parameters": [
-                    {
-                        "description": "Address and unsigned RLP",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignLegacyTransactionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/v1.SignLegacyTransactionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/evm/v2/transfers/native/eip1559": {
             "post": {
-                "description": "Signs and broadcasts a dynamic-fee ETH transfer transaction",
+                "description": "Fetches chain state (chainID, nonce, fees) and returns the unsigned RLP-encoded EIP-1559 transfer transaction",
                 "consumes": [
                     "application/json"
                 ],
@@ -1331,15 +1469,15 @@
                 "tags": [
                     "transfer"
                 ],
-                "summary": "Send ETH (EIP-1559)",
+                "summary": "Build unsigned EIP-1559 transfer tx",
                 "parameters": [
                     {
-                        "description": "Transfer request",
+                        "description": "BuildNativeEIP1559Transaction request",
                         "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/v2.transferRequest"
+                            "$ref": "#/definitions/v2.BuildNativeEIP1559TransactionRequest"
                         }
                     }
                 ],
@@ -1347,7 +1485,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/v2.transferResponse"
+                            "$ref": "#/definitions/v2.BuildNativeEIP1559TransactionResponse"
                         }
                     },
                     "400": {
@@ -1367,9 +1505,260 @@
                                 "type": "string"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/evm/v2/transfers/native/legacy": {
+            "post": {
+                "description": "Fetches chain state (chainID, nonce, gas price) and returns the unsigned RLP-encoded EIP-155 legacy transfer transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transfer"
+                ],
+                "summary": "Build unsigned legacy transfer tx",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildNativeLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildNativeLegacyTransactionResponse"
+                        }
                     },
-                    "504": {
-                        "description": "Gateway Timeout",
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v3/transactions/native/eip1559": {
+            "post": {
+                "description": "Fetches chain state, builds and signs an EIP-1559 native transfer, returns unsigned_rlp, signed_rlp, and tx_hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build and sign EIP-1559 transfer tx",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildNativeEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildNativeEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v3/transactions/native/legacy": {
+            "post": {
+                "description": "Fetches chain state, builds and signs an EIP-155 legacy native transfer, returns unsigned_rlp, signed_rlp, and tx_hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build and sign legacy transfer tx",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildNativeLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildNativeLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v4/transaction/native/eip1559": {
+            "post": {
+                "description": "Fetches chain state, builds and signs an EIP-1559 native transfer, broadcasts it, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build, sign, and send EIP-1559 transfer tx",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildNativeEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildNativeEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v4/transaction/native/legacy": {
+            "post": {
+                "description": "Fetches chain state, builds and signs an EIP-155 legacy native transfer, broadcasts it, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build, sign, and send legacy transfer tx",
+                "parameters": [
+                    {
+                        "description": "Transfer request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildNativeLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildNativeLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1502,6 +1891,62 @@
                 }
             }
         },
+        "misc.DecodeCallRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xa9059cbb000000000000000000000000da70aa79f1a329719b9cf9d334b0a82b1d5269f300000000000000000000000000000000000000000000000000000000000003e8"
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "transfer(address,uint256)"
+                }
+            }
+        },
+        "misc.DecodeCallResponse": {
+            "type": "object",
+            "properties": {
+                "selector": {
+                    "type": "string"
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "misc.DecodeResultRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0x000000000000000000000000000000000000000000000000000000000001cf1d"
+                },
+                "types": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"uint256\"]"
+                    ]
+                }
+            }
+        },
+        "misc.DecodeResultResponse": {
+            "type": "object",
+            "properties": {
+                "values": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "misc.DeriveKeyRequest": {
             "type": "object",
             "properties": {
@@ -1538,6 +1983,30 @@
             "type": "object",
             "properties": {
                 "address": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.EcrecoverRequest": {
+            "type": "object",
+            "properties": {
+                "hash": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                }
+            }
+        },
+        "misc.EcrecoverResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "public_key": {
                     "type": "string"
                 }
             }
@@ -1634,6 +2103,78 @@
                 }
             }
         },
+        "misc.Keccak256EIP191Request": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "hello world!"
+                }
+            }
+        },
+        "misc.Keccak256EIP191Response": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.Keccak256EIP712Request": {
+            "type": "object",
+            "properties": {
+                "args": {
+                    "type": "array",
+                    "items": {}
+                },
+                "chain_id": {
+                    "type": "string"
+                },
+                "contract": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.Keccak256EIP712Response": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                },
+                "domain_separator": {
+                    "type": "string"
+                },
+                "message_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.Keccak256LegacyRequest": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "hello world!"
+                }
+            }
+        },
+        "misc.Keccak256LegacyResponse": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                }
+            }
+        },
         "misc.MaxFeePerGasResponse": {
             "type": "object",
             "properties": {
@@ -1698,6 +2239,24 @@
                 }
             }
         },
+        "misc.RawRPCRequest": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "params": {
+                    "type": "array",
+                    "items": {}
+                }
+            }
+        },
+        "misc.RawRPCResponse": {
+            "type": "object",
+            "properties": {
+                "result": {}
+            }
+        },
         "misc.SelectorRequest": {
             "type": "object",
             "properties": {
@@ -1728,6 +2287,102 @@
             "type": "object",
             "properties": {
                 "tx_hash": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.SignEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                },
+                "unsigned_rlp": {
+                    "type": "string",
+                    "example": "0x02f8..."
+                }
+            }
+        },
+        "misc.SignEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "raw_transaction": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.SignLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                },
+                "unsigned_rlp": {
+                    "type": "string",
+                    "example": "0xec8085..."
+                }
+            }
+        },
+        "misc.SignLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "raw_transaction": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.SignRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xEbD69375..."
+                },
+                "digest": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                }
+            }
+        },
+        "misc.SignResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }
@@ -1766,6 +2421,56 @@
                 },
                 "unit": {
                     "type": "string"
+                }
+            }
+        },
+        "misc.VerifyByAddressRequest": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "0xAbCd1234..."
+                },
+                "hash": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                }
+            }
+        },
+        "misc.VerifyByAddressResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "misc.VerifyByPublicKeyRequest": {
+            "type": "object",
+            "properties": {
+                "hash": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                },
+                "public_key": {
+                    "type": "string",
+                    "example": "0x04a1b2c3..."
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "0xa1b2c3d4..."
+                }
+            }
+        },
+        "misc.VerifyByPublicKeyResponse": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "boolean"
                 }
             }
         },
@@ -1861,255 +2566,54 @@
                 }
             }
         },
-        "v1.EcrecoverRequest": {
-            "type": "object",
-            "properties": {
-                "hash": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                },
-                "signature": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                }
-            }
-        },
-        "v1.EcrecoverResponse": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "public_key": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.Keccak256EIP191Request": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "hello world!"
-                }
-            }
-        },
-        "v1.Keccak256EIP191Response": {
-            "type": "object",
-            "properties": {
-                "digest": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.Keccak256EIP712Request": {
-            "type": "object",
-            "properties": {
-                "args": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "chain_id": {
-                    "type": "string"
-                },
-                "contract": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.Keccak256EIP712Response": {
-            "type": "object",
-            "properties": {
-                "digest": {
-                    "type": "string"
-                },
-                "domain_separator": {
-                    "type": "string"
-                },
-                "message_hash": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.Keccak256LegacyRequest": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string",
-                    "example": "hello world!"
-                }
-            }
-        },
-        "v1.Keccak256LegacyResponse": {
-            "type": "object",
-            "properties": {
-                "digest": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.SignEIP1559TransactionRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "0xEbD69375..."
-                },
-                "unsigned_rlp": {
-                    "type": "string",
-                    "example": "0x02f8..."
-                }
-            }
-        },
-        "v1.SignEIP1559TransactionResponse": {
-            "type": "object",
-            "properties": {
-                "r": {
-                    "type": "string"
-                },
-                "raw_transaction": {
-                    "type": "string"
-                },
-                "s": {
-                    "type": "string"
-                },
-                "tx_hash": {
-                    "type": "string"
-                },
-                "v": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.SignLegacyTransactionRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "0xEbD69375..."
-                },
-                "unsigned_rlp": {
-                    "type": "string",
-                    "example": "0xec8085..."
-                }
-            }
-        },
-        "v1.SignLegacyTransactionResponse": {
-            "type": "object",
-            "properties": {
-                "r": {
-                    "type": "string"
-                },
-                "raw_transaction": {
-                    "type": "string"
-                },
-                "s": {
-                    "type": "string"
-                },
-                "tx_hash": {
-                    "type": "string"
-                },
-                "v": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.SignRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "0xEbD69375..."
-                },
-                "digest": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                }
-            }
-        },
-        "v1.SignResponse": {
-            "type": "object",
-            "properties": {
-                "r": {
-                    "type": "string"
-                },
-                "s": {
-                    "type": "string"
-                },
-                "signature": {
-                    "type": "string"
-                },
-                "v": {
-                    "type": "string"
-                }
-            }
-        },
-        "v1.VerifyByAddressRequest": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "example": "0xAbCd1234..."
-                },
-                "hash": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                },
-                "signature": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                }
-            }
-        },
-        "v1.VerifyByAddressResponse": {
-            "type": "object",
-            "properties": {
-                "result": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "v1.VerifyByPublicKeyRequest": {
-            "type": "object",
-            "properties": {
-                "hash": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                },
-                "public_key": {
-                    "type": "string",
-                    "example": "0x04a1b2c3..."
-                },
-                "signature": {
-                    "type": "string",
-                    "example": "0xa1b2c3d4..."
-                }
-            }
-        },
-        "v1.VerifyByPublicKeyResponse": {
-            "type": "object",
-            "properties": {
-                "result": {
-                    "type": "boolean"
-                }
-            }
-        },
-        "v2.transferRequest": {
+        "v2.BuildNativeEIP1559TransactionRequest": {
             "type": "object",
             "properties": {
                 "from": {
-                    "description": "sender address",
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v2.BuildNativeEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
+        "v2.BuildNativeLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v2.BuildNativeLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
+        "v3.BuildNativeEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
                     "type": "string"
                 },
                 "to": {
@@ -2121,10 +2625,137 @@
                 }
             }
         },
-        "v2.transferResponse": {
+        "v3.BuildNativeEIP1559TransactionResponse": {
             "type": "object",
             "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
                 "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v3.BuildNativeLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "description": "wei as decimal string",
+                    "type": "string"
+                }
+            }
+        },
+        "v3.BuildNativeLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildNativeEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildNativeEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildNativeLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildNativeLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }

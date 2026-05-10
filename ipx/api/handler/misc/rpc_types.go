@@ -10,6 +10,23 @@ import (
 	"github.com/andantan/evmlab/internal/util"
 )
 
+type RawRPCRequest struct {
+	Method string `json:"method"`
+	Params []any  `json:"params"`
+}
+
+func (r *RawRPCRequest) ValidateRequest() error {
+	r.Method = strings.TrimSpace(r.Method)
+	if r.Method == "" {
+		return errors.New("method is required")
+	}
+	return nil
+}
+
+type RawRPCResponse struct {
+	Result any `json:"result"`
+}
+
 type ChainIDResponse struct {
 	ChainID    uint64 `json:"chain_id"`
 	ChainIDHex string `json:"chain_id_hex"`

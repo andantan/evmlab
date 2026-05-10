@@ -49,15 +49,14 @@ func (h *hasher) EIP191(m []byte) *types.Hash {
 // EIP712 computes the EIP-712 digest for the given domain, function, and arguments.
 //
 //	digest = keccak256("\x19\x01" || domainSeparator || hashStruct(message))
-func (h *hasher) EIP712(domain *types.EIP712Domain, fn *types.Function, args []string) (*types.EIP712Result, error) {
-	primaryType := make([]apitypes.Type, len(fn.Types))
-	for i := range fn.Types {
-		primaryType[i] = apitypes.Type{Name: fn.Names[i], Type: fn.Types[i]}
-	}
-
-	message := apitypes.TypedDataMessage{}
-	for i, name := range fn.Names {
-		message[name] = args[i]
+func (h *hasher) EIP712(domain *types.EIP712Domain, fn *types.Function, args []any) (*types.EIP712Result, error) {
+	params := fn.Parameters()
+	primaryType := make([]apitypes.Type, len(params))
+	for i, p := range params {
+		primaryType[i] = apitypes.Type{
+			Name: p.Name,
+			Type: p.Type,
+		}
 	}
 
 	typedData := apitypes.TypedData{
@@ -77,7 +76,7 @@ func (h *hasher) EIP712(domain *types.EIP712Domain, fn *types.Function, args []s
 			ChainId:           (*math.HexOrDecimal256)(domain.ChainID),
 			VerifyingContract: domain.Contract.String(),
 		},
-		Message: message,
+		Message: fn.NamedArgs(args),
 	}
 
 	domainSepBytes, err := typedData.HashStruct("EIP712Domain", typedData.Domain.Map())
