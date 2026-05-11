@@ -200,6 +200,33 @@ func (c *abiCodec) DecodeString(data []byte) (string, error) {
 	return values[0].(string), nil
 }
 
+// DecodeBool unpacks a single ABI-encoded bool return value.
+func (c *abiCodec) DecodeBool(data []byte) (bool, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBool}}.Unpack(data)
+	if err != nil {
+		return false, err
+	}
+	return values[0].(bool), nil
+}
+
+// DecodeUint8 unpacks a single ABI-encoded uint8 return value.
+func (c *abiCodec) DecodeUint8(data []byte) (uint8, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint8}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(uint8), nil
+}
+
+// DecodeUint256 unpacks a single ABI-encoded uint256 return value.
+func (c *abiCodec) DecodeUint256(data []byte) (*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint256}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].(*big.Int), nil
+}
+
 func formatValue(v any) (string, error) {
 	switch val := v.(type) {
 	case common.Address:

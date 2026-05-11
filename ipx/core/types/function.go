@@ -7,8 +7,11 @@ var (
 	AllowanceSelector    = []byte{0xdd, 0x62, 0xed, 0x3e} // allowance(address,address)
 	TransferFromSelector = []byte{0x23, 0xb8, 0x72, 0xdd} // transferFrom(address,address,uint256)
 	EIP712DomainSelector = []byte{0x84, 0xb0, 0x19, 0x6e} // eip712Domain()
+	NoncesSelector       = []byte{0x7e, 0xce, 0xbe, 0x00} // nonces(address)
 	NameSelector         = []byte{0x06, 0xfd, 0xde, 0x03} // name()
 	VersionSelector      = []byte{0x54, 0xfd, 0x4d, 0x50} // version()
+	SymbolSelector       = []byte{0x95, 0xd8, 0x9b, 0x41} // symbol()
+	DecimalsSelector     = []byte{0x31, 0x3c, 0xe5, 0x67} // decimals()
 )
 
 // Parameter represents a single ABI function parameter with its name and type.

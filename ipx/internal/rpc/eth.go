@@ -36,6 +36,15 @@ func (c *Client) GetCode(ctx context.Context, address string, block string) (str
 	return result, err
 }
 
+func (c *Client) IsContract(ctx context.Context, address string, block string) (bool, error) {
+	r, err := c.GetCode(ctx, address, block)
+	if err != nil {
+		return false, err
+	}
+
+	return r != "0x", nil
+}
+
 func (c *Client) CallContract(ctx context.Context, params any, block string) (string, error) {
 	var result string
 	err := c.Call(ctx, "eth_call", []any{params, block}, &result)

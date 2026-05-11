@@ -10,6 +10,7 @@ import (
 
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
+	"github.com/andantan/evmlab/core/types"
 	"github.com/andantan/evmlab/internal/rpc"
 	"github.com/andantan/evmlab/internal/util"
 )
@@ -79,7 +80,13 @@ func (h *EIPHandler) EIP712Domain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	version := "1"
+	d := &types.EIP712Domain{
+		Name:     name,
+		Version:  "1",
+		ChainID:  chainID,
+		Contract: req.ToContract(),
+	}
+
 	p["data"] = "0x" + hex.EncodeToString(core.VersionCalldata())
 	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
 		goto respond
@@ -87,10 +94,58 @@ func (h *EIPHandler) EIP712Domain(w http.ResponseWriter, r *http.Request) {
 	if data, err = util.ParseHex(raw); err != nil {
 		goto respond
 	}
-	if version, err = core.ABI.DecodeString(data); err != nil {
+	if d.Version, err = core.ABI.DecodeString(data); err != nil {
 		goto respond
 	}
 
 respond:
-	handler.WriteJSON(w, http.StatusOK, NewEIP712DomainResponse(name, version, chainID, req.Contract))
+	handler.WriteJSON(w, http.StatusOK, NewEIP712DomainResponse(d))
+}
+
+// EIP2612Nonces godoc
+// @Summary      Fetch EIP-2612 nonce
+// @Description  Returns the current nonces(address) value for an owner on a permit-compatible contract
+// @Tags         contract
+// @Accept       json
+// @Produce      json
+// @Param        body  body      EIP2612NoncesRequest   true  "Contract and owner address"
+// @Success      200   {object}  EIP2612NoncesResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/contract/eip2612/nonces [post]
+func (h *EIPHandler) EIP2612Nonces(w http.ResponseWriter, r *http.Request) {
+	req := new(EIP2612NoncesRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	p := map[string]string{
+		"to":   req.Contract,
+		"data": "0x" + hex.EncodeToString(core.NoncesCalldata(req.ToOwner())),
+	}
+
+	raw, err := h.client.CallContract(r.Context(), p, req.Block)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call nonces() failed: %s", err))
+		return
+	}
+
+	data, err := util.ParseHex(raw)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
+		return
+	}
+
+	nonce, err := core.ABI.DecodeUint256(data)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode response: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewEIP2612NoncesResponse(nonce))
 }

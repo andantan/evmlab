@@ -20,6 +20,98 @@ definitions:
       version:
         type: string
     type: object
+  contract.EIP2612NoncesRequest:
+    properties:
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+      owner:
+        example: 0xAbcD1234...
+        type: string
+    type: object
+  contract.EIP2612NoncesResponse:
+    properties:
+      nonce:
+        type: string
+    type: object
+  contract.ERC20AllowanceRequest:
+    properties:
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+      owner:
+        example: 0xAbcD1234...
+        type: string
+      spender:
+        example: 0xAbcD1234...
+        type: string
+    type: object
+  contract.ERC20AllowanceResponse:
+    properties:
+      allowance:
+        type: string
+    type: object
+  contract.ERC20ApproveRequest:
+    properties:
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+      spender:
+        example: 0xAbcD1234...
+        type: string
+      value:
+        example: "1000000000000000000"
+        type: string
+    type: object
+  contract.ERC20ApproveResponse:
+    properties:
+      approved:
+        type: boolean
+    type: object
+  contract.ERC20BalanceRequest:
+    properties:
+      account:
+        example: 0xAbcD1234...
+        type: string
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+    type: object
+  contract.ERC20BalanceResponse:
+    properties:
+      balance:
+        type: string
+    type: object
+  contract.ERC20MetadataRequest:
+    properties:
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+    type: object
+  contract.ERC20MetadataResponse:
+    properties:
+      decimals:
+        type: integer
+      name:
+        type: string
+      symbol:
+        type: string
+    type: object
   misc.AllowanceCalldataRequest:
     properties:
       owner:
@@ -1261,6 +1353,178 @@ paths:
               type: string
             type: object
       summary: Fetch EIP-712 domain
+      tags:
+      - contract
+  /evm/contract/eip2612/nonces:
+    post:
+      consumes:
+      - application/json
+      description: Returns the current nonces(address) value for an owner on a permit-compatible
+        contract
+      parameters:
+      - description: Contract and owner address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.EIP2612NoncesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.EIP2612NoncesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fetch EIP-2612 nonce
+      tags:
+      - contract
+  /evm/contract/erc20/allowance:
+    post:
+      consumes:
+      - application/json
+      description: Returns the formatted token allowance of a spender for an owner
+      parameters:
+      - description: Contract, owner, and spender address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.ERC20AllowanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.ERC20AllowanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fetch ERC-20 token allowance
+      tags:
+      - contract
+  /evm/contract/erc20/approved:
+    post:
+      consumes:
+      - application/json
+      description: Simulates approve(address,uint256) via eth_call and returns the
+        bool result
+      parameters:
+      - description: Contract, spender, and value
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.ERC20ApproveRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.ERC20ApproveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Simulate ERC-20 approve
+      tags:
+      - contract
+  /evm/contract/erc20/balance:
+    post:
+      consumes:
+      - application/json
+      description: Returns the formatted token balance of an account
+      parameters:
+      - description: Contract and account address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.ERC20BalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.ERC20BalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fetch ERC-20 token balance
+      tags:
+      - contract
+  /evm/contract/erc20/metadata:
+    post:
+      consumes:
+      - application/json
+      description: Returns name, symbol, and decimals for an ERC-20 contract
+      parameters:
+      - description: Contract address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.ERC20MetadataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.ERC20MetadataResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fetch ERC-20 token metadata
       tags:
       - contract
   /evm/hash/keccak256/eip191:

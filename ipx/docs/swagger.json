@@ -456,6 +456,58 @@
                 }
             }
         },
+        "/evm/contract/eip2612/nonces": {
+            "post": {
+                "description": "Returns the current nonces(address) value for an owner on a permit-compatible contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Fetch EIP-2612 nonce",
+                "parameters": [
+                    {
+                        "description": "Contract and owner address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.EIP2612NoncesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.EIP2612NoncesResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/contract/eip712/domain": {
             "post": {
                 "description": "Resolves name, version, chain_id, and verifying_contract for a contract",
@@ -485,6 +537,214 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/contract.EIP712DomainResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/contract/erc20/allowance": {
+            "post": {
+                "description": "Returns the formatted token allowance of a spender for an owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Fetch ERC-20 token allowance",
+                "parameters": [
+                    {
+                        "description": "Contract, owner, and spender address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20AllowanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20AllowanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/contract/erc20/approved": {
+            "post": {
+                "description": "Simulates approve(address,uint256) via eth_call and returns the bool result",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Simulate ERC-20 approve",
+                "parameters": [
+                    {
+                        "description": "Contract, spender, and value",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20ApproveRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20ApproveResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/contract/erc20/balance": {
+            "post": {
+                "description": "Returns the formatted token balance of an account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Fetch ERC-20 token balance",
+                "parameters": [
+                    {
+                        "description": "Contract and account address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20BalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20BalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/contract/erc20/metadata": {
+            "post": {
+                "description": "Returns name, symbol, and decimals for an ERC-20 contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Fetch ERC-20 token metadata",
+                "parameters": [
+                    {
+                        "description": "Contract address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20MetadataRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20MetadataResponse"
                         }
                     },
                     "400": {
@@ -2410,6 +2670,31 @@
         }
     },
     "definitions": {
+        "contract.EIP2612NoncesRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                }
+            }
+        },
+        "contract.EIP2612NoncesResponse": {
+            "type": "object",
+            "properties": {
+                "nonce": {
+                    "type": "string"
+                }
+            }
+        },
         "contract.EIP712DomainRequest": {
             "type": "object",
             "properties": {
@@ -2436,6 +2721,116 @@
                     "type": "string"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20AllowanceRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "spender": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                }
+            }
+        },
+        "contract.ERC20AllowanceResponse": {
+            "type": "object",
+            "properties": {
+                "allowance": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20ApproveRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                },
+                "spender": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "value": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                }
+            }
+        },
+        "contract.ERC20ApproveResponse": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "contract.ERC20BalanceRequest": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                }
+            }
+        },
+        "contract.ERC20BalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20MetadataRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                }
+            }
+        },
+        "contract.ERC20MetadataResponse": {
+            "type": "object",
+            "properties": {
+                "decimals": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "symbol": {
                     "type": "string"
                 }
             }

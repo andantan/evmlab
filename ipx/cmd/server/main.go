@@ -114,6 +114,13 @@ func run() error {
 	r.Route("/evm/contract", func(r chi.Router) {
 		eip := contract.NewEIPHandler(client)
 		r.Post("/eip712/domain", eip.EIP712Domain)
+		r.Post("/eip2612/nonces", eip.EIP2612Nonces)
+
+		erc20 := contract.NewERC20Handler(client)
+		r.Post("/erc20/metadata", erc20.Metadata)
+		r.Post("/erc20/balance", erc20.Balance)
+		r.Post("/erc20/allowance", erc20.Allowance)
+		r.Post("/erc20/approved", erc20.Approved)
 	})
 
 	r.Route("/evm/v1", func(r chi.Router) {
