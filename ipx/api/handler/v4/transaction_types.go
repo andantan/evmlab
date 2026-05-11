@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/andantan/evmlab/core/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type BuildNativeLegacyTransactionRequest struct {
@@ -21,23 +20,26 @@ type BuildNativeLegacyTransactionRequest struct {
 }
 
 func (r *BuildNativeLegacyTransactionRequest) ValidateRequest() error {
+	var err error
 	r.From = strings.TrimSpace(r.From)
 	if r.From == "" {
 		return errors.New("from is required")
 	}
-	if !common.IsHexAddress(r.From) {
+
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
 		return errors.New("from: invalid address")
 	}
-	r.f = types.NewAddress(common.HexToAddress(r.From))
 
 	r.To = strings.TrimSpace(r.To)
 	if r.To == "" {
 		return errors.New("to is required")
 	}
-	if !common.IsHexAddress(r.To) {
+
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
 
 	r.Value = strings.TrimSpace(r.Value)
 	if r.Value == "" {
@@ -87,23 +89,26 @@ type BuildNativeEIP1559TransactionRequest struct {
 }
 
 func (r *BuildNativeEIP1559TransactionRequest) ValidateRequest() error {
+	var err error
 	r.From = strings.TrimSpace(r.From)
 	if r.From == "" {
 		return errors.New("from is required")
 	}
-	if !common.IsHexAddress(r.From) {
+
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
 		return errors.New("from: invalid address")
 	}
-	r.f = types.NewAddress(common.HexToAddress(r.From))
 
 	r.To = strings.TrimSpace(r.To)
 	if r.To == "" {
 		return errors.New("to is required")
 	}
-	if !common.IsHexAddress(r.To) {
+
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
 
 	r.Value = strings.TrimSpace(r.Value)
 	if r.Value == "" {
@@ -155,23 +160,24 @@ type BuildERC20LegacyTransactionRequest struct {
 }
 
 func (r *BuildERC20LegacyTransactionRequest) ValidateRequest() error {
+	var err error
 	r.From = strings.TrimSpace(r.From)
-	if !common.IsHexAddress(r.From) {
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
 		return errors.New("from: invalid address")
 	}
-	r.f = types.NewAddress(common.HexToAddress(r.From))
 
 	r.To = strings.TrimSpace(r.To)
-	if !common.IsHexAddress(r.To) {
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
 
 	r.Contract = strings.TrimSpace(r.Contract)
-	if !common.IsHexAddress(r.Contract) {
+	r.c, err = types.NewAddressFromHex(r.Contract)
+	if err != nil {
 		return errors.New("contract: invalid address")
 	}
-	r.c = types.NewAddress(common.HexToAddress(r.Contract))
 
 	r.Amount = strings.TrimSpace(r.Amount)
 	a, ok := new(big.Int).SetString(r.Amount, 10)
@@ -221,23 +227,24 @@ type BuildERC20EIP1559TransactionRequest struct {
 }
 
 func (r *BuildERC20EIP1559TransactionRequest) ValidateRequest() error {
+	var err error
 	r.From = strings.TrimSpace(r.From)
-	if !common.IsHexAddress(r.From) {
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
 		return errors.New("from: invalid address")
 	}
-	r.f = types.NewAddress(common.HexToAddress(r.From))
 
 	r.To = strings.TrimSpace(r.To)
-	if !common.IsHexAddress(r.To) {
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
 
 	r.Contract = strings.TrimSpace(r.Contract)
-	if !common.IsHexAddress(r.Contract) {
+	r.c, err = types.NewAddressFromHex(r.Contract)
+	if err != nil {
 		return errors.New("contract: invalid address")
 	}
-	r.c = types.NewAddress(common.HexToAddress(r.Contract))
 
 	r.Amount = strings.TrimSpace(r.Amount)
 	a, ok := new(big.Int).SetString(r.Amount, 10)

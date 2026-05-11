@@ -252,6 +252,39 @@ func (h *ABIHandler) AllowanceCalldata(w http.ResponseWriter, r *http.Request) {
 	handler.WriteJSON(w, http.StatusOK, NewAllowanceCalldataResponse(data))
 }
 
+// NameCalldata godoc
+// @Summary      Build name calldata
+// @Description  Returns ABI-encoded calldata for name()
+// @Tags         abi
+// @Produce      json
+// @Success      200   {object}  NameCalldataResponse
+// @Router       /evm/abi/encode/name [post]
+func (h *ABIHandler) NameCalldata(w http.ResponseWriter, r *http.Request) {
+	handler.WriteJSON(w, http.StatusOK, NewNameCalldataResponse(core.NameCalldata()))
+}
+
+// VersionCalldata godoc
+// @Summary      Build version calldata
+// @Description  Returns ABI-encoded calldata for version()
+// @Tags         abi
+// @Produce      json
+// @Success      200   {object}  VersionCalldataResponse
+// @Router       /evm/abi/encode/version [post]
+func (h *ABIHandler) VersionCalldata(w http.ResponseWriter, r *http.Request) {
+	handler.WriteJSON(w, http.StatusOK, NewVersionCalldataResponse(core.VersionCalldata()))
+}
+
+// EIP712DomainCalldata godoc
+// @Summary      Build eip712Domain calldata
+// @Description  Returns ABI-encoded calldata for eip712Domain()
+// @Tags         abi
+// @Produce      json
+// @Success      200   {object}  EIP712DomainCalldataResponse
+// @Router       /evm/abi/encode/eip712-domain [post]
+func (h *ABIHandler) EIP712DomainCalldata(w http.ResponseWriter, r *http.Request) {
+	handler.WriteJSON(w, http.StatusOK, NewEIP712DomainCalldataResponse(core.EIP712DomainCalldata()))
+}
+
 // TransferFromCalldata godoc
 // @Summary      Build transferFrom calldata
 // @Description  Returns ABI-encoded calldata for transferFrom(address,address,uint256)

@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	"github.com/andantan/evmlab/core/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/andantan/evmlab/internal/util"
 )
 
 type SelectorRequest struct {
@@ -27,9 +26,9 @@ type SelectorResponse struct {
 	Selector string `json:"selector"`
 }
 
-func NewSelectorResponse(selector []byte) *SelectorResponse {
+func NewSelectorResponse(s []byte) *SelectorResponse {
 	return &SelectorResponse{
-		Selector: "0x" + hex.EncodeToString(selector),
+		Selector: "0x" + hex.EncodeToString(s),
 	}
 }
 
@@ -43,6 +42,7 @@ func (r *EncodeRequest) ValidateRequest() error {
 	if r.Signature == "" {
 		return errors.New("signature is required")
 	}
+
 	return nil
 }
 
@@ -50,9 +50,9 @@ type EncodeResponse struct {
 	Data string `json:"data"`
 }
 
-func NewEncodeResponse(data []byte) *EncodeResponse {
+func NewEncodeResponse(b []byte) *EncodeResponse {
 	return &EncodeResponse{
-		Data: "0x" + hex.EncodeToString(data),
+		Data: "0x" + hex.EncodeToString(b),
 	}
 }
 
@@ -65,11 +65,13 @@ func (r *DecodeResultRequest) ValidateRequest() ([]byte, error) {
 	if len(r.Types) == 0 {
 		return nil, errors.New("types is required")
 	}
+
 	r.Data = strings.TrimSpace(r.Data)
-	b, err := hexutil.Decode(r.Data)
+	b, err := util.ParseHex(r.Data)
 	if err != nil {
 		return nil, errors.New("data: " + err.Error())
 	}
+
 	return b, nil
 }
 
@@ -77,8 +79,10 @@ type DecodeResultResponse struct {
 	Values []string `json:"values"`
 }
 
-func NewDecodeResultResponse(values []string) *DecodeResultResponse {
-	return &DecodeResultResponse{Values: values}
+func NewDecodeResultResponse(v []string) *DecodeResultResponse {
+	return &DecodeResultResponse{
+		Values: v,
+	}
 }
 
 type DecodeCallRequest struct {
@@ -91,11 +95,13 @@ func (r *DecodeCallRequest) ValidateRequest() ([]byte, error) {
 	if r.Signature == "" {
 		return nil, errors.New("signature is required")
 	}
+
 	r.Data = strings.TrimSpace(r.Data)
-	b, err := hexutil.Decode(r.Data)
+	b, err := util.ParseHex(r.Data)
 	if err != nil {
 		return nil, errors.New("data: " + err.Error())
 	}
+
 	return b, nil
 }
 
@@ -104,10 +110,10 @@ type DecodeCallResponse struct {
 	Values   map[string]string `json:"values"`
 }
 
-func NewDecodeCallResponse(data []byte, values map[string]string) *DecodeCallResponse {
+func NewDecodeCallResponse(b []byte, v map[string]string) *DecodeCallResponse {
 	return &DecodeCallResponse{
-		Selector: "0x" + hex.EncodeToString(data[:4]),
-		Values:   values,
+		Selector: "0x" + hex.EncodeToString(b[:4]),
+		Values:   v,
 	}
 }
 
@@ -121,10 +127,11 @@ type ApproveCalldataRequest struct {
 
 func (r *ApproveCalldataRequest) ValidateRequest() error {
 	r.Spender = strings.TrimSpace(r.Spender)
-	if !common.IsHexAddress(r.Spender) {
+	s, err := types.NewAddressFromHex(r.Spender)
+	if err != nil {
 		return errors.New("spender: invalid address")
 	}
-	r.s = types.NewAddress(common.HexToAddress(r.Spender))
+	r.s = s
 
 	r.Amount = strings.TrimSpace(r.Amount)
 	var ok bool
@@ -142,9 +149,9 @@ type ApproveCalldataResponse struct {
 	Data string `json:"data"`
 }
 
-func NewApproveCalldataResponse(data []byte) *ApproveCalldataResponse {
+func NewApproveCalldataResponse(b []byte) *ApproveCalldataResponse {
 	return &ApproveCalldataResponse{
-		Data: "0x" + hex.EncodeToString(data),
+		Data: "0x" + hex.EncodeToString(b),
 	}
 }
 
@@ -158,10 +165,11 @@ type TransferCalldataRequest struct {
 
 func (r *TransferCalldataRequest) ValidateRequest() error {
 	r.To = strings.TrimSpace(r.To)
-	if !common.IsHexAddress(r.To) {
+	t, err := types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
+	r.t = t
 
 	r.Amount = strings.TrimSpace(r.Amount)
 	var ok bool
@@ -179,9 +187,9 @@ type TransferCalldataResponse struct {
 	Data string `json:"data"`
 }
 
-func NewTransferCalldataResponse(data []byte) *TransferCalldataResponse {
+func NewTransferCalldataResponse(b []byte) *TransferCalldataResponse {
 	return &TransferCalldataResponse{
-		Data: "0x" + hex.EncodeToString(data),
+		Data: "0x" + hex.EncodeToString(b),
 	}
 }
 
@@ -195,16 +203,18 @@ type AllowanceCalldataRequest struct {
 
 func (r *AllowanceCalldataRequest) ValidateRequest() error {
 	r.Owner = strings.TrimSpace(r.Owner)
-	if !common.IsHexAddress(r.Owner) {
+	o, err := types.NewAddressFromHex(r.Owner)
+	if err != nil {
 		return errors.New("owner: invalid address")
 	}
-	r.o = types.NewAddress(common.HexToAddress(r.Owner))
+	r.o = o
 
 	r.Spender = strings.TrimSpace(r.Spender)
-	if !common.IsHexAddress(r.Spender) {
+	s, err := types.NewAddressFromHex(r.Spender)
+	if err != nil {
 		return errors.New("spender: invalid address")
 	}
-	r.s = types.NewAddress(common.HexToAddress(r.Spender))
+	r.s = s
 
 	return nil
 }
@@ -216,9 +226,9 @@ type AllowanceCalldataResponse struct {
 	Data string `json:"data"`
 }
 
-func NewAllowanceCalldataResponse(data []byte) *AllowanceCalldataResponse {
+func NewAllowanceCalldataResponse(b []byte) *AllowanceCalldataResponse {
 	return &AllowanceCalldataResponse{
-		Data: "0x" + hex.EncodeToString(data),
+		Data: "0x" + hex.EncodeToString(b),
 	}
 }
 
@@ -230,10 +240,11 @@ type BalanceOfCalldataRequest struct {
 
 func (r *BalanceOfCalldataRequest) ValidateRequest() error {
 	r.Account = strings.TrimSpace(r.Account)
-	if !common.IsHexAddress(r.Account) {
+	a, err := types.NewAddressFromHex(r.Account)
+	if err != nil {
 		return errors.New("account: invalid address")
 	}
-	r.a = types.NewAddress(common.HexToAddress(r.Account))
+	r.a = a
 	return nil
 }
 
@@ -243,9 +254,9 @@ type BalanceOfCalldataResponse struct {
 	Data string `json:"data"`
 }
 
-func NewBalanceOfCalldataResponse(data []byte) *BalanceOfCalldataResponse {
+func NewBalanceOfCalldataResponse(b []byte) *BalanceOfCalldataResponse {
 	return &BalanceOfCalldataResponse{
-		Data: "0x" + hex.EncodeToString(data),
+		Data: "0x" + hex.EncodeToString(b),
 	}
 }
 
@@ -261,16 +272,18 @@ type TransferFromCalldataRequest struct {
 
 func (r *TransferFromCalldataRequest) ValidateRequest() error {
 	r.From = strings.TrimSpace(r.From)
-	if !common.IsHexAddress(r.From) {
+	f, err := types.NewAddressFromHex(r.From)
+	if err != nil {
 		return errors.New("from: invalid address")
 	}
-	r.f = types.NewAddress(common.HexToAddress(r.From))
+	r.f = f
 
 	r.To = strings.TrimSpace(r.To)
-	if !common.IsHexAddress(r.To) {
+	t, err := types.NewAddressFromHex(r.To)
+	if err != nil {
 		return errors.New("to: invalid address")
 	}
-	r.t = types.NewAddress(common.HexToAddress(r.To))
+	r.t = t
 
 	r.Amount = strings.TrimSpace(r.Amount)
 	var ok bool
@@ -289,6 +302,38 @@ type TransferFromCalldataResponse struct {
 	Data string `json:"data"`
 }
 
-func NewTransferFromCalldataResponse(data []byte) *TransferFromCalldataResponse {
-	return &TransferFromCalldataResponse{Data: "0x" + hex.EncodeToString(data)}
+func NewTransferFromCalldataResponse(b []byte) *TransferFromCalldataResponse {
+	return &TransferFromCalldataResponse{
+		Data: "0x" + hex.EncodeToString(b),
+	}
+}
+
+type EIP712DomainCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewEIP712DomainCalldataResponse(b []byte) *EIP712DomainCalldataResponse {
+	return &EIP712DomainCalldataResponse{
+		Data: "0x" + hex.EncodeToString(b),
+	}
+}
+
+type NameCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewNameCalldataResponse(b []byte) *NameCalldataResponse {
+	return &NameCalldataResponse{
+		Data: "0x" + hex.EncodeToString(b),
+	}
+}
+
+type VersionCalldataResponse struct {
+	Data string `json:"data"`
+}
+
+func NewVersionCalldataResponse(b []byte) *VersionCalldataResponse {
+	return &VersionCalldataResponse{
+		Data: "0x" + hex.EncodeToString(b),
+	}
 }

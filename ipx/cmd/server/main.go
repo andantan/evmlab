@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/andantan/evmlab/api/handler/contract"
 	"github.com/andantan/evmlab/api/handler/misc"
 	"github.com/andantan/evmlab/api/handler/v1"
 	"github.com/andantan/evmlab/api/handler/v2"
@@ -81,6 +82,9 @@ func run() error {
 		r.Post("/encode/transfer", abi.TransferCalldata)
 		r.Post("/encode/allowance", abi.AllowanceCalldata)
 		r.Post("/encode/transfer-from", abi.TransferFromCalldata)
+		r.Post("/encode/eip712-domain", abi.EIP712DomainCalldata)
+		r.Post("/encode/name", abi.NameCalldata)
+		r.Post("/encode/version", abi.VersionCalldata)
 	})
 
 	r.Route("/evm/tool", func(r chi.Router) {
@@ -105,6 +109,11 @@ func run() error {
 		r.Post("/verify/by-address", sign.VerifyByAddress)
 		r.Post("/transaction/legacy", sign.SignLegacyTransaction)
 		r.Post("/transaction/eip1559", sign.SignEIP1559Transaction)
+	})
+
+	r.Route("/evm/contract", func(r chi.Router) {
+		eip := contract.NewEIPHandler(client)
+		r.Post("/eip712/domain", eip.EIP712Domain)
 	})
 
 	r.Route("/evm/v1", func(r chi.Router) {

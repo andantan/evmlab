@@ -29,3 +29,13 @@ func ParseHex(s string) ([]byte, error) {
 	}
 	return b, nil
 }
+
+// IsHexAddress reports whether s is a valid 20-byte hex address (with or without 0x prefix).
+func IsHexAddress(s string) bool {
+	s = strings.TrimPrefix(s, "0x")
+	if len(s) != 40 {
+		return false
+	}
+	_, err := hex.DecodeString(s)
+	return err == nil
+}

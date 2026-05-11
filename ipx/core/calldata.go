@@ -48,6 +48,27 @@ func TransferFromCalldata(from, to *types.Address, amount *big.Int) []byte {
 	return data
 }
 
+// EIP712DomainCalldata builds calldata for eip712Domain().
+func EIP712DomainCalldata() []byte {
+	data := make([]byte, selectorSize)
+	copy(data, types.EIP712DomainSelector)
+	return data
+}
+
+// NameCalldata builds calldata for name().
+func NameCalldata() []byte {
+	data := make([]byte, selectorSize)
+	copy(data, types.NameSelector)
+	return data
+}
+
+// VersionCalldata builds calldata for version().
+func VersionCalldata() []byte {
+	data := make([]byte, selectorSize)
+	copy(data, types.VersionSelector)
+	return data
+}
+
 // AllowanceCalldata builds calldata for allowance(address,address).
 func AllowanceCalldata(owner, spender *types.Address) []byte {
 	data := make([]byte, selectorSize+wordSize+wordSize)

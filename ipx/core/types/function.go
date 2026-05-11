@@ -6,7 +6,9 @@ var (
 	TransferSelector     = []byte{0xa9, 0x05, 0x9c, 0xbb} // transfer(address,uint256)
 	AllowanceSelector    = []byte{0xdd, 0x62, 0xed, 0x3e} // allowance(address,address)
 	TransferFromSelector = []byte{0x23, 0xb8, 0x72, 0xdd} // transferFrom(address,address,uint256)
-
+	EIP712DomainSelector = []byte{0x84, 0xb0, 0x19, 0x6e} // eip712Domain()
+	NameSelector         = []byte{0x06, 0xfd, 0xde, 0x03} // name()
+	VersionSelector      = []byte{0x54, 0xfd, 0x4d, 0x50} // version()
 )
 
 // Parameter represents a single ABI function parameter with its name and type.

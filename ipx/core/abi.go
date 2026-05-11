@@ -191,6 +191,15 @@ func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]strin
 	return result, nil
 }
 
+// DecodeString unpacks a single ABI-encoded string return value.
+func (c *abiCodec) DecodeString(data []byte) (string, error) {
+	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)
+	if err != nil {
+		return "", err
+	}
+	return values[0].(string), nil
+}
+
 func formatValue(v any) (string, error) {
 	switch val := v.(type) {
 	case common.Address:

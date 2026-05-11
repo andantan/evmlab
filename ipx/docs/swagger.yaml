@@ -1,5 +1,25 @@
 basePath: /
 definitions:
+  contract.EIP712DomainRequest:
+    properties:
+      block:
+        example: latest
+        type: string
+      contract:
+        example: 0x8336c196...
+        type: string
+    type: object
+  contract.EIP712DomainResponse:
+    properties:
+      chain_id:
+        type: string
+      name:
+        type: string
+      verifying_contract:
+        type: string
+      version:
+        type: string
+    type: object
   misc.AllowanceCalldataRequest:
     properties:
       owner:
@@ -182,6 +202,11 @@ definitions:
       address:
         type: string
     type: object
+  misc.EIP712DomainCalldataResponse:
+    properties:
+      data:
+        type: string
+    type: object
   misc.EcrecoverRequest:
     properties:
       hash:
@@ -331,6 +356,11 @@ definitions:
       max_priority_fee_per_gas_hex:
         type: string
       wei:
+        type: string
+    type: object
+  misc.NameCalldataResponse:
+    properties:
+      data:
         type: string
     type: object
   misc.NonceRequest:
@@ -536,6 +566,11 @@ definitions:
     properties:
       result:
         type: boolean
+    type: object
+  misc.VersionCalldataResponse:
+    properties:
+      data:
+        type: string
     type: object
   v1.BuildEIP1559TransactionRequest:
     properties:
@@ -1070,6 +1105,32 @@ paths:
       summary: Build balanceOf calldata
       tags:
       - abi
+  /evm/abi/encode/eip712-domain:
+    post:
+      description: Returns ABI-encoded calldata for eip712Domain()
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.EIP712DomainCalldataResponse'
+      summary: Build eip712Domain calldata
+      tags:
+      - abi
+  /evm/abi/encode/name:
+    post:
+      description: Returns ABI-encoded calldata for name()
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.NameCalldataResponse'
+      summary: Build name calldata
+      tags:
+      - abi
   /evm/abi/encode/transfer:
     post:
       consumes:
@@ -1126,6 +1187,19 @@ paths:
       summary: Build transferFrom calldata
       tags:
       - abi
+  /evm/abi/encode/version:
+    post:
+      description: Returns ABI-encoded calldata for version()
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.VersionCalldataResponse'
+      summary: Build version calldata
+      tags:
+      - abi
   /evm/abi/selector:
     post:
       consumes:
@@ -1154,6 +1228,41 @@ paths:
       summary: Compute ABI function selector
       tags:
       - abi
+  /evm/contract/eip712/domain:
+    post:
+      consumes:
+      - application/json
+      description: Resolves name, version, chain_id, and verifying_contract for a
+        contract
+      parameters:
+      - description: Contract address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.EIP712DomainRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.EIP712DomainResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Fetch EIP-712 domain
+      tags:
+      - contract
   /evm/hash/keccak256/eip191:
     post:
       consumes:

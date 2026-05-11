@@ -2,7 +2,9 @@ package types
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -23,6 +25,16 @@ func NewAddress(a common.Address) *Address {
 	return &Address{
 		Addr: a,
 	}
+}
+
+func NewAddressFromHex(s string) (*Address, error) {
+	s = strings.TrimSpace(s)
+	s = strings.TrimPrefix(s, "0x")
+	b, err := hex.DecodeString(s)
+	if err != nil {
+		return nil, fmt.Errorf("invalid hex address: %w", err)
+	}
+	return NewAddressFromBytes(b)
 }
 
 func NewAddressFromBytes(b []byte) (*Address, error) {

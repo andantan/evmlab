@@ -7,7 +7,6 @@ import (
 
 	"github.com/andantan/evmlab/core"
 	"github.com/andantan/evmlab/core/types"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type Keccak256LegacyRequest struct {
@@ -78,7 +77,8 @@ func (r *Keccak256EIP712Request) ValidateRequest() error {
 		return errors.New("version is required")
 	}
 	r.Contract = strings.TrimSpace(r.Contract)
-	if !common.IsHexAddress(r.Contract) {
+	contract, err := types.NewAddressFromHex(r.Contract)
+	if err != nil {
 		return errors.New("contract: invalid address")
 	}
 	r.Signature = strings.TrimSpace(r.Signature)
@@ -86,7 +86,6 @@ func (r *Keccak256EIP712Request) ValidateRequest() error {
 		return errors.New("signature is required")
 	}
 
-	var err error
 	r.fn, err = core.ABI.ParseFunctionSignature(r.Signature)
 	if err != nil {
 		return errors.New("signature: " + err.Error())
@@ -107,7 +106,7 @@ func (r *Keccak256EIP712Request) ValidateRequest() error {
 		Name:     r.Name,
 		Version:  r.Version,
 		ChainID:  chainID,
-		Contract: types.NewAddress(common.HexToAddress(r.Contract)),
+		Contract: contract,
 	}
 
 	return nil

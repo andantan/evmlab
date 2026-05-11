@@ -8,7 +8,6 @@ import (
 
 	"github.com/andantan/evmlab/core/types"
 	"github.com/andantan/evmlab/internal/util"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 type BuildLegacyTransactionRequest struct {
@@ -22,7 +21,7 @@ type BuildLegacyTransactionRequest struct {
 
 	chainID  *big.Int
 	gasPrice *big.Int
-	to       common.Address
+	to       *types.Address
 	value    *big.Int
 	data     []byte
 }
@@ -50,11 +49,11 @@ func (r *BuildLegacyTransactionRequest) ValidateRequest() error {
 		return errors.New("gas_limit: must be greater than zero")
 	}
 
-	toBytes, err := util.ParseHex(r.To)
+	var err error
+	r.to, err = types.NewAddressFromHex(r.To)
 	if err != nil {
 		return errors.New("to: " + err.Error())
 	}
-	r.to = common.BytesToAddress(toBytes)
 
 	if v := strings.TrimSpace(r.Value); v == "" {
 		r.value = new(big.Int)
@@ -85,7 +84,7 @@ func (r *BuildLegacyTransactionRequest) ToLegacyTx() *types.LegacyTx {
 		Nonce:    r.Nonce,
 		GasPrice: r.gasPrice,
 		GasLimit: r.GasLimit,
-		To:       &r.to,
+		To:       &r.to.Addr,
 		Value:    r.value,
 		Data:     r.data,
 	}
@@ -96,10 +95,10 @@ type BuildLegacyTransactionResponse struct {
 	SigningHash string `json:"signing_hash"`
 }
 
-func NewBuildLegacyNativeTransferResponse(raw []byte, hash *types.Hash) *BuildLegacyTransactionResponse {
+func NewBuildLegacyNativeTransferResponse(b []byte, h *types.Hash) *BuildLegacyTransactionResponse {
 	return &BuildLegacyTransactionResponse{
-		UnsignedRLP: "0x" + hex.EncodeToString(raw),
-		SigningHash: hash.String(),
+		UnsignedRLP: "0x" + hex.EncodeToString(b),
+		SigningHash: h.String(),
 	}
 }
 
@@ -116,7 +115,7 @@ type BuildEIP1559TransactionRequest struct {
 	chainID   *big.Int
 	gasTipCap *big.Int
 	gasFeeCap *big.Int
-	to        common.Address
+	to        *types.Address
 	value     *big.Int
 	data      []byte
 }
@@ -152,11 +151,11 @@ func (r *BuildEIP1559TransactionRequest) ValidateRequest() error {
 		return errors.New("gas_limit: must be greater than zero")
 	}
 
-	toBytes, err := util.ParseHex(r.To)
+	var err error
+	r.to, err = types.NewAddressFromHex(r.To)
 	if err != nil {
 		return errors.New("to: " + err.Error())
 	}
-	r.to = common.BytesToAddress(toBytes)
 
 	if v := strings.TrimSpace(r.Value); v == "" {
 		r.value = new(big.Int)
@@ -188,7 +187,7 @@ func (r *BuildEIP1559TransactionRequest) ToDynamicFeeTx() *types.DynamicFeeTx {
 		GasTipCap: r.gasTipCap,
 		GasFeeCap: r.gasFeeCap,
 		GasLimit:  r.GasLimit,
-		To:        &r.to,
+		To:        &r.to.Addr,
 		Value:     r.value,
 		Data:      r.data,
 	}
@@ -199,9 +198,9 @@ type BuildEIP1559TransactionResponse struct {
 	SigningHash string `json:"signing_hash"`
 }
 
-func NewBuildEIP1559TransactionResponse(raw []byte, hash *types.Hash) *BuildEIP1559TransactionResponse {
+func NewBuildEIP1559TransactionResponse(b []byte, h *types.Hash) *BuildEIP1559TransactionResponse {
 	return &BuildEIP1559TransactionResponse{
-		UnsignedRLP: "0x" + hex.EncodeToString(raw),
-		SigningHash: hash.String(),
+		UnsignedRLP: "0x" + hex.EncodeToString(b),
+		SigningHash: h.String(),
 	}
 }

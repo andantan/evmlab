@@ -16,7 +16,9 @@ type RPCHandler struct {
 }
 
 func NewRPCHandler(client *rpc.Client) *RPCHandler {
-	return &RPCHandler{client: client}
+	return &RPCHandler{
+		client: client,
+	}
 }
 
 // Raw godoc
@@ -47,7 +49,7 @@ func (h *RPCHandler) Raw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, &RawRPCResponse{Result: result})
+	handler.WriteJSON(w, http.StatusOK, NewRawRPCResponse(result))
 }
 
 // ChainID godoc

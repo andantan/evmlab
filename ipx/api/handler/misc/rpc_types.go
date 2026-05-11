@@ -8,7 +8,6 @@ import (
 
 	"github.com/andantan/evmlab/core/types"
 	"github.com/andantan/evmlab/internal/util"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type RawRPCRequest struct {
@@ -28,15 +27,21 @@ type RawRPCResponse struct {
 	Result any `json:"result"`
 }
 
+func NewRawRPCResponse(r any) *RawRPCResponse {
+	return &RawRPCResponse{
+		Result: r,
+	}
+}
+
 type ChainIDResponse struct {
 	ChainID    uint64 `json:"chain_id"`
 	ChainIDHex string `json:"chain_id_hex"`
 }
 
-func NewChainIDResponse(chainID uint64, hex string) *ChainIDResponse {
+func NewChainIDResponse(c uint64, s string) *ChainIDResponse {
 	return &ChainIDResponse{
-		ChainID:    chainID,
-		ChainIDHex: hex,
+		ChainID:    c,
+		ChainIDHex: s,
 	}
 }
 
@@ -48,13 +53,13 @@ type GasPriceResponse struct {
 	Ether       string `json:"ether"`
 }
 
-func NewGasPriceResponse(gasPrice *big.Int, hex string) *GasPriceResponse {
+func NewGasPriceResponse(g *big.Int, s string) *GasPriceResponse {
 	return &GasPriceResponse{
-		GasPrice:    gasPrice.String(),
-		GasPriceHex: hex,
-		Wei:         gasPrice.String(),
-		Gwei:        types.WeiToGwei(gasPrice),
-		Ether:       types.WeiToEther(gasPrice),
+		GasPrice:    g.String(),
+		GasPriceHex: s,
+		Wei:         g.String(),
+		Gwei:        types.WeiToGwei(g),
+		Ether:       types.WeiToEther(g),
 	}
 }
 
@@ -66,13 +71,13 @@ type BaseFeePerGasResponse struct {
 	Ether            string `json:"ether"`
 }
 
-func NewBaseFeePerGasResponse(baseFee *big.Int, hex string) *BaseFeePerGasResponse {
+func NewBaseFeePerGasResponse(f *big.Int, s string) *BaseFeePerGasResponse {
 	return &BaseFeePerGasResponse{
-		BaseFeePerGas:    baseFee.String(),
-		BaseFeePerGasHex: hex,
-		Wei:              baseFee.String(),
-		Gwei:             types.WeiToGwei(baseFee),
-		Ether:            types.WeiToEther(baseFee),
+		BaseFeePerGas:    f.String(),
+		BaseFeePerGasHex: s,
+		Wei:              f.String(),
+		Gwei:             types.WeiToGwei(f),
+		Ether:            types.WeiToEther(f),
 	}
 }
 
@@ -84,13 +89,13 @@ type MaxPriorityFeePerGasResponse struct {
 	Ether                   string `json:"ether"`
 }
 
-func NewMaxPriorityFeePerGasResponse(priorityFee *big.Int, hex string) *MaxPriorityFeePerGasResponse {
+func NewMaxPriorityFeePerGasResponse(f *big.Int, s string) *MaxPriorityFeePerGasResponse {
 	return &MaxPriorityFeePerGasResponse{
-		MaxPriorityFeePerGas:    priorityFee.String(),
-		MaxPriorityFeePerGasHex: hex,
-		Wei:                     priorityFee.String(),
-		Gwei:                    types.WeiToGwei(priorityFee),
-		Ether:                   types.WeiToEther(priorityFee),
+		MaxPriorityFeePerGas:    f.String(),
+		MaxPriorityFeePerGasHex: s,
+		Wei:                     f.String(),
+		Gwei:                    types.WeiToGwei(f),
+		Ether:                   types.WeiToEther(f),
 	}
 }
 
@@ -102,13 +107,13 @@ type MaxFeePerGasResponse struct {
 	Ether           string `json:"ether"`
 }
 
-func NewMaxFeePerGasResponse(maxFee *big.Int, hex string) *MaxFeePerGasResponse {
+func NewMaxFeePerGasResponse(f *big.Int, s string) *MaxFeePerGasResponse {
 	return &MaxFeePerGasResponse{
-		MaxFeePerGas:    maxFee.String(),
-		MaxFeePerGasHex: hex,
-		Wei:             maxFee.String(),
-		Gwei:            types.WeiToGwei(maxFee),
-		Ether:           types.WeiToEther(maxFee),
+		MaxFeePerGas:    f.String(),
+		MaxFeePerGasHex: s,
+		Wei:             f.String(),
+		Gwei:            types.WeiToGwei(f),
+		Ether:           types.WeiToEther(f),
 	}
 }
 
@@ -117,10 +122,10 @@ type BlockNumberResponse struct {
 	BlockNumberHex string `json:"block_number_hex"`
 }
 
-func NewBlockNumberResponse(blockNumber uint64, hex string) *BlockNumberResponse {
+func NewBlockNumberResponse(n uint64, s string) *BlockNumberResponse {
 	return &BlockNumberResponse{
-		BlockNumber:    blockNumber,
-		BlockNumberHex: hex,
+		BlockNumber:    n,
+		BlockNumberHex: s,
 	}
 }
 
@@ -145,10 +150,10 @@ type NonceResponse struct {
 	NonceHex string `json:"nonce_hex"`
 }
 
-func NewNonceResponse(nonce uint64, hex string) *NonceResponse {
+func NewNonceResponse(n uint64, s string) *NonceResponse {
 	return &NonceResponse{
-		Nonce:    nonce,
-		NonceHex: hex,
+		Nonce:    n,
+		NonceHex: s,
 	}
 }
 
@@ -177,13 +182,13 @@ type BalanceResponse struct {
 	Ether      string `json:"ether"`
 }
 
-func NewBalanceResponse(wei *big.Int, hex string) *BalanceResponse {
+func NewBalanceResponse(w *big.Int, s string) *BalanceResponse {
 	return &BalanceResponse{
-		Balance:    wei.String(),
-		BalanceHex: hex,
-		Wei:        wei.String(),
-		Gwei:       types.WeiToGwei(wei),
-		Ether:      types.WeiToEther(wei),
+		Balance:    w.String(),
+		BalanceHex: s,
+		Wei:        w.String(),
+		Gwei:       types.WeiToGwei(w),
+		Ether:      types.WeiToEther(w),
 	}
 }
 
@@ -214,10 +219,10 @@ type CodeResponse struct {
 	IsContract bool   `json:"is_contract"`
 }
 
-func NewCodeResponse(code string) *CodeResponse {
+func NewCodeResponse(c string) *CodeResponse {
 	return &CodeResponse{
-		Code:       code,
-		IsContract: code != "" && code != "0x" && code != "0x0",
+		Code:       c,
+		IsContract: c != "" && c != "0x" && c != "0x0",
 	}
 }
 
@@ -285,7 +290,7 @@ func (r *EstimateGasRequest) ValidateRequest() error {
 			if !ok {
 				return errors.New("value: invalid integer")
 			}
-			r.p["value"] = hexutil.EncodeBig(n)
+			r.p["value"] = "0x" + n.Text(16)
 		}
 	}
 	if r.Data != "" {
@@ -306,14 +311,14 @@ type EstimateGasResponse struct {
 	Ether       string `json:"ether"`
 }
 
-func NewEstimateGasResponse(gasLimit uint64, hex string) *EstimateGasResponse {
-	wei := new(big.Int).SetUint64(gasLimit)
+func NewEstimateGasResponse(g uint64, s string) *EstimateGasResponse {
+	w := new(big.Int).SetUint64(g)
 	return &EstimateGasResponse{
-		GasLimit:    gasLimit,
-		GasLimitHex: hex,
-		Wei:         wei.String(),
-		Gwei:        types.WeiToGwei(wei),
-		Ether:       types.WeiToEther(wei),
+		GasLimit:    g,
+		GasLimitHex: s,
+		Wei:         w.String(),
+		Gwei:        types.WeiToGwei(w),
+		Ether:       types.WeiToEther(w),
 	}
 }
 
@@ -370,8 +375,8 @@ type SendTransactionResponse struct {
 	TxHash string `json:"tx_hash"`
 }
 
-func NewSendTransactionResponse(txHash string) *SendTransactionResponse {
+func NewSendTransactionResponse(s string) *SendTransactionResponse {
 	return &SendTransactionResponse{
-		TxHash: txHash,
+		TxHash: s,
 	}
 }

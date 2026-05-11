@@ -209,8 +209,10 @@ type VerifyByPublicKeyResponse struct {
 	Result bool `json:"result"`
 }
 
-func NewVerifyByPublicKeyResponse(result bool) *VerifyByPublicKeyResponse {
-	return &VerifyByPublicKeyResponse{Result: result}
+func NewVerifyByPublicKeyResponse(r bool) *VerifyByPublicKeyResponse {
+	return &VerifyByPublicKeyResponse{
+		Result: r,
+	}
 }
 
 type VerifyByAddressResponse struct {
@@ -256,13 +258,13 @@ type SignLegacyTransactionResponse struct {
 	V              string `json:"v"`
 }
 
-func NewSignLegacyTransactionResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignLegacyTransactionResponse {
+func NewSignLegacyTransactionResponse(b []byte, h *types.Hash, s *types.Signature) *SignLegacyTransactionResponse {
 	return &SignLegacyTransactionResponse{
-		RawTransaction: "0x" + hex.EncodeToString(raw),
-		TxHash:         hash.String(),
-		R:              "0x" + sig.R().Text(16),
-		S:              "0x" + sig.S().Text(16),
-		V:              "0x" + sig.V().Text(16),
+		RawTransaction: "0x" + hex.EncodeToString(b),
+		TxHash:         h.String(),
+		R:              "0x" + s.R().Text(16),
+		S:              "0x" + s.S().Text(16),
+		V:              "0x" + s.V().Text(16),
 	}
 }
 
@@ -303,12 +305,12 @@ type SignEIP1559TransactionResponse struct {
 	V              string `json:"v"`
 }
 
-func NewSignEIP1559TransactionResponse(raw []byte, hash *types.Hash, sig *types.Signature) *SignEIP1559TransactionResponse {
+func NewSignEIP1559TransactionResponse(b []byte, h *types.Hash, s *types.Signature) *SignEIP1559TransactionResponse {
 	return &SignEIP1559TransactionResponse{
-		RawTransaction: "0x" + hex.EncodeToString(raw),
-		TxHash:         hash.String(),
-		R:              "0x" + sig.R().Text(16),
-		S:              "0x" + sig.S().Text(16),
-		V:              "0x" + sig.V().Text(16),
+		RawTransaction: "0x" + hex.EncodeToString(b),
+		TxHash:         h.String(),
+		R:              "0x" + s.R().Text(16),
+		S:              "0x" + s.S().Text(16),
+		V:              "0x" + s.V().Text(16),
 	}
 }

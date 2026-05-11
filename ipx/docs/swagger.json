@@ -267,6 +267,46 @@
                 }
             }
         },
+        "/evm/abi/encode/eip712-domain": {
+            "post": {
+                "description": "Returns ABI-encoded calldata for eip712Domain()",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Build eip712Domain calldata",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.EIP712DomainCalldataResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/abi/encode/name": {
+            "post": {
+                "description": "Returns ABI-encoded calldata for name()",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Build name calldata",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.NameCalldataResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/evm/abi/encode/transfer": {
             "post": {
                 "description": "Returns ABI-encoded calldata for transfer(address,uint256)",
@@ -353,6 +393,26 @@
                 }
             }
         },
+        "/evm/abi/encode/version": {
+            "post": {
+                "description": "Returns ABI-encoded calldata for version()",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Build version calldata",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.VersionCalldataResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/evm/abi/selector": {
             "post": {
                 "description": "Returns the 4-byte selector for the given function signature",
@@ -386,6 +446,58 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/contract/eip712/domain": {
+            "post": {
+                "description": "Resolves name, version, chain_id, and verifying_contract for a contract",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Fetch EIP-712 domain",
+                "parameters": [
+                    {
+                        "description": "Contract address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.EIP712DomainRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.EIP712DomainResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -2298,6 +2410,36 @@
         }
     },
     "definitions": {
+        "contract.EIP712DomainRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "contract": {
+                    "type": "string",
+                    "example": "0x8336c196..."
+                }
+            }
+        },
+        "contract.EIP712DomainResponse": {
+            "type": "object",
+            "properties": {
+                "chain_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "verifying_contract": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
         "misc.AllowanceCalldataRequest": {
             "type": "object",
             "properties": {
@@ -2573,6 +2715,14 @@
                 }
             }
         },
+        "misc.EIP712DomainCalldataResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                }
+            }
+        },
         "misc.EcrecoverRequest": {
             "type": "object",
             "properties": {
@@ -2797,6 +2947,14 @@
                     "type": "string"
                 },
                 "wei": {
+                    "type": "string"
+                }
+            }
+        },
+        "misc.NameCalldataResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
                     "type": "string"
                 }
             }
@@ -3103,6 +3261,14 @@
             "properties": {
                 "result": {
                     "type": "boolean"
+                }
+            }
+        },
+        "misc.VersionCalldataResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
                 }
             }
         },
