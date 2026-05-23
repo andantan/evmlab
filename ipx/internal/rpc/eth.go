@@ -120,6 +120,10 @@ func (c *Client) WaitForReceipt(ctx context.Context, txHash string, timeout time
 			return nil, fmt.Errorf("timeout waiting for receipt: %s", txHash)
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(500 * time.Millisecond):
+		}
 	}
 }

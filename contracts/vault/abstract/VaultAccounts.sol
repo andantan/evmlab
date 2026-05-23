@@ -20,16 +20,6 @@ abstract contract VaultAccounts is VaultAccess, IVaultAccounts {
         return accountList;
     }
 
-    function accountAt(uint256 index) external view returns (address) {
-        uint256 length = accountList.length;
-
-        if (index >= length) {
-            revert AccountIndexOutOfBounds(index, length);
-        }
-
-        return accountList[index];
-    }
-
     function accountCount() external view returns (uint256) {
         return accountList.length;
     }

@@ -17,7 +17,6 @@ interface IVaultAccounts {
     function addAccount(address account, VaultTypes.AccountRole role) external;
     function removeAccount(address account) external;
     function getAccounts() external view returns (address[] memory);
-    function accountAt(uint256 index) external view returns (address);
     function accountCount() external view returns (uint256);
     function getAccountInfo(address account) external view returns (VaultTypes.AccountInfo memory);
 }

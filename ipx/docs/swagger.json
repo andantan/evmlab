@@ -2004,6 +2004,110 @@
                 }
             }
         },
+        "/evm/v2/transaction/contract/eip1559": {
+            "post": {
+                "description": "Fetches chain state (chainID, nonce, fees), estimates gas, and returns the unsigned RLP-encoded EIP-1559 contract call transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Build unsigned EIP-1559 contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildContractCallEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildContractCallEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v2/transaction/contract/legacy": {
+            "post": {
+                "description": "Fetches chain state (chainID, nonce, gas price), estimates gas, and returns the unsigned RLP-encoded EIP-155 legacy contract call transaction",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Build unsigned legacy contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildContractCallLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v2.BuildContractCallLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/v2/transaction/erc20/eip1559": {
             "post": {
                 "description": "Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-1559 transaction. Gas limit is estimated on-chain with a 20% buffer.",
@@ -2212,6 +2316,110 @@
                 }
             }
         },
+        "/evm/v3/transaction/contract/eip1559": {
+            "post": {
+                "description": "Fetches chain state, estimates gas, signs with the configured key, returns unsigned_rlp, signed_rlp, and tx_hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build and sign EIP-1559 contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildContractCallEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildContractCallEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v3/transaction/contract/legacy": {
+            "post": {
+                "description": "Fetches chain state, estimates gas, signs with the configured key, returns unsigned_rlp, signed_rlp, and tx_hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build and sign legacy contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildContractCallLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v3.BuildContractCallLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/v3/transaction/erc20/eip1559": {
             "post": {
                 "description": "Builds transfer(address,uint256) calldata, estimates gas, signs with the configured key, returns unsigned_rlp, signed_rlp, and tx_hash",
@@ -2397,6 +2605,110 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/v3.BuildNativeLegacyTransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v4/transaction/contract/eip1559": {
+            "post": {
+                "description": "Fetches chain state, estimates gas, signs with the configured key, broadcasts, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build, sign, and send EIP-1559 contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildContractCallEIP1559TransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildContractCallEIP1559TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/v4/transaction/contract/legacy": {
+            "post": {
+                "description": "Fetches chain state, estimates gas, signs with the configured key, broadcasts, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transaction"
+                ],
+                "summary": "Build, sign, and send legacy contract call tx",
+                "parameters": [
+                    {
+                        "description": "Contract call request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildContractCallLegacyTransactionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v4.BuildContractCallLegacyTransactionResponse"
                         }
                     },
                     "400": {
@@ -3706,6 +4018,64 @@
                 }
             }
         },
+        "v2.BuildContractCallEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v2.BuildContractCallEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
+        "v2.BuildContractCallLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v2.BuildContractCallLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
         "v2.BuildERC20EIP1559TransactionRequest": {
             "type": "object",
             "properties": {
@@ -3804,6 +4174,94 @@
             "type": "object",
             "properties": {
                 "unsigned_rlp": {
+                    "type": "string"
+                }
+            }
+        },
+        "v3.BuildContractCallEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v3.BuildContractCallEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v3.BuildContractCallLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v3.BuildContractCallLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
                     "type": "string"
                 }
             }
@@ -3950,6 +4408,94 @@
             }
         },
         "v3.BuildNativeLegacyTransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildContractCallEIP1559TransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v4.BuildContractCallEIP1559TransactionResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "v4.BuildContractCallLegacyTransactionRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0xe30e3834000000000000000000000000..."
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"
+                },
+                "to": {
+                    "type": "string",
+                    "example": "0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"
+                },
+                "value": {
+                    "type": "string",
+                    "example": "0"
+                }
+            }
+        },
+        "v4.BuildContractCallLegacyTransactionResponse": {
             "type": "object",
             "properties": {
                 "r": {

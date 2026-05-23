@@ -240,13 +240,13 @@ func (h *TransactionHandler) BuildERC20LegacyTransaction(w http.ResponseWriter, 
 
 	calldata := core.TransferCalldata(req.ToAddr(), req.ToAmount())
 
-	contractAddr := req.ContractAddr().String()
-	gasEstHex, err := h.client.EstimateGas(r.Context(), map[string]any{
+	p := map[string]any{
 		"from":  req.From,
-		"to":    contractAddr,
+		"to":    req.ContractAddr().String(),
 		"value": "0x0",
 		"data":  "0x" + hex.EncodeToString(calldata),
-	}, "latest")
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
 	if err != nil {
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
 		return
@@ -346,13 +346,13 @@ func (h *TransactionHandler) BuildERC20EIP1559Transaction(w http.ResponseWriter,
 
 	calldata := core.TransferCalldata(req.ToAddr(), req.ToAmount())
 
-	contractAddr := req.ContractAddr().String()
-	gasEstHex, err := h.client.EstimateGas(r.Context(), map[string]any{
+	p := map[string]any{
 		"from":  req.From,
-		"to":    contractAddr,
+		"to":    req.ContractAddr().String(),
 		"value": "0x0",
 		"data":  "0x" + hex.EncodeToString(calldata),
-	}, "latest")
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
 	if err != nil {
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
 		return
@@ -382,4 +382,201 @@ func (h *TransactionHandler) BuildERC20EIP1559Transaction(w http.ResponseWriter,
 	}
 
 	handler.WriteJSON(w, http.StatusOK, NewBuildERC20EIP1559Transaction(unsigned))
+}
+
+// BuildContractCallLegacyTransaction godoc
+// @Summary      Build unsigned legacy contract call tx
+// @Description  Fetches chain state (chainID, nonce, gas price), estimates gas, and returns the unsigned RLP-encoded EIP-155 legacy contract call transaction
+// @Tags         contract
+// @Accept       json
+// @Produce      json
+// @Param        body  body      BuildContractCallLegacyTransactionRequest   true  "Contract call request"
+// @Success      200   {object}  BuildContractCallLegacyTransactionResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      502   {object}  map[string]string
+// @Router       /evm/v2/transaction/contract/legacy [post]
+func (h *TransactionHandler) BuildContractCallLegacyTransaction(w http.ResponseWriter, r *http.Request) {
+	var req BuildContractCallLegacyTransactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	chainIDHex, err := h.client.ChainID(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get chain id: %s", err))
+		return
+	}
+	chainID, err := util.HexToBigInt(chainIDHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse chain id: %s", err))
+		return
+	}
+
+	nonceHex, err := h.client.GetTransactionCount(r.Context(), req.From, "pending")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get nonce: %s", err))
+		return
+	}
+	nonce, err := util.HexToUint64(nonceHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse nonce: %s", err))
+		return
+	}
+
+	gasPriceHex, err := h.client.GasPrice(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get gas price: %s", err))
+		return
+	}
+	gasPrice, err := util.HexToBigInt(gasPriceHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse gas price: %s", err))
+		return
+	}
+
+	p := map[string]any{
+		"from":  req.From,
+		"to":    req.ToAddr().String(),
+		"value": "0x" + req.Amount().Text(16),
+		"data":  "0x" + hex.EncodeToString(req.Calldata()),
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
+		return
+	}
+	gasEst, err := util.HexToUint64(gasEstHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse gas estimate: %s", err))
+		return
+	}
+	gasLimit := gasEst * 12 / 10
+
+	tx := &types.LegacyTx{
+		ChainID:  chainID,
+		Nonce:    nonce,
+		GasPrice: gasPrice,
+		GasLimit: gasLimit,
+		To:       &req.ToAddr().Addr,
+		Value:    req.Amount(),
+		Data:     req.Calldata(),
+	}
+
+	unsigned, err := core.RLP.EncodeLegacyUnsigned(tx)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to encode tx: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallLegacyTransaction(unsigned))
+}
+
+// BuildContractCallEIP1559Transaction godoc
+// @Summary      Build unsigned EIP-1559 contract call tx
+// @Description  Fetches chain state (chainID, nonce, fees), estimates gas, and returns the unsigned RLP-encoded EIP-1559 contract call transaction
+// @Tags         contract
+// @Accept       json
+// @Produce      json
+// @Param        body  body      BuildContractCallEIP1559TransactionRequest   true  "Contract call request"
+// @Success      200   {object}  BuildContractCallEIP1559TransactionResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      502   {object}  map[string]string
+// @Router       /evm/v2/transaction/contract/eip1559 [post]
+func (h *TransactionHandler) BuildContractCallEIP1559Transaction(w http.ResponseWriter, r *http.Request) {
+	var req BuildContractCallEIP1559TransactionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	chainIDHex, err := h.client.ChainID(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get chain id: %s", err))
+		return
+	}
+	chainID, err := util.HexToBigInt(chainIDHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse chain id: %s", err))
+		return
+	}
+
+	nonceHex, err := h.client.GetTransactionCount(r.Context(), req.From, "pending")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get nonce: %s", err))
+		return
+	}
+	nonce, err := util.HexToUint64(nonceHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse nonce: %s", err))
+		return
+	}
+
+	tipCapHex, err := h.client.MaxPriorityFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get tip cap: %s", err))
+		return
+	}
+	tipCap, err := util.HexToBigInt(tipCapHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse tip cap: %s", err))
+		return
+	}
+
+	baseFeeHex, err := h.client.BaseFeePerGas(r.Context())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get base fee: %s", err))
+		return
+	}
+	baseFee, err := util.HexToBigInt(baseFeeHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse base fee: %s", err))
+		return
+	}
+	feeCap := new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), tipCap)
+
+	p := map[string]any{
+		"from":  req.From,
+		"to":    req.ToAddr().String(),
+		"value": "0x" + req.Amount().Text(16),
+		"data":  "0x" + hex.EncodeToString(req.Calldata()),
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
+		return
+	}
+	gasEst, err := util.HexToUint64(gasEstHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse gas estimate: %s", err))
+		return
+	}
+	gasLimit := gasEst * 12 / 10
+
+	tx := &types.DynamicFeeTx{
+		ChainID:   chainID,
+		Nonce:     nonce,
+		GasTipCap: tipCap,
+		GasFeeCap: feeCap,
+		GasLimit:  gasLimit,
+		To:        &req.ToAddr().Addr,
+		Value:     req.Amount(),
+		Data:      req.Calldata(),
+	}
+
+	unsigned, err := core.RLP.EncodeDynamicFeeUnsigned(tx)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to encode tx: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallEIP1559Transaction(unsigned))
 }

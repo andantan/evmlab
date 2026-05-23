@@ -14,9 +14,9 @@ type BuildNativeLegacyTransactionRequest struct {
 	To    string `json:"to"`
 	Value string `json:"value"`
 
-	value *big.Int
-	from  *types.Address
-	to    *types.Address
+	f *types.Address
+	t *types.Address
+	v *big.Int
 }
 
 func (r *BuildNativeLegacyTransactionRequest) ValidateRequest() error {
@@ -26,7 +26,7 @@ func (r *BuildNativeLegacyTransactionRequest) ValidateRequest() error {
 	}
 
 	var err error
-	r.from, err = types.NewAddressFromHex(r.From)
+	r.f, err = types.NewAddressFromHex(r.From)
 	if err != nil {
 		return errors.New("from: invalid address")
 	}
@@ -36,7 +36,7 @@ func (r *BuildNativeLegacyTransactionRequest) ValidateRequest() error {
 		return errors.New("to is required")
 	}
 
-	r.to, err = types.NewAddressFromHex(r.To)
+	r.t, err = types.NewAddressFromHex(r.To)
 	if err != nil {
 		return errors.New("to: invalid address")
 	}
@@ -49,14 +49,14 @@ func (r *BuildNativeLegacyTransactionRequest) ValidateRequest() error {
 	if !ok {
 		return errors.New("value: must be a decimal wei amount")
 	}
-	r.value = v
+	r.v = v
 
 	return nil
 }
 
-func (r *BuildNativeLegacyTransactionRequest) FromAddr() *types.Address { return r.from }
-func (r *BuildNativeLegacyTransactionRequest) ToAddr() *types.Address   { return r.to }
-func (r *BuildNativeLegacyTransactionRequest) Amount() *big.Int         { return r.value }
+func (r *BuildNativeLegacyTransactionRequest) FromAddr() *types.Address { return r.f }
+func (r *BuildNativeLegacyTransactionRequest) ToAddr() *types.Address   { return r.t }
+func (r *BuildNativeLegacyTransactionRequest) Amount() *big.Int         { return r.v }
 
 type BuildNativeLegacyTransactionResponse struct {
 	UnsignedRLP string `json:"unsigned_rlp"`
@@ -73,9 +73,9 @@ type BuildNativeEIP1559TransactionRequest struct {
 	To    string `json:"to"`
 	Value string `json:"value"`
 
-	v *big.Int
 	f *types.Address
 	t *types.Address
+	v *big.Int
 }
 
 func (r *BuildNativeEIP1559TransactionRequest) ValidateRequest() error {
@@ -237,6 +237,136 @@ type BuildERC20EIP1559TransactionResponse struct {
 
 func NewBuildERC20EIP1559Transaction(data []byte) *BuildERC20EIP1559TransactionResponse {
 	return &BuildERC20EIP1559TransactionResponse{
+		UnsignedRLP: "0x" + hex.EncodeToString(data),
+	}
+}
+
+type BuildContractCallLegacyTransactionRequest struct {
+	From  string `json:"from"  example:"0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"`
+	To    string `json:"to"    example:"0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"`
+	Data  string `json:"data"  example:"0xe30e3834000000000000000000000000..."`
+	Value string `json:"value" example:"0"`
+
+	f *types.Address
+	t *types.Address
+	d []byte
+	v *big.Int
+}
+
+func (r *BuildContractCallLegacyTransactionRequest) ValidateRequest() error {
+	var err error
+
+	r.From = strings.TrimSpace(r.From)
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
+		return errors.New("from: invalid address")
+	}
+
+	r.To = strings.TrimSpace(r.To)
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
+		return errors.New("to: invalid address")
+	}
+
+	r.Data = strings.TrimSpace(r.Data)
+	if r.Data == "" {
+		return errors.New("data is required")
+	}
+	raw := strings.TrimPrefix(r.Data, "0x")
+	r.d, err = hex.DecodeString(raw)
+	if err != nil {
+		return errors.New("data: invalid hex")
+	}
+
+	r.Value = strings.TrimSpace(r.Value)
+	if r.Value == "" {
+		r.Value = "0"
+	}
+	v, ok := new(big.Int).SetString(r.Value, 10)
+	if !ok {
+		return errors.New("value: must be a decimal wei amount")
+	}
+	r.v = v
+
+	return nil
+}
+
+func (r *BuildContractCallLegacyTransactionRequest) FromAddr() *types.Address { return r.f }
+func (r *BuildContractCallLegacyTransactionRequest) ToAddr() *types.Address   { return r.t }
+func (r *BuildContractCallLegacyTransactionRequest) Calldata() []byte         { return r.d }
+func (r *BuildContractCallLegacyTransactionRequest) Amount() *big.Int         { return r.v }
+
+type BuildContractCallLegacyTransactionResponse struct {
+	UnsignedRLP string `json:"unsigned_rlp"`
+}
+
+func NewBuildContractCallLegacyTransaction(data []byte) *BuildContractCallLegacyTransactionResponse {
+	return &BuildContractCallLegacyTransactionResponse{
+		UnsignedRLP: "0x" + hex.EncodeToString(data),
+	}
+}
+
+type BuildContractCallEIP1559TransactionRequest struct {
+	From  string `json:"from"  example:"0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2"`
+	To    string `json:"to"    example:"0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2"`
+	Data  string `json:"data"  example:"0xe30e3834000000000000000000000000..."`
+	Value string `json:"value" example:"0"`
+
+	f *types.Address
+	t *types.Address
+	d []byte
+	v *big.Int
+}
+
+func (r *BuildContractCallEIP1559TransactionRequest) ValidateRequest() error {
+	var err error
+
+	r.From = strings.TrimSpace(r.From)
+	r.f, err = types.NewAddressFromHex(r.From)
+	if err != nil {
+		return errors.New("from: invalid address")
+	}
+
+	r.To = strings.TrimSpace(r.To)
+	r.t, err = types.NewAddressFromHex(r.To)
+	if err != nil {
+		return errors.New("to: invalid address")
+	}
+
+	r.Data = strings.TrimSpace(r.Data)
+	if r.Data == "" {
+		return errors.New("data is required")
+	}
+	raw := strings.TrimPrefix(r.Data, "0x")
+	r.d, err = hex.DecodeString(raw)
+	if err != nil {
+		return errors.New("data: invalid hex")
+	}
+
+	r.Value = strings.TrimSpace(r.Value)
+	if r.Value == "" {
+		r.Value = "0"
+	}
+	v, ok := new(big.Int).SetString(r.Value, 10)
+	if !ok {
+		return errors.New("value: must be a decimal wei amount")
+	}
+	r.v = v
+
+	return nil
+}
+
+func (r *BuildContractCallEIP1559TransactionRequest) FromAddr() *types.Address { return r.f }
+func (r *BuildContractCallEIP1559TransactionRequest) ToAddr() *types.Address   { return r.t }
+func (r *BuildContractCallEIP1559TransactionRequest) Calldata() []byte         { return r.d }
+func (r *BuildContractCallEIP1559TransactionRequest) Amount() *big.Int         { return r.v }
+
+type BuildContractCallEIP1559TransactionResponse struct {
+	UnsignedRLP string `json:"unsigned_rlp"`
+}
+
+func NewBuildContractCallEIP1559Transaction(data []byte) *BuildContractCallEIP1559TransactionResponse {
+	return &BuildContractCallEIP1559TransactionResponse{
 		UnsignedRLP: "0x" + hex.EncodeToString(data),
 	}
 }

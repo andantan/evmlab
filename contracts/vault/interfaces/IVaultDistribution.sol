@@ -6,7 +6,7 @@ interface IVaultDistribution {
     error AmountTooSmall(uint256 amount, uint256 recipientCount);
     error NothingToCollect();
 
-    event Spread(address indexed from, uint256 totalAmount, uint256 share, uint256 remainder);
+    event Spread(address indexed from, uint256 indexed totalAmount, uint256 indexed share, uint256 remainder);
     event Collected(address indexed by, uint256 totalAmount);
 
     function spread() external;

@@ -133,6 +133,9 @@ func run() error {
 		r.Post("/transaction/native/eip1559", transfer.BuildNativeEIP1559Transaction)
 		r.Post("/transaction/erc20/legacy", transfer.BuildERC20LegacyTransaction)
 		r.Post("/transaction/erc20/eip1559", transfer.BuildERC20EIP1559Transaction)
+
+		r.Post("/transaction/contract/legacy", transfer.BuildContractCallLegacyTransaction)
+		r.Post("/transaction/contract/eip1559", transfer.BuildContractCallEIP1559Transaction)
 	})
 
 	r.Route("/evm/v3", func(r chi.Router) {
@@ -141,6 +144,8 @@ func run() error {
 		r.Post("/transaction/native/eip1559", tx.BuildNativeEIP1559Transaction)
 		r.Post("/transaction/erc20/legacy", tx.BuildERC20LegacyTransaction)
 		r.Post("/transaction/erc20/eip1559", tx.BuildERC20EIP1559Transaction)
+		r.Post("/transaction/contract/legacy", tx.BuildContractCallLegacyTransaction)
+		r.Post("/transaction/contract/eip1559", tx.BuildContractCallEIP1559Transaction)
 	})
 
 	r.Route("/evm/v4", func(r chi.Router) {
@@ -149,6 +154,8 @@ func run() error {
 		r.Post("/transaction/native/eip1559", tx.BuildNativeEIP1559Transaction)
 		r.Post("/transaction/erc20/legacy", tx.BuildERC20LegacyTransaction)
 		r.Post("/transaction/erc20/eip1559", tx.BuildERC20EIP1559Transaction)
+		r.Post("/transaction/contract/legacy", tx.BuildContractCallLegacyTransaction)
+		r.Post("/transaction/contract/eip1559", tx.BuildContractCallEIP1559Transaction)
 	})
 
 	fmt.Println("Listening on", cfg.ServerAddr)

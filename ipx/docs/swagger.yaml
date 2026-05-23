@@ -721,6 +721,46 @@ definitions:
       unsigned_rlp:
         type: string
     type: object
+  v2.BuildContractCallEIP1559TransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v2.BuildContractCallEIP1559TransactionResponse:
+    properties:
+      unsigned_rlp:
+        type: string
+    type: object
+  v2.BuildContractCallLegacyTransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v2.BuildContractCallLegacyTransactionResponse:
+    properties:
+      unsigned_rlp:
+        type: string
+    type: object
   v2.BuildERC20EIP1559TransactionRequest:
     properties:
       amount:
@@ -787,6 +827,66 @@ definitions:
   v2.BuildNativeLegacyTransactionResponse:
     properties:
       unsigned_rlp:
+        type: string
+    type: object
+  v3.BuildContractCallEIP1559TransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v3.BuildContractCallEIP1559TransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v3.BuildContractCallLegacyTransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v3.BuildContractCallLegacyTransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
         type: string
     type: object
   v3.BuildERC20EIP1559TransactionRequest:
@@ -885,6 +985,66 @@ definitions:
         type: string
     type: object
   v3.BuildNativeLegacyTransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v4.BuildContractCallEIP1559TransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v4.BuildContractCallEIP1559TransactionResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  v4.BuildContractCallLegacyTransactionRequest:
+    properties:
+      data:
+        example: 0xe30e3834000000000000000000000000...
+        type: string
+      from:
+        example: 0xEbD69375d51a8472DF22A3C18405b5A2586c2Aa2
+        type: string
+      to:
+        example: 0xF0a619CDA27104b969086d15Ad7fcDaa4a251Eb2
+        type: string
+      value:
+        example: "0"
+        type: string
+    type: object
+  v4.BuildContractCallLegacyTransactionResponse:
     properties:
       r:
         type: string
@@ -2346,6 +2506,76 @@ paths:
       summary: Build an unsigned legacy native transfer transaction
       tags:
       - transaction
+  /evm/v2/transaction/contract/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state (chainID, nonce, fees), estimates gas, and
+        returns the unsigned RLP-encoded EIP-1559 contract call transaction
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v2.BuildContractCallEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v2.BuildContractCallEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build unsigned EIP-1559 contract call tx
+      tags:
+      - contract
+  /evm/v2/transaction/contract/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state (chainID, nonce, gas price), estimates gas,
+        and returns the unsigned RLP-encoded EIP-155 legacy contract call transaction
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v2.BuildContractCallLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v2.BuildContractCallLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build unsigned legacy contract call tx
+      tags:
+      - contract
   /evm/v2/transaction/erc20/eip1559:
     post:
       consumes:
@@ -2488,6 +2718,76 @@ paths:
       summary: Build unsigned legacy transfer tx
       tags:
       - transfer
+  /evm/v3/transaction/contract/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, estimates gas, signs with the configured key,
+        returns unsigned_rlp, signed_rlp, and tx_hash
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v3.BuildContractCallEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v3.BuildContractCallEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build and sign EIP-1559 contract call tx
+      tags:
+      - transaction
+  /evm/v3/transaction/contract/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, estimates gas, signs with the configured key,
+        returns unsigned_rlp, signed_rlp, and tx_hash
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v3.BuildContractCallLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v3.BuildContractCallLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build and sign legacy contract call tx
+      tags:
+      - transaction
   /evm/v3/transaction/erc20/eip1559:
     post:
       consumes:
@@ -2626,6 +2926,76 @@ paths:
               type: string
             type: object
       summary: Build and sign legacy transfer tx
+      tags:
+      - transaction
+  /evm/v4/transaction/contract/eip1559:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, estimates gas, signs with the configured key,
+        broadcasts, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v4.BuildContractCallEIP1559TransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v4.BuildContractCallEIP1559TransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build, sign, and send EIP-1559 contract call tx
+      tags:
+      - transaction
+  /evm/v4/transaction/contract/legacy:
+    post:
+      consumes:
+      - application/json
+      description: Fetches chain state, estimates gas, signs with the configured key,
+        broadcasts, and returns unsigned_rlp, signed_rlp, tx_hash, r, s, v
+      parameters:
+      - description: Contract call request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/v4.BuildContractCallLegacyTransactionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v4.BuildContractCallLegacyTransactionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Build, sign, and send legacy contract call tx
       tags:
       - transaction
   /evm/v4/transaction/erc20/eip1559:
