@@ -167,6 +167,47 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 | POST   | `/evm/v4/transaction/contract/legacy`       | Sign and broadcast legacy contract call     |
 | POST   | `/evm/v4/transaction/contract/eip1559`      | Sign and broadcast EIP-1559 contract call   |
 
+### Sanctum — `/evm/sanctum` — build, sign, and broadcast Sanctum contract calls
+
+#### Nexus — `/evm/sanctum/nexus` — membership management
+
+| Method | Path                                              | Description                                        |
+|--------|---------------------------------------------------|----------------------------------------------------|
+| POST   | `/evm/sanctum/nexus/register/legacy`              | `register()` — legacy                              |
+| POST   | `/evm/sanctum/nexus/register/eip1559`             | `register()` — EIP-1559                            |
+| POST   | `/evm/sanctum/nexus/register/for/legacy`          | `registerFor(address)` — legacy                    |
+| POST   | `/evm/sanctum/nexus/register/for/eip1559`         | `registerFor(address)` — EIP-1559                  |
+| POST   | `/evm/sanctum/nexus/register/approve/legacy`      | `approveRegister(address)` — legacy                |
+| POST   | `/evm/sanctum/nexus/register/approve/eip1559`     | `approveRegister(address)` — EIP-1559              |
+| POST   | `/evm/sanctum/nexus/deregister/legacy`            | `deregister()` — legacy                            |
+| POST   | `/evm/sanctum/nexus/deregister/eip1559`           | `deregister()` — EIP-1559                          |
+| POST   | `/evm/sanctum/nexus/deregister/for/legacy`        | `deregisterFor(address)` — legacy                  |
+| POST   | `/evm/sanctum/nexus/deregister/for/eip1559`       | `deregisterFor(address)` — EIP-1559                |
+| POST   | `/evm/sanctum/nexus/account/list`                 | `getAccounts()` — list all registered accounts     |
+| POST   | `/evm/sanctum/nexus/account/count`                | `accountCount()` — number of registered accounts   |
+| POST   | `/evm/sanctum/nexus/account/info`                 | `getAccountInfo(address)` — role and block info    |
+
+#### Treasury — `/evm/sanctum/treasury` — native token treasury operations
+
+| Method | Path                                                | Description                                            |
+|--------|-----------------------------------------------------|--------------------------------------------------------|
+| POST   | `/evm/sanctum/treasury/native/deposit/legacy`       | `depositNative()` payable — legacy                     |
+| POST   | `/evm/sanctum/treasury/native/deposit/eip1559`      | `depositNative()` payable — EIP-1559                   |
+| POST   | `/evm/sanctum/treasury/native/request/legacy`       | `requestNative(uint256)` — legacy                      |
+| POST   | `/evm/sanctum/treasury/native/request/eip1559`      | `requestNative(uint256)` — EIP-1559                    |
+| POST   | `/evm/sanctum/treasury/native/approve/legacy`       | `approveNative(address,uint256)` — legacy              |
+| POST   | `/evm/sanctum/treasury/native/approve/eip1559`      | `approveNative(address,uint256)` — EIP-1559            |
+| POST   | `/evm/sanctum/treasury/native/approve/all/legacy`   | `approveNativeAll(address)` — legacy                   |
+| POST   | `/evm/sanctum/treasury/native/approve/all/eip1559`  | `approveNativeAll(address)` — EIP-1559                 |
+| POST   | `/evm/sanctum/treasury/native/withdraw/legacy`      | `withdrawNative(uint256)` — legacy                     |
+| POST   | `/evm/sanctum/treasury/native/withdraw/eip1559`     | `withdrawNative(uint256)` — EIP-1559                   |
+| POST   | `/evm/sanctum/treasury/native/withdraw/all/legacy`  | `withdrawNativeAll()` — legacy                         |
+| POST   | `/evm/sanctum/treasury/native/withdraw/all/eip1559` | `withdrawNativeAll()` — EIP-1559                       |
+| POST   | `/evm/sanctum/treasury/native/balance`              | `nativeBalance()` — total treasury balance             |
+| POST   | `/evm/sanctum/treasury/native/available`            | `nativeAvailable()` — unallocated balance              |
+| POST   | `/evm/sanctum/treasury/native/allocation`           | `nativeAllocation(address)` — approved amount for user |
+| POST   | `/evm/sanctum/treasury/native/pending`              | `nativePending(address)` — pending request for user    |
+
 ---
 
 ## Configuration

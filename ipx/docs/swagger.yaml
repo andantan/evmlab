@@ -910,6 +910,108 @@ definitions:
       v:
         type: string
     type: object
+  sanctum.SanctumDeregisterEIP1559Request:
+    properties:
+      from:
+        example: 0xAbcD1234...
+        type: string
+      sanctum:
+        example: 0x1234Abcd...
+        type: string
+    type: object
+  sanctum.SanctumDeregisterEIP1559Response:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  sanctum.SanctumDeregisterForEIP1559Request:
+    properties:
+      from:
+        example: 0xAbcD1234...
+        type: string
+      sanctum:
+        example: 0x1234Abcd...
+        type: string
+      target:
+        example: 0xDeadBeef...
+        type: string
+    type: object
+  sanctum.SanctumDeregisterForEIP1559Response:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  sanctum.SanctumDeregisterForLegacyRequest:
+    properties:
+      from:
+        example: 0xAbcD1234...
+        type: string
+      sanctum:
+        example: 0x1234Abcd...
+        type: string
+      target:
+        example: 0xDeadBeef...
+        type: string
+    type: object
+  sanctum.SanctumDeregisterForLegacyResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
+  sanctum.SanctumDeregisterLegacyRequest:
+    properties:
+      from:
+        example: 0xAbcD1234...
+        type: string
+      sanctum:
+        example: 0x1234Abcd...
+        type: string
+    type: object
+  sanctum.SanctumDeregisterLegacyResponse:
+    properties:
+      r:
+        type: string
+      s:
+        type: string
+      signed_rlp:
+        type: string
+      tx_hash:
+        type: string
+      unsigned_rlp:
+        type: string
+      v:
+        type: string
+    type: object
   sanctum.SanctumGetAccountInfoRequest:
     properties:
       account:
@@ -2917,20 +3019,144 @@ paths:
       - sanctum
   /evm/sanctum/nexus/deregister/eip1559:
     post:
-      responses: {}
+      consumes:
+      - application/json
+      description: Builds, signs, and broadcasts a deregister() call to the Sanctum
+        contract using an EIP-1559 transaction.
+      parameters:
+      - description: Deregister request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/sanctum.SanctumDeregisterEIP1559Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sanctum.SanctumDeregisterEIP1559Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Deregister caller from Sanctum (EIP-1559)
+      tags:
+      - sanctum
   /evm/sanctum/nexus/deregister/for/eip1559:
     post:
-      responses: {}
+      consumes:
+      - application/json
+      description: Builds, signs, and broadcasts a deregisterFor(address) call to
+        the Sanctum contract using an EIP-1559 transaction.
+      parameters:
+      - description: DeregisterFor request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/sanctum.SanctumDeregisterForEIP1559Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sanctum.SanctumDeregisterForEIP1559Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Deregister an address from Sanctum (EIP-1559)
+      tags:
+      - sanctum
   /evm/sanctum/nexus/deregister/for/legacy:
     post:
-      responses: {}
+      consumes:
+      - application/json
+      description: Builds, signs, and broadcasts a deregisterFor(address) call to
+        the Sanctum contract using a legacy transaction.
+      parameters:
+      - description: DeregisterFor request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/sanctum.SanctumDeregisterForLegacyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sanctum.SanctumDeregisterForLegacyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Deregister an address from Sanctum (legacy)
+      tags:
+      - sanctum
   /evm/sanctum/nexus/deregister/legacy:
     post:
-      responses: {}
+      consumes:
+      - application/json
+      description: Builds, signs, and broadcasts a deregister() call to the Sanctum
+        contract using a legacy transaction.
+      parameters:
+      - description: Deregister request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/sanctum.SanctumDeregisterLegacyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/sanctum.SanctumDeregisterLegacyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Deregister caller from Sanctum (legacy)
+      tags:
+      - sanctum
   /evm/sanctum/nexus/register/approve/eip1559:
     post:
       consumes:

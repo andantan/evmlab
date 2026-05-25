@@ -1705,26 +1705,210 @@
         },
         "/evm/sanctum/nexus/deregister/eip1559": {
             "post": {
+                "description": "Builds, signs, and broadcasts a deregister() call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
                 "summary": "Deregister caller from Sanctum (EIP-1559)",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "Deregister request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/evm/sanctum/nexus/deregister/for/eip1559": {
             "post": {
+                "description": "Builds, signs, and broadcasts a deregisterFor(address) call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
                 "summary": "Deregister an address from Sanctum (EIP-1559)",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "DeregisterFor request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterForEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterForEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/evm/sanctum/nexus/deregister/for/legacy": {
             "post": {
+                "description": "Builds, signs, and broadcasts a deregisterFor(address) call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
                 "summary": "Deregister an address from Sanctum (legacy)",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "DeregisterFor request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterForLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterForLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/evm/sanctum/nexus/deregister/legacy": {
             "post": {
+                "description": "Builds, signs, and broadcasts a deregister() call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
                 "summary": "Deregister caller from Sanctum (legacy)",
-                "responses": {}
+                "parameters": [
+                    {
+                        "description": "Deregister request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDeregisterLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
             }
         },
         "/evm/sanctum/nexus/register/approve/eip1559": {
@@ -5647,6 +5831,158 @@
             }
         },
         "sanctum.SanctumDepositNativeLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterForEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterForEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterForLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterForLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumDeregisterLegacyResponse": {
             "type": "object",
             "properties": {
                 "r": {
