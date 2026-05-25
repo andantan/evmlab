@@ -95,6 +95,49 @@
                 }
             }
         },
+        "/evm/abi/decode/revert": {
+            "post": {
+                "description": "Decodes revert data (4-byte selector + args) into a name→value map using the given error signature. Validates that the selector matches before unpacking.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "abi"
+                ],
+                "summary": "Decode ABI-encoded revert data",
+                "parameters": [
+                    {
+                        "description": "Error signature and hex-encoded revert data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeRevertRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.DecodeRevertResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/abi/encode": {
             "post": {
                 "description": "Returns the ABI-encoded calldata (4-byte selector + packed arguments) for the given signature and args.\nSignature must be in canonical form — no spaces, no parameter names (e.g. \"transfer(address,uint256)\").\nSupported types: address | bool | string | bytes | bytes1–bytes32 | uint8/16/32/64/128/256 | int8/16/32/64/128/256\nTuple, array, and slice types are not yet supported.",
@@ -3386,6 +3429,33 @@
                 "values": {
                     "type": "array",
                     "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "misc.DecodeRevertRequest": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string",
+                    "example": "0x1d2a3b4c..."
+                },
+                "signature": {
+                    "type": "string",
+                    "example": "InsufficientBalance(address,uint256,uint256)"
+                }
+            }
+        },
+        "misc.DecodeRevertResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "values": {
+                    "type": "object",
+                    "additionalProperties": {
                         "type": "string"
                     }
                 }

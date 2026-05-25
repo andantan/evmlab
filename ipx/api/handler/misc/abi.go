@@ -100,13 +100,12 @@ func (h *ABIHandler) DecodeResult(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
 	}
-	data, err := req.ValidateRequest()
-	if err != nil {
+	if err := req.ValidateRequest(); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	values, err := core.ABI.DecodeResult(req.Types, data)
+	values, err := core.ABI.DecodeResult(req.Types, req.ToData())
 	if err != nil {
 		handler.WriteError(w, http.StatusBadRequest, err.Error())
 		return
@@ -131,8 +130,7 @@ func (h *ABIHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
 		return
 	}
-	data, err := req.ValidateRequest()
-	if err != nil {
+	if err := req.ValidateRequest(); err != nil {
 		handler.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
@@ -143,13 +141,49 @@ func (h *ABIHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values, err := core.ABI.DecodeCall(fn, data)
+	values, err := core.ABI.DecodeCall(fn, req.ToData())
 	if err != nil {
 		handler.WriteError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewDecodeCallResponse(data, values))
+	handler.WriteJSON(w, http.StatusOK, NewDecodeCallResponse(req.ToData(), values))
+}
+
+// DecodeRevert godoc
+// @Summary      Decode ABI-encoded revert data
+// @Description  Decodes revert data (4-byte selector + args) into a name→value map using the given error signature. Validates that the selector matches before unpacking.
+// @Tags         abi
+// @Accept       json
+// @Produce      json
+// @Param        body  body      DecodeRevertRequest   true  "Error signature and hex-encoded revert data"
+// @Success      200   {object}  DecodeRevertResponse
+// @Failure      400   {object}  map[string]string
+// @Router       /evm/abi/decode/revert [post]
+func (h *ABIHandler) DecodeRevert(w http.ResponseWriter, r *http.Request) {
+	req := new(DecodeRevertRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	fn, err := core.ABI.ParseFunctionSignature(req.Signature)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	values, err := core.ABI.DecodeRevert(fn, req.ToData())
+	if err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewDecodeRevertResponse(fn.Name, values))
 }
 
 // EIP712DomainCalldata godoc
@@ -159,6 +193,6 @@ func (h *ABIHandler) DecodeCall(w http.ResponseWriter, r *http.Request) {
 // @Produce      json
 // @Success      200   {object}  EIP712DomainCalldataResponse
 // @Router       /evm/abi/encode/eip712-domain [post]
-func (h *ABIHandler) EIP712DomainCalldata(w http.ResponseWriter, r *http.Request) {
+func (h *ABIHandler) EIP712DomainCalldata(w http.ResponseWriter, _ *http.Request) {
 	handler.WriteJSON(w, http.StatusOK, NewEIP712DomainCalldataResponse(core.EIP712DomainCalldata()))
 }

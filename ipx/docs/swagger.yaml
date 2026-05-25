@@ -301,6 +301,24 @@ definitions:
           type: string
         type: array
     type: object
+  misc.DecodeRevertRequest:
+    properties:
+      data:
+        example: 0x1d2a3b4c...
+        type: string
+      signature:
+        example: InsufficientBalance(address,uint256,uint256)
+        type: string
+    type: object
+  misc.DecodeRevertResponse:
+    properties:
+      error:
+        type: string
+      values:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
   misc.DeriveKeyRequest:
     properties:
       private_key:
@@ -1231,6 +1249,36 @@ paths:
               type: string
             type: object
       summary: Decode ABI-encoded return data
+      tags:
+      - abi
+  /evm/abi/decode/revert:
+    post:
+      consumes:
+      - application/json
+      description: Decodes revert data (4-byte selector + args) into a name→value
+        map using the given error signature. Validates that the selector matches before
+        unpacking.
+      parameters:
+      - description: Error signature and hex-encoded revert data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.DecodeRevertRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.DecodeRevertResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Decode ABI-encoded revert data
       tags:
       - abi
   /evm/abi/encode:

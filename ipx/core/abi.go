@@ -191,6 +191,52 @@ func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]strin
 	return result, nil
 }
 
+// DecodeRevert ABI-decodes revert data (4-byte selector + args) into a name→value map.
+// Validates that the selector matches the given error signature. Returns an error if
+// the selector does not match or the data cannot be unpacked.
+func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]string, error) {
+	if len(data) < 4 {
+		return nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
+	}
+
+	sel := fn.Selector()
+	if sel[0] != data[0] || sel[1] != data[1] || sel[2] != data[2] || sel[3] != data[3] {
+		return nil, fmt.Errorf("selector mismatch: expected 0x%x, got 0x%x", sel, data[:4])
+	}
+
+	if len(fn.Types) == 0 {
+		return map[string]string{}, nil
+	}
+
+	abiArgs := make(abi.Arguments, len(fn.Types))
+	for i, ts := range fn.Types {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		abiArgs[i] = abi.Argument{Type: t}
+	}
+
+	values, err := abiArgs.Unpack(data[4:])
+	if err != nil {
+		return nil, fmt.Errorf("unpack: %s", err)
+	}
+
+	result := make(map[string]string, len(values))
+	for i, v := range values {
+		key := fmt.Sprintf("arg%d", i)
+		if i < len(fn.Names) && fn.Names[i] != "" {
+			key = fn.Names[i]
+		}
+		s, err := formatValue(v)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %s", key, err)
+		}
+		result[key] = s
+	}
+	return result, nil
+}
+
 // DecodeString unpacks a single ABI-encoded string return value.
 func (c *abiCodec) DecodeString(data []byte) (string, error) {
 	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)

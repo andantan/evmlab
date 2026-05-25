@@ -76,6 +76,7 @@ func run() error {
 		r.Post("/selector", abi.Selector)
 		r.Post("/decode/result", abi.DecodeResult)
 		r.Post("/decode/call", abi.DecodeCall)
+		r.Post("/decode/revert", abi.DecodeRevert)
 		r.Post("/encode", abi.Encode)
 		r.Post("/encode/eip712-domain", abi.EIP712DomainCalldata)
 	})
