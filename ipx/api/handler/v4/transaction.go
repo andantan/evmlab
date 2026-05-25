@@ -90,11 +90,27 @@ func (h *TransactionHandler) BuildNativeLegacyTransaction(w http.ResponseWriter,
 		return
 	}
 
+	p := map[string]any{
+		"from":  req.From,
+		"to":    req.To,
+		"value": "0x" + req.Amount().Text(16),
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
+		return
+	}
+	gasEst, err := util.HexToUint64(gasEstHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse gas estimate: %s", err))
+		return
+	}
+
 	tx := &types.LegacyTx{
 		ChainID:  chainID,
 		Nonce:    nonce,
 		GasPrice: gasPrice,
-		GasLimit: 21000,
+		GasLimit: gasEst * 12 / 10,
 		To:       &req.ToAddr().Addr,
 		Value:    req.Amount(),
 		Data:     nil,
@@ -205,12 +221,28 @@ func (h *TransactionHandler) BuildNativeEIP1559Transaction(w http.ResponseWriter
 	}
 	feeCap := new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), tipCap)
 
+	p := map[string]any{
+		"from":  req.From,
+		"to":    req.To,
+		"value": "0x" + req.Amount().Text(16),
+	}
+	gasEstHex, err := h.client.EstimateGas(r.Context(), p, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to estimate gas: %s", err))
+		return
+	}
+	gasEst, err := util.HexToUint64(gasEstHex)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse gas estimate: %s", err))
+		return
+	}
+
 	tx := &types.DynamicFeeTx{
 		ChainID:   chainID,
 		Nonce:     nonce,
 		GasTipCap: tipCap,
 		GasFeeCap: feeCap,
-		GasLimit:  21000,
+		GasLimit:  gasEst * 12 / 10,
 		To:        &req.ToAddr().Addr,
 		Value:     req.Amount(),
 		Data:      nil,

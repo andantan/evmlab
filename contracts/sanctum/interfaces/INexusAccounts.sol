@@ -11,9 +11,26 @@ interface INexusAccounts {
     error InvalidRole(Account.Role role);
     error CannotRemoveMaster();
 
-    event AccountAdded(address indexed who, uint256 indexed when, Account.Role indexed role, uint256 count);
-    event AccountApproved(address indexed who, uint256 indexed when, Account.Role indexed role, uint256 count);
-    event AccountRemoved(address indexed who, uint256 indexed when, Account.Role indexed role, uint256 count);
+    event AccountAdded(
+        address indexed who,
+        uint256 indexed when,
+        Account.Role indexed role,
+        uint256 count
+    );
+
+    event AccountApproved(
+        address indexed who,
+        uint256 indexed when,
+        Account.Role indexed role,
+        uint256 count
+    );
+
+    event AccountRemoved(
+        address indexed who,
+        uint256 indexed when,
+        Account.Role indexed role,
+        uint256 count
+    );
 
     // caller registers themselves as Pending — requires master approval to become Member
     function register() external;
