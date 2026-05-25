@@ -34,7 +34,6 @@ A local Ethereum development environment for low-level EVM operations.
 | `make compile CONTRACT=<path>`                                                     | Compile a Solidity file and generate standard JSON input |
 | `make deploy CONTRACT=<path> DEPLOYER=<key>`                                       | Compile and deploy to local geth                         |
 | `make deploy-lab-token DEPLOYER=<key> NAME=<n> SYMBOL=<s> DECIMALS=<d> SUPPLY=<n>` | Deploy LabToken ERC-20                                   |
-| `make deploy-vault DEPLOYER=<key>`                                                 | Deploy MultiAccountVault                                 |
 
 ### Go
 
