@@ -237,6 +237,59 @@ func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]str
 	return result, nil
 }
 
+// DecodeErrorData decodes ABI-encoded revert data using the provided selector→signature map.
+// Returns the parsed Function (name + parameter schema) and a map of parameter name→value pairs.
+// If the signature has no parameter names, keys fall back to "arg0", "arg1", etc.
+func (c *abiCodec) DecodeErrorData(data []byte, signatures map[types.Selector]string) (*types.Function, map[string]string, error) {
+	if len(data) < 4 {
+		return nil, nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
+	}
+
+	sel := types.Selector{data[0], data[1], data[2], data[3]}
+	sig, ok := signatures[sel]
+	if !ok {
+		return nil, nil, fmt.Errorf("unknown error selector: %s", sel)
+	}
+
+	fn, err := c.ParseFunctionSignature(sig)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if len(fn.Types) == 0 {
+		return fn, map[string]string{}, nil
+	}
+
+	abiArgs := make(abi.Arguments, len(fn.Types))
+	for i, ts := range fn.Types {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		abiArgs[i] = abi.Argument{Type: t}
+	}
+
+	values, err := abiArgs.Unpack(data[4:])
+	if err != nil {
+		return nil, nil, fmt.Errorf("unpack: %s", err)
+	}
+
+	params := make(map[string]string, len(values))
+	for i, v := range values {
+		key := fmt.Sprintf("arg%d", i)
+		if i < len(fn.Names) && fn.Names[i] != "" {
+			key = fn.Names[i]
+		}
+		s, err := formatValue(v)
+		if err != nil {
+			return nil, nil, fmt.Errorf("%s: %s", key, err)
+		}
+		params[key] = s
+	}
+
+	return fn, params, nil
+}
+
 // DecodeString unpacks a single ABI-encoded string return value.
 func (c *abiCodec) DecodeString(data []byte) (string, error) {
 	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)
@@ -271,6 +324,15 @@ func (c *abiCodec) DecodeUint256(data []byte) (*big.Int, error) {
 		return nil, err
 	}
 	return values[0].(*big.Int), nil
+}
+
+// DecodeAddressSlice unpacks a single ABI-encoded address[] return value.
+func (c *abiCodec) DecodeAddressSlice(data []byte) ([]common.Address, error) {
+	values, err := types.ABIArguments{{Type: types.ABIAddressSlice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]common.Address), nil
 }
 
 func formatValue(v any) (string, error) {

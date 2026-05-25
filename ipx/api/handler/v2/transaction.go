@@ -25,7 +25,7 @@ func NewTransactionHandler(client *rpc.Client) *TransactionHandler {
 // BuildNativeLegacyTransaction godoc
 // @Summary      Build unsigned legacy transfer tx
 // @Description  Fetches chain state (chainID, nonce, gas price) and returns the unsigned RLP-encoded EIP-155 legacy transfer transaction
-// @Tags         transfer
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildNativeLegacyTransactionRequest   true  "Transfer request"
@@ -115,7 +115,7 @@ func (h *TransactionHandler) BuildNativeLegacyTransaction(w http.ResponseWriter,
 // BuildNativeEIP1559Transaction godoc
 // @Summary      Build unsigned EIP-1559 transfer tx
 // @Description  Fetches chain state (chainID, nonce, fees) and returns the unsigned RLP-encoded EIP-1559 transfer transaction
-// @Tags         transfer
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildNativeEIP1559TransactionRequest   true  "BuildNativeEIP1559Transaction request"
@@ -218,7 +218,7 @@ func (h *TransactionHandler) BuildNativeEIP1559Transaction(w http.ResponseWriter
 // BuildERC20LegacyTransaction godoc
 // @Summary      Build unsigned ERC-20 legacy transfer tx
 // @Description  Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-155 legacy transaction. Gas limit is estimated on-chain with a 20% buffer.
-// @Tags         transfer
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildERC20LegacyTransactionRequest   true  "ERC-20 transfer request"
@@ -312,7 +312,7 @@ func (h *TransactionHandler) BuildERC20LegacyTransaction(w http.ResponseWriter, 
 // BuildERC20EIP1559Transaction godoc
 // @Summary      Build unsigned ERC-20 EIP-1559 transfer tx
 // @Description  Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-1559 transaction. Gas limit is estimated on-chain with a 20% buffer.
-// @Tags         transfer
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildERC20EIP1559TransactionRequest   true  "ERC-20 transfer request"
@@ -419,7 +419,7 @@ func (h *TransactionHandler) BuildERC20EIP1559Transaction(w http.ResponseWriter,
 // BuildContractCallLegacyTransaction godoc
 // @Summary      Build unsigned legacy contract call tx
 // @Description  Fetches chain state (chainID, nonce, gas price), estimates gas, and returns the unsigned RLP-encoded EIP-155 legacy contract call transaction
-// @Tags         contract
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildContractCallLegacyTransactionRequest   true  "Contract call request"
@@ -511,7 +511,7 @@ func (h *TransactionHandler) BuildContractCallLegacyTransaction(w http.ResponseW
 // BuildContractCallEIP1559Transaction godoc
 // @Summary      Build unsigned EIP-1559 contract call tx
 // @Description  Fetches chain state (chainID, nonce, fees), estimates gas, and returns the unsigned RLP-encoded EIP-1559 contract call transaction
-// @Tags         contract
+// @Tags         transaction
 // @Accept       json
 // @Produce      json
 // @Param        body  body      BuildContractCallEIP1559TransactionRequest   true  "Contract call request"

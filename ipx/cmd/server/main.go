@@ -13,6 +13,7 @@ import (
 
 	"github.com/andantan/evmlab/api/handler/contract"
 	"github.com/andantan/evmlab/api/handler/misc"
+	"github.com/andantan/evmlab/api/handler/sanctum"
 	"github.com/andantan/evmlab/api/handler/v1"
 	"github.com/andantan/evmlab/api/handler/v2"
 	"github.com/andantan/evmlab/api/handler/v3"
@@ -157,6 +158,44 @@ func run() error {
 		r.Post("/transaction/erc20/eip1559", tx.BuildERC20EIP1559Transaction)
 		r.Post("/transaction/contract/legacy", tx.BuildContractCallLegacyTransaction)
 		r.Post("/transaction/contract/eip1559", tx.BuildContractCallEIP1559Transaction)
+	})
+
+	r.Route("/evm/sanctum", func(r chi.Router) {
+		s := sanctum.NewSanctumHandler(cfg, client)
+		r.Route("/nexus", func(r chi.Router) {
+			r.Post("/register/legacy", s.RegisterLegacy)
+			r.Post("/register/eip1559", s.RegisterEIP1559)
+			r.Post("/register/for/legacy", s.RegisterForLegacy)
+			r.Post("/register/for/eip1559", s.RegisterForEIP1559)
+			r.Post("/register/approve/legacy", s.ApproveRegisterLegacy)
+			r.Post("/register/approve/eip1559", s.ApproveRegisterEIP1559)
+			r.Post("/deregister/legacy", s.DeregisterLegacy)
+			r.Post("/deregister/eip1559", s.DeregisterEIP1559)
+			r.Post("/deregister/for/legacy", s.DeregisterForLegacy)
+			r.Post("/deregister/for/eip1559", s.DeregisterForEIP1559)
+
+			r.Post("/account/list", s.GetAccounts)
+			r.Post("/account/count", s.AccountCount)
+			r.Post("/account/info", s.GetAccountInfo)
+		})
+		r.Route("/treasury", func(r chi.Router) {
+			r.Post("/native/deposit/legacy", s.DepositNativeLegacy)
+			r.Post("/native/deposit/eip1559", s.DepositNativeEIP1559)
+			r.Post("/native/request/legacy", s.RequestNativeLegacy)
+			r.Post("/native/request/eip1559", s.RequestNativeEIP1559)
+			r.Post("/native/approve/legacy", s.ApproveNativeLegacy)
+			r.Post("/native/approve/eip1559", s.ApproveNativeEIP1559)
+			r.Post("/native/approve/all/legacy", s.ApproveNativeAllLegacy)
+			r.Post("/native/approve/all/eip1559", s.ApproveNativeAllEIP1559)
+			r.Post("/native/withdraw/legacy", s.WithdrawNativeLegacy)
+			r.Post("/native/withdraw/eip1559", s.WithdrawNativeEIP1559)
+			r.Post("/native/withdraw/all/legacy", s.WithdrawNativeAllLegacy)
+			r.Post("/native/withdraw/all/eip1559", s.WithdrawNativeAllEIP1559)
+			r.Post("/native/balance", s.NativeBalance)
+			r.Post("/native/available", s.NativeAvailable)
+			r.Post("/native/allocation", s.NativeAllocation)
+			r.Post("/native/pending", s.NativePending)
+		})
 	})
 
 	fmt.Println("Listening on", cfg.ServerAddr)

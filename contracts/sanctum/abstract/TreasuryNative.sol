@@ -44,10 +44,16 @@ abstract contract TreasuryNative is NexusContext, TreasuryContext, ITreasuryNati
     }
 
     function nativeAllocation(address user) external view returns (uint256) {
+        if (!_isMember(user)) {
+            revert NotRegisteredAccount(user);
+        }
         return allocation[user][Asset.NATIVE];
     }
 
     function nativePending(address user) external view returns (uint256) {
+        if (!_isMember(user)) {
+            revert NotRegisteredAccount(user);
+        }
         return pending[user][Asset.NATIVE];
     }
 
@@ -65,7 +71,6 @@ abstract contract TreasuryNative is NexusContext, TreasuryContext, ITreasuryNati
         }
 
         address native = Asset.NATIVE;
-
         uint256 available = _available(native, address(this).balance);
         if (available < amount) {
             revert InsufficientBalance(native, amount, available);
@@ -79,16 +84,16 @@ abstract contract TreasuryNative is NexusContext, TreasuryContext, ITreasuryNati
     }
 
     function _approveNative(address user, uint256 amount) internal {
-        if (amount == 0) {
-            revert ZeroAmount();
-        }
-
         address native = Asset.NATIVE;
-
         uint256 userPending = pending[user][native];
         if (userPending == 0) {
             revert NoPendedBalance(native, user);
         }
+
+        if (amount == 0) {
+            revert ZeroAmount();
+        }
+
         if (userPending < amount) {
             revert InsufficientPending(native, amount, userPending);
         }
@@ -105,16 +110,16 @@ abstract contract TreasuryNative is NexusContext, TreasuryContext, ITreasuryNati
     }
 
     function _withdrawNative(address to, uint256 amount) internal {
-        if (amount == 0) {
-            revert ZeroAmount();
-        }
-
         address native = Asset.NATIVE;
-
         uint256 allocated = allocation[to][native];
         if (allocated == 0) {
             revert NoAllocatedBalance(native, to);
         }
+
+        if (amount == 0) {
+            revert ZeroAmount();
+        }
+
         if (allocated < amount) {
             revert InsufficientAllocation(native, amount, allocated);
         }

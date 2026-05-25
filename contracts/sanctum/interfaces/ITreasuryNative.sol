@@ -2,8 +2,9 @@
 pragma solidity ^0.8.20;
 
 import {ITreasury} from "./ITreasury.sol";
+import {INexus} from "./INexus.sol";
 
-interface ITreasuryNative is ITreasury {
+interface ITreasuryNative is ITreasury, INexus {
     function depositNative() external payable;
     function requestNative(uint256 amount) external;
     function approveNative(address user, uint256 amount) external;

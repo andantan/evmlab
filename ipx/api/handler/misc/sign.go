@@ -200,7 +200,7 @@ func (h *SignHandler) SignLegacyTransaction(w http.ResponseWriter, r *http.Reque
 // SignEIP1559Transaction godoc
 // @Summary      Sign an unsigned dynamic fee native transfer transaction
 // @Description  Decodes an unsigned EIP-1559 payload, signs it with the key for the given address, and returns the signed raw transaction and tx hash
-// @Tags         transaction
+// @Tags         sign
 // @Accept       json
 // @Produce      json
 // @Param        body  body      SignEIP1559TransactionRequest  true  "Address and unsigned RLP"

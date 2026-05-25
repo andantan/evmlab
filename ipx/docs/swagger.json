@@ -1547,6 +1547,1330 @@
                 }
             }
         },
+        "/evm/sanctum/nexus/account/count": {
+            "post": {
+                "description": "Calls accountCount() on the Sanctum contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get the number of registered Sanctum accounts",
+                "parameters": [
+                    {
+                        "description": "AccountCount request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumAccountCountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumAccountCountResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/account/info": {
+            "post": {
+                "description": "Calls getAccountInfo(address) on the Sanctum contract and returns the account's address, role, and registration block.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get account info for a Sanctum member",
+                "parameters": [
+                    {
+                        "description": "GetAccountInfo request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumGetAccountInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumGetAccountInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/account/list": {
+            "post": {
+                "description": "Calls getAccounts() on the Sanctum contract and returns the list of registered addresses.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get all registered Sanctum accounts",
+                "parameters": [
+                    {
+                        "description": "GetAccounts request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumGetAccountsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumGetAccountsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/deregister/eip1559": {
+            "post": {
+                "summary": "Deregister caller from Sanctum (EIP-1559)",
+                "responses": {}
+            }
+        },
+        "/evm/sanctum/nexus/deregister/for/eip1559": {
+            "post": {
+                "summary": "Deregister an address from Sanctum (EIP-1559)",
+                "responses": {}
+            }
+        },
+        "/evm/sanctum/nexus/deregister/for/legacy": {
+            "post": {
+                "summary": "Deregister an address from Sanctum (legacy)",
+                "responses": {}
+            }
+        },
+        "/evm/sanctum/nexus/deregister/legacy": {
+            "post": {
+                "summary": "Deregister caller from Sanctum (legacy)",
+                "responses": {}
+            }
+        },
+        "/evm/sanctum/nexus/register/approve/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveRegister(address) call to the Sanctum contract using an EIP-1559 transaction. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve a pending Sanctum registration (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "ApproveRegister request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveRegisterEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveRegisterEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/register/approve/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveRegister(address) call to the Sanctum contract using a legacy transaction. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve a pending Sanctum registration (legacy)",
+                "parameters": [
+                    {
+                        "description": "ApproveRegister request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveRegisterLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveRegisterLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/register/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a register() call to the Sanctum contract using an EIP-1559 transaction. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Register caller as a Sanctum member (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "Register request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/register/for/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a registerFor(address) call to the Sanctum contract using an EIP-1559 transaction. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Register an address as a Sanctum member (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "RegisterFor request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterForEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterForEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/register/for/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a registerFor(address) call to the Sanctum contract using a legacy transaction. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Register an address as a Sanctum member (legacy)",
+                "parameters": [
+                    {
+                        "description": "RegisterFor request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterForLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterForLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/nexus/register/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a register() call to the Sanctum contract. Reverts are decoded into human-readable errors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Register caller as a Sanctum member",
+                "parameters": [
+                    {
+                        "description": "Register request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRegisterLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/allocation": {
+            "post": {
+                "description": "Calls nativeAllocation(address) on the Sanctum contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get the allocated native token amount for a user",
+                "parameters": [
+                    {
+                        "description": "NativeAllocation request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeAllocationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeAllocationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/approve/all/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveNativeAll(address) call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve all pending native token withdrawal for a user (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "ApproveNativeAll request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeAllEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeAllEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/approve/all/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveNativeAll(address) call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve all pending native token withdrawal for a user (legacy)",
+                "parameters": [
+                    {
+                        "description": "ApproveNativeAll request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeAllLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeAllLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/approve/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveNative(address,uint256) call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve a user's native token withdrawal request (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "ApproveNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/approve/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts an approveNative(address,uint256) call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Approve a user's native token withdrawal request (legacy)",
+                "parameters": [
+                    {
+                        "description": "ApproveNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumApproveNativeLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/available": {
+            "post": {
+                "description": "Calls nativeAvailable() on the Sanctum contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get the available (unallocated) native token balance of the Sanctum treasury",
+                "parameters": [
+                    {
+                        "description": "NativeAvailable request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeAvailableRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeAvailableResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/balance": {
+            "post": {
+                "description": "Calls nativeBalance() on the Sanctum contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get the total native token balance of the Sanctum treasury",
+                "parameters": [
+                    {
+                        "description": "NativeBalance request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativeBalanceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/deposit/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a depositNative() payable call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Deposit native tokens into Sanctum treasury (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "DepositNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDepositNativeEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDepositNativeEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/deposit/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a depositNative() payable call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Deposit native tokens into Sanctum treasury (legacy)",
+                "parameters": [
+                    {
+                        "description": "DepositNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDepositNativeLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumDepositNativeLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/pending": {
+            "post": {
+                "description": "Calls nativePending(address) on the Sanctum contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Get the pending native token withdrawal amount for a user",
+                "parameters": [
+                    {
+                        "description": "NativePending request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativePendingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumNativePendingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/request/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a requestNative(uint256) call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Request native token withdrawal from Sanctum treasury (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "RequestNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRequestNativeEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRequestNativeEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/request/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a requestNative(uint256) call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Request native token withdrawal from Sanctum treasury (legacy)",
+                "parameters": [
+                    {
+                        "description": "RequestNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRequestNativeLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumRequestNativeLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/withdraw/all/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a withdrawNativeAll() call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Withdraw all available native tokens from Sanctum treasury (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "WithdrawNativeAll request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeAllEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeAllEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/withdraw/all/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a withdrawNativeAll() call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Withdraw all available native tokens from Sanctum treasury (legacy)",
+                "parameters": [
+                    {
+                        "description": "WithdrawNativeAll request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeAllLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeAllLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/withdraw/eip1559": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a withdrawNative(uint256) call to the Sanctum contract using an EIP-1559 transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Withdraw native tokens from Sanctum treasury (EIP-1559)",
+                "parameters": [
+                    {
+                        "description": "WithdrawNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeEIP1559Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeEIP1559Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/sanctum/treasury/native/withdraw/legacy": {
+            "post": {
+                "description": "Builds, signs, and broadcasts a withdrawNative(uint256) call to the Sanctum contract using a legacy transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "sanctum"
+                ],
+                "summary": "Withdraw native tokens from Sanctum treasury (legacy)",
+                "parameters": [
+                    {
+                        "description": "WithdrawNative request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeLegacyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/sanctum.SanctumWithdrawNativeLegacyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/sign": {
             "post": {
                 "description": "Signs a hex-encoded 32-byte digest with the given private key using raw secp256k1 ECDSA. Hashing is the caller's responsibility — use the hash endpoints to produce the digest before calling this.",
@@ -1652,7 +2976,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "transaction"
+                    "sign"
                 ],
                 "summary": "Sign an unsigned dynamic fee native transfer transaction",
                 "parameters": [
@@ -2057,7 +3381,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "contract"
+                    "transaction"
                 ],
                 "summary": "Build unsigned EIP-1559 contract call tx",
                 "parameters": [
@@ -2109,7 +3433,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "contract"
+                    "transaction"
                 ],
                 "summary": "Build unsigned legacy contract call tx",
                 "parameters": [
@@ -2161,7 +3485,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "transfer"
+                    "transaction"
                 ],
                 "summary": "Build unsigned ERC-20 EIP-1559 transfer tx",
                 "parameters": [
@@ -2213,7 +3537,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "transfer"
+                    "transaction"
                 ],
                 "summary": "Build unsigned ERC-20 legacy transfer tx",
                 "parameters": [
@@ -2265,7 +3589,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "transfer"
+                    "transaction"
                 ],
                 "summary": "Build unsigned EIP-1559 transfer tx",
                 "parameters": [
@@ -2317,7 +3641,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "transfer"
+                    "transaction"
                 ],
                 "summary": "Build unsigned legacy transfer tx",
                 "parameters": [
@@ -3993,6 +5317,886 @@
             "properties": {
                 "result": {
                     "type": "boolean"
+                }
+            }
+        },
+        "sanctum.SanctumAccountCountRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumAccountCountResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeAllEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeAllEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeAllLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeAllLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveNativeLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveRegisterEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveRegisterEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumApproveRegisterLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumApproveRegisterLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDepositNativeEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "value": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                }
+            }
+        },
+        "sanctum.SanctumDepositNativeEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumDepositNativeLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "value": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                }
+            }
+        },
+        "sanctum.SanctumDepositNativeLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumGetAccountInfoRequest": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumGetAccountInfoResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "registered_block": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumGetAccountsRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumGetAccountsResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "sanctum.SanctumNativeAllocationRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                }
+            }
+        },
+        "sanctum.SanctumNativeAllocationResponse": {
+            "type": "object",
+            "properties": {
+                "allocation": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumNativeAvailableRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumNativeAvailableResponse": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumNativeBalanceRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumNativeBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumNativePendingRequest": {
+            "type": "object",
+            "properties": {
+                "block": {
+                    "type": "string",
+                    "example": "latest"
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "user": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                }
+            }
+        },
+        "sanctum.SanctumNativePendingResponse": {
+            "type": "object",
+            "properties": {
+                "pending": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRegisterEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumRegisterEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRegisterForEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumRegisterForEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRegisterForLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                },
+                "target": {
+                    "type": "string",
+                    "example": "0xDeadBeef..."
+                }
+            }
+        },
+        "sanctum.SanctumRegisterForLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRegisterLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumRegisterLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRequestNativeEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumRequestNativeEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumRequestNativeLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumRequestNativeLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeAllEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeAllEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeAllLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeAllLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeEIP1559Request": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeEIP1559Response": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeLegacyRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "string",
+                    "example": "1000000000000000000"
+                },
+                "from": {
+                    "type": "string",
+                    "example": "0xAbcD1234..."
+                },
+                "sanctum": {
+                    "type": "string",
+                    "example": "0x1234Abcd..."
+                }
+            }
+        },
+        "sanctum.SanctumWithdrawNativeLegacyResponse": {
+            "type": "object",
+            "properties": {
+                "r": {
+                    "type": "string"
+                },
+                "s": {
+                    "type": "string"
+                },
+                "signed_rlp": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
+                },
+                "unsigned_rlp": {
+                    "type": "string"
+                },
+                "v": {
+                    "type": "string"
                 }
             }
         },
