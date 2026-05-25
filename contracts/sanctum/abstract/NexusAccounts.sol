@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {SanctumContext} from "./SanctumContext.sol";
+import {NexusContext} from "./NexusContext.sol";
 import {INexusAccounts} from "../interfaces/INexusAccounts.sol";
 import {Account} from "../libraries/Account.sol";
 
-abstract contract NexusAccounts is SanctumContext, INexusAccounts {
+abstract contract NexusAccounts is NexusContext, INexusAccounts {
     function register() external {
         _addAccount(msg.sender, Account.Role.Pending);
     }
@@ -35,15 +35,11 @@ abstract contract NexusAccounts is SanctumContext, INexusAccounts {
     }
 
     function getAccountInfo(address account) external view returns (Account.Info memory) {
-        if (!isAccount[account]) {
+        if (nexus[account].addr == address(0)) {
             revert NotRegisteredAccount(account);
         }
 
-        return Account.Info({
-            account: account,
-            role: roles[account],
-            registeredBlock: registeredBlock[account]
-        });
+        return nexus[account];
     }
 
     function _addAccount(address account, Account.Role role) internal {
@@ -51,18 +47,24 @@ abstract contract NexusAccounts is SanctumContext, INexusAccounts {
             revert InvalidAccount(account);
         }
 
-        if (isAccount[account]) {
-            revert AlreadyRegisteredAccount(account);
-        }
-
-        if (!Account.isValidRole(role)) {
+        if (role == Account.Role.None) {
             revert InvalidRole(role);
         }
 
-        isAccount[account] = true;
-        roles[account] = role;
+        if (nexus[account].addr != address(0)) {
+            revert AlreadyRegisteredAccount(account);
+        }
+
+        if (uint8(role) > uint8(type(Account.Role).max)) {
+            revert InvalidRole(role);
+        }
+
+        nexus[account] = Account.Info({
+            addr: account,
+            role: role,
+            registeredBlock: block.number
+        });
         accountIndex[account] = accountList.length;
-        registeredBlock[account] = block.number;
         accountList.push(account);
 
         emit AccountAdded(account, block.number, role, accountList.length);
@@ -73,19 +75,19 @@ abstract contract NexusAccounts is SanctumContext, INexusAccounts {
             revert InvalidAccount(account);
         }
 
-        if (!isAccount[account]) {
+        if (nexus[account].addr == address(0)) {
             revert NotRegisteredAccount(account);
         }
 
-        if (!Account.isValidRole(role)) {
+        if (uint8(role) > uint8(type(Account.Role).max)) {
             revert InvalidRole(role);
         }
 
-        if (!Account.isPending(roles[account])) {
+        if (nexus[account].role != Account.Role.Pending) {
             revert AlreadyApprovedAccount(account);
         }
 
-        roles[account] = role;
+        nexus[account].role = role;
 
         emit AccountApproved(account, block.number, role, accountList.length);
     }
@@ -95,15 +97,15 @@ abstract contract NexusAccounts is SanctumContext, INexusAccounts {
             revert InvalidAccount(account);
         }
 
-        if (!isAccount[account]) {
+        if (nexus[account].addr == address(0)) {
             revert NotRegisteredAccount(account);
         }
 
-        if (Account.isMaster(roles[account])) {
+        if (nexus[account].role == Account.Role.Master) {
             revert CannotRemoveMaster();
         }
 
-        Account.Role role = roles[account];
+        Account.Role role = nexus[account].role;
         uint256 index = accountIndex[account];
         uint256 lastIndex = accountList.length - 1;
 
@@ -116,9 +118,7 @@ abstract contract NexusAccounts is SanctumContext, INexusAccounts {
         accountList.pop();
 
         delete accountIndex[account];
-        delete isAccount[account];
-        delete roles[account];
-        delete registeredBlock[account];
+        delete nexus[account];
 
         emit AccountRemoved(account, block.number, role, accountList.length);
     }

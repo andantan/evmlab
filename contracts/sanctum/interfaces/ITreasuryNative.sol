@@ -1,24 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface ITreasuryNative {
-    error InsufficientBalance(uint256 requested, uint256 available);
-    error ZeroAmount();
-    error TransferFailed(address to, uint256 amount);
+import {ITreasury} from "./ITreasury.sol";
 
-    event NativeDeposited(
-        address indexed from,
-        uint256 amount,
-        uint256 balanceAfter
-    );
-
-    event NativeWithdrawn(
-        address indexed to,
-        uint256 amount,
-        uint256 balanceAfter
-    );
-
+interface ITreasuryNative is ITreasury {
     function depositNative() external payable;
+    function requestNative(uint256 amount) external;
+    function approveNative(address user, uint256 amount) external;
+    function approveNativeAll(address user) external;
     function withdrawNative(uint256 amount) external;
+    function withdrawNativeAll() external;
     function nativeBalance() external view returns (uint256);
+    function nativeAvailable() external view returns (uint256);
+    function nativeAllocation(address user) external view returns (uint256);
+    function nativePending(address user) external view returns (uint256);
 }
