@@ -82,11 +82,23 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 | POST   | `/evm/abi/encode`               | ABI-encode calldata from signature + args        |
 | POST   | `/evm/abi/decode/result`        | Decode eth_call return data by ABI types         |
 | POST   | `/evm/abi/decode/call`          | Decode calldata by function signature            |
-| POST   | `/evm/abi/encode/balance-of`    | `balanceOf(address)` calldata                    |
-| POST   | `/evm/abi/encode/approve`       | `approve(address,uint256)` calldata              |
-| POST   | `/evm/abi/encode/transfer`      | `transfer(address,uint256)` calldata             |
-| POST   | `/evm/abi/encode/allowance`     | `allowance(address,address)` calldata            |
-| POST   | `/evm/abi/encode/transfer-from` | `transferFrom(address,address,uint256)` calldata |
+| POST   | `/evm/abi/encode/eip712-domain` | `EIP712Domain` calldata                          |
+
+### Contract — `/evm/contract`
+
+| Method | Path                                         | Description                                      |
+|--------|----------------------------------------------|--------------------------------------------------|
+| POST   | `/evm/contract/eip712/domain`                | Fetch EIP-712 domain from contract               |
+| POST   | `/evm/contract/eip2612/nonces`               | Fetch EIP-2612 permit nonce                      |
+| POST   | `/evm/contract/erc20/metadata`               | Fetch ERC-20 name, symbol, decimals, totalSupply |
+| POST   | `/evm/contract/erc20/balance`                | `balanceOf(address)`                             |
+| POST   | `/evm/contract/erc20/allowance`              | `allowance(address,address)`                     |
+| POST   | `/evm/contract/erc20/approved`               | Check if allowance >= amount                     |
+| POST   | `/evm/contract/erc20/calldata/balance-of`    | `balanceOf(address)` calldata                    |
+| POST   | `/evm/contract/erc20/calldata/approve`       | `approve(address,uint256)` calldata              |
+| POST   | `/evm/contract/erc20/calldata/transfer`      | `transfer(address,uint256)` calldata             |
+| POST   | `/evm/contract/erc20/calldata/allowance`     | `allowance(address,address)` calldata            |
+| POST   | `/evm/contract/erc20/calldata/transfer-from` | `transferFrom(address,address,uint256)` calldata |
 
 ### Hash — `/evm/hash`
 
@@ -124,30 +136,36 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 
 ### v2 — `/evm/v2` — build unsigned tx (fetches chain state, estimates gas)
 
-| Method | Path                                 | Description                                       |
-|--------|--------------------------------------|---------------------------------------------------|
-| POST   | `/evm/v2/transaction/native/legacy`  | Unsigned legacy native transfer                   |
-| POST   | `/evm/v2/transaction/native/eip1559` | Unsigned EIP-1559 native transfer                 |
-| POST   | `/evm/v2/transaction/erc20/legacy`   | Unsigned legacy ERC-20 transfer (gas estimated)   |
-| POST   | `/evm/v2/transaction/erc20/eip1559`  | Unsigned EIP-1559 ERC-20 transfer (gas estimated) |
+| Method | Path                                        | Description                                       |
+|--------|---------------------------------------------|---------------------------------------------------|
+| POST   | `/evm/v2/transaction/native/legacy`         | Unsigned legacy native transfer                   |
+| POST   | `/evm/v2/transaction/native/eip1559`        | Unsigned EIP-1559 native transfer                 |
+| POST   | `/evm/v2/transaction/erc20/legacy`          | Unsigned legacy ERC-20 transfer (gas estimated)   |
+| POST   | `/evm/v2/transaction/erc20/eip1559`         | Unsigned EIP-1559 ERC-20 transfer (gas estimated) |
+| POST   | `/evm/v2/transaction/contract/legacy`       | Unsigned legacy contract call                     |
+| POST   | `/evm/v2/transaction/contract/eip1559`      | Unsigned EIP-1559 contract call                   |
 
 ### v3 — `/evm/v3` — build and sign tx
 
-| Method | Path                                 | Description                    |
-|--------|--------------------------------------|--------------------------------|
-| POST   | `/evm/v3/transaction/native/legacy`  | Sign legacy native transfer    |
-| POST   | `/evm/v3/transaction/native/eip1559` | Sign EIP-1559 native transfer  |
-| POST   | `/evm/v3/transaction/erc20/legacy`   | Sign legacy ERC-20 transfer    |
-| POST   | `/evm/v3/transaction/erc20/eip1559`  | Sign EIP-1559 ERC-20 transfer  |
+| Method | Path                                        | Description                    |
+|--------|---------------------------------------------|--------------------------------|
+| POST   | `/evm/v3/transaction/native/legacy`         | Sign legacy native transfer    |
+| POST   | `/evm/v3/transaction/native/eip1559`        | Sign EIP-1559 native transfer  |
+| POST   | `/evm/v3/transaction/erc20/legacy`          | Sign legacy ERC-20 transfer    |
+| POST   | `/evm/v3/transaction/erc20/eip1559`         | Sign EIP-1559 ERC-20 transfer  |
+| POST   | `/evm/v3/transaction/contract/legacy`       | Sign legacy contract call      |
+| POST   | `/evm/v3/transaction/contract/eip1559`      | Sign EIP-1559 contract call    |
 
 ### v4 — `/evm/v4` — build, sign, and broadcast tx
 
-| Method | Path                                 | Description                                 |
-|--------|--------------------------------------|---------------------------------------------|
-| POST   | `/evm/v4/transaction/native/legacy`  | Sign and broadcast legacy native transfer   |
-| POST   | `/evm/v4/transaction/native/eip1559` | Sign and broadcast EIP-1559 native transfer |
-| POST   | `/evm/v4/transaction/erc20/legacy`   | Sign and broadcast legacy ERC-20 transfer   |
-| POST   | `/evm/v4/transaction/erc20/eip1559`  | Sign and broadcast EIP-1559 ERC-20 transfer |
+| Method | Path                                        | Description                                 |
+|--------|---------------------------------------------|---------------------------------------------|
+| POST   | `/evm/v4/transaction/native/legacy`         | Sign and broadcast legacy native transfer   |
+| POST   | `/evm/v4/transaction/native/eip1559`        | Sign and broadcast EIP-1559 native transfer |
+| POST   | `/evm/v4/transaction/erc20/legacy`          | Sign and broadcast legacy ERC-20 transfer   |
+| POST   | `/evm/v4/transaction/erc20/eip1559`         | Sign and broadcast EIP-1559 ERC-20 transfer |
+| POST   | `/evm/v4/transaction/contract/legacy`       | Sign and broadcast legacy contract call     |
+| POST   | `/evm/v4/transaction/contract/eip1559`      | Sign and broadcast EIP-1559 contract call   |
 
 ---
 
