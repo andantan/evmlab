@@ -102,13 +102,9 @@ func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error)
 		return nil, fmt.Errorf("signature has %d param(s) but got %d arg(s)", len(fn.Types), len(args))
 	}
 
-	abiArgs := make(abi.Arguments, len(fn.Types))
-	for i, ts := range fn.Types {
-		t, err := abi.NewType(ts, "", nil)
-		if err != nil {
-			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
-		}
-		abiArgs[i] = abi.Argument{Type: t}
+	abiArgs, err := buildABIArgs(fn.Types)
+	if err != nil {
+		return nil, err
 	}
 
 	goArgs := make([]any, len(args))
@@ -128,15 +124,11 @@ func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error)
 	return append(fn.Selector(), packed...), nil
 }
 
-// DecodeResult ABI-decodes raw return data from an eth_call into string values.
-func (c *abiCodec) DecodeResult(typeStrs []string, data []byte) ([]string, error) {
-	abiArgs := make(abi.Arguments, len(typeStrs))
-	for i, ts := range typeStrs {
-		t, err := abi.NewType(ts, "", nil)
-		if err != nil {
-			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
-		}
-		abiArgs[i] = abi.Argument{Type: t}
+// DecodeResult ABI-decodes raw return data from an eth_call into values.
+func (c *abiCodec) DecodeResult(typeStrs []string, data []byte) ([]any, error) {
+	abiArgs, err := buildABIArgs(typeStrs)
+	if err != nil {
+		return nil, err
 	}
 
 	values, err := abiArgs.Unpack(data)
@@ -144,31 +136,19 @@ func (c *abiCodec) DecodeResult(typeStrs []string, data []byte) ([]string, error
 		return nil, fmt.Errorf("unpack: %s", err)
 	}
 
-	result := make([]string, len(values))
-	for i, v := range values {
-		s, err := formatValue(v)
-		if err != nil {
-			return nil, fmt.Errorf("value[%d]: %s", i, err)
-		}
-		result[i] = s
-	}
-	return result, nil
+	return formatDecodedValues(values)
 }
 
 // DecodeCall ABI-decodes calldata (selector + args) into a name→value map.
 // If the signature contains no parameter names, keys are "arg0", "arg1", etc.
-func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]string, error) {
+func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]any, error) {
 	if len(data) < 4 {
 		return nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
 	}
 
-	abiArgs := make(abi.Arguments, len(fn.Types))
-	for i, ts := range fn.Types {
-		t, err := abi.NewType(ts, "", nil)
-		if err != nil {
-			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
-		}
-		abiArgs[i] = abi.Argument{Type: t}
+	abiArgs, err := buildABIArgs(fn.Types)
+	if err != nil {
+		return nil, err
 	}
 
 	values, err := abiArgs.Unpack(data[4:])
@@ -176,25 +156,13 @@ func (c *abiCodec) DecodeCall(fn *types.Function, data []byte) (map[string]strin
 		return nil, fmt.Errorf("unpack: %s", err)
 	}
 
-	result := make(map[string]string, len(values))
-	for i, v := range values {
-		key := fmt.Sprintf("arg%d", i)
-		if i < len(fn.Names) && fn.Names[i] != "" {
-			key = fn.Names[i]
-		}
-		s, err := formatValue(v)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %s", key, err)
-		}
-		result[key] = s
-	}
-	return result, nil
+	return formatDecodedMap(values, fn.Names)
 }
 
 // DecodeRevert ABI-decodes revert data (4-byte selector + args) into a name→value map.
 // Validates that the selector matches the given error signature. Returns an error if
 // the selector does not match or the data cannot be unpacked.
-func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]string, error) {
+func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]any, error) {
 	if len(data) < 4 {
 		return nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
 	}
@@ -205,16 +173,12 @@ func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]str
 	}
 
 	if len(fn.Types) == 0 {
-		return map[string]string{}, nil
+		return map[string]any{}, nil
 	}
 
-	abiArgs := make(abi.Arguments, len(fn.Types))
-	for i, ts := range fn.Types {
-		t, err := abi.NewType(ts, "", nil)
-		if err != nil {
-			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
-		}
-		abiArgs[i] = abi.Argument{Type: t}
+	abiArgs, err := buildABIArgs(fn.Types)
+	if err != nil {
+		return nil, err
 	}
 
 	values, err := abiArgs.Unpack(data[4:])
@@ -222,25 +186,13 @@ func (c *abiCodec) DecodeRevert(fn *types.Function, data []byte) (map[string]str
 		return nil, fmt.Errorf("unpack: %s", err)
 	}
 
-	result := make(map[string]string, len(values))
-	for i, v := range values {
-		key := fmt.Sprintf("arg%d", i)
-		if i < len(fn.Names) && fn.Names[i] != "" {
-			key = fn.Names[i]
-		}
-		s, err := formatValue(v)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %s", key, err)
-		}
-		result[key] = s
-	}
-	return result, nil
+	return formatDecodedMap(values, fn.Names)
 }
 
 // DecodeErrorData decodes ABI-encoded revert data using the provided selector→signature map.
 // Returns the parsed Function (name + parameter schema) and a map of parameter name→value pairs.
 // If the signature has no parameter names, keys fall back to "arg0", "arg1", etc.
-func (c *abiCodec) DecodeErrorData(data []byte, signatures map[types.Selector]string) (*types.Function, map[string]string, error) {
+func (c *abiCodec) DecodeErrorData(data []byte, signatures map[types.Selector]string) (*types.Function, map[string]any, error) {
 	if len(data) < 4 {
 		return nil, nil, fmt.Errorf("data too short: need at least 4 bytes for selector")
 	}
@@ -257,16 +209,12 @@ func (c *abiCodec) DecodeErrorData(data []byte, signatures map[types.Selector]st
 	}
 
 	if len(fn.Types) == 0 {
-		return fn, map[string]string{}, nil
+		return fn, map[string]any{}, nil
 	}
 
-	abiArgs := make(abi.Arguments, len(fn.Types))
-	for i, ts := range fn.Types {
-		t, err := abi.NewType(ts, "", nil)
-		if err != nil {
-			return nil, nil, fmt.Errorf("invalid type %q: %s", ts, err)
-		}
-		abiArgs[i] = abi.Argument{Type: t}
+	abiArgs, err := buildABIArgs(fn.Types)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	values, err := abiArgs.Unpack(data[4:])
@@ -274,65 +222,39 @@ func (c *abiCodec) DecodeErrorData(data []byte, signatures map[types.Selector]st
 		return nil, nil, fmt.Errorf("unpack: %s", err)
 	}
 
-	params := make(map[string]string, len(values))
-	for i, v := range values {
-		key := fmt.Sprintf("arg%d", i)
-		if i < len(fn.Names) && fn.Names[i] != "" {
-			key = fn.Names[i]
-		}
-		s, err := formatValue(v)
-		if err != nil {
-			return nil, nil, fmt.Errorf("%s: %s", key, err)
-		}
-		params[key] = s
+	params, err := formatDecodedMap(values, fn.Names)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	return fn, params, nil
 }
 
-// DecodeString unpacks a single ABI-encoded string return value.
-func (c *abiCodec) DecodeString(data []byte) (string, error) {
-	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)
-	if err != nil {
-		return "", err
-	}
-	return values[0].(string), nil
+func isTypedSlice(rv reflect.Value) bool {
+	return (rv.Kind() == reflect.Slice && rv.Type() != reflect.TypeOf([]byte(nil))) ||
+		(rv.Kind() == reflect.Array && rv.Type().Elem().Kind() != reflect.Uint8)
 }
 
-// DecodeBool unpacks a single ABI-encoded bool return value.
-func (c *abiCodec) DecodeBool(data []byte) (bool, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBool}}.Unpack(data)
-	if err != nil {
-		return false, err
+func formatSliceValue(rv reflect.Value) ([]any, error) {
+	result := make([]any, rv.Len())
+	for i := range result {
+		elem := rv.Index(i).Interface()
+		erv := reflect.ValueOf(elem)
+		if isTypedSlice(erv) {
+			sub, err := formatSliceValue(erv)
+			if err != nil {
+				return nil, fmt.Errorf("[%d]: %s", i, err)
+			}
+			result[i] = sub
+		} else {
+			s, err := formatValue(elem)
+			if err != nil {
+				return nil, fmt.Errorf("[%d]: %s", i, err)
+			}
+			result[i] = s
+		}
 	}
-	return values[0].(bool), nil
-}
-
-// DecodeUint8 unpacks a single ABI-encoded uint8 return value.
-func (c *abiCodec) DecodeUint8(data []byte) (uint8, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint8}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(uint8), nil
-}
-
-// DecodeUint256 unpacks a single ABI-encoded uint256 return value.
-func (c *abiCodec) DecodeUint256(data []byte) (*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint256}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].(*big.Int), nil
-}
-
-// DecodeAddressSlice unpacks a single ABI-encoded address[] return value.
-func (c *abiCodec) DecodeAddressSlice(data []byte) ([]common.Address, error) {
-	values, err := types.ABIArguments{{Type: types.ABIAddressSlice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]common.Address), nil
+	return result, nil
 }
 
 func formatValue(v any) (string, error) {
@@ -375,8 +297,81 @@ func formatValue(v any) (string, error) {
 			}
 			return hexutil.Encode(b), nil
 		}
+		if rv.Kind() == reflect.Array || rv.Kind() == reflect.Slice {
+			return formatArrayValue(rv)
+		}
 		return "", fmt.Errorf("unsupported type: %T", v)
 	}
+}
+
+func formatArrayValue(rv reflect.Value) (string, error) {
+	values := make([]string, rv.Len())
+	for i := range values {
+		s, err := formatValue(rv.Index(i).Interface())
+		if err != nil {
+			return "", fmt.Errorf("[%d]: %s", i, err)
+		}
+		values[i] = s
+	}
+	return "[" + strings.Join(values, ",") + "]", nil
+}
+
+func buildABIArgs(typeStrs []string) (abi.Arguments, error) {
+	args := make(abi.Arguments, len(typeStrs))
+	for i, ts := range typeStrs {
+		t, err := abi.NewType(ts, "", nil)
+		if err != nil {
+			return nil, fmt.Errorf("invalid type %q: %s", ts, err)
+		}
+		args[i] = abi.Argument{Type: t}
+	}
+	return args, nil
+}
+
+func formatDecodedValues(values []any) ([]any, error) {
+	result := make([]any, len(values))
+	for i, v := range values {
+		rv := reflect.ValueOf(v)
+		if isTypedSlice(rv) {
+			arr, err := formatSliceValue(rv)
+			if err != nil {
+				return nil, fmt.Errorf("value[%d]: %s", i, err)
+			}
+			result[i] = arr
+		} else {
+			s, err := formatValue(v)
+			if err != nil {
+				return nil, fmt.Errorf("value[%d]: %s", i, err)
+			}
+			result[i] = s
+		}
+	}
+	return result, nil
+}
+
+func formatDecodedMap(values []any, names []string) (map[string]any, error) {
+	result := make(map[string]any, len(values))
+	for i, v := range values {
+		key := fmt.Sprintf("arg%d", i)
+		if i < len(names) && names[i] != "" {
+			key = names[i]
+		}
+		rv := reflect.ValueOf(v)
+		if isTypedSlice(rv) {
+			arr, err := formatSliceValue(rv)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", key, err)
+			}
+			result[key] = arr
+		} else {
+			s, err := formatValue(v)
+			if err != nil {
+				return nil, fmt.Errorf("%s: %s", key, err)
+			}
+			result[key] = s
+		}
+	}
+	return result, nil
 }
 
 func convertArg(t abi.Type, arg string) (any, error) {
@@ -461,4 +456,526 @@ func convertArg(t abi.Type, arg string) (any, error) {
 	default:
 		return nil, fmt.Errorf("unsupported type: %v", t)
 	}
+}
+
+func (c *abiCodec) DecodeAddress(data []byte) (common.Address, error) {
+	values, err := types.ABIArguments{{Type: types.ABIAddress}}.Unpack(data)
+	if err != nil {
+		return common.Address{}, err
+	}
+	return values[0].(common.Address), nil
+}
+
+func (c *abiCodec) DecodeBool(data []byte) (bool, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBool}}.Unpack(data)
+	if err != nil {
+		return false, err
+	}
+	return values[0].(bool), nil
+}
+
+func (c *abiCodec) DecodeString(data []byte) (string, error) {
+	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)
+	if err != nil {
+		return "", err
+	}
+	return values[0].(string), nil
+}
+
+func (c *abiCodec) DecodeBytes(data []byte) ([]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]byte), nil
+}
+
+func (c *abiCodec) DecodeUint8(data []byte) (uint8, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint8}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(uint8), nil
+}
+
+func (c *abiCodec) DecodeUint16(data []byte) (uint16, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint16}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(uint16), nil
+}
+
+func (c *abiCodec) DecodeUint32(data []byte) (uint32, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint32}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(uint32), nil
+}
+
+func (c *abiCodec) DecodeUint64(data []byte) (uint64, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint64}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(uint64), nil
+}
+
+func (c *abiCodec) DecodeUint128(data []byte) (*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint128}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].(*big.Int), nil
+}
+
+func (c *abiCodec) DecodeUint256(data []byte) (*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint256}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].(*big.Int), nil
+}
+
+func (c *abiCodec) DecodeInt8(data []byte) (int8, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt8}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(int8), nil
+}
+
+func (c *abiCodec) DecodeInt16(data []byte) (int16, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt16}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(int16), nil
+}
+
+func (c *abiCodec) DecodeInt32(data []byte) (int32, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt32}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(int32), nil
+}
+
+func (c *abiCodec) DecodeInt64(data []byte) (int64, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt64}}.Unpack(data)
+	if err != nil {
+		return 0, err
+	}
+	return values[0].(int64), nil
+}
+
+func (c *abiCodec) DecodeInt128(data []byte) (*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt128}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].(*big.Int), nil
+}
+
+func (c *abiCodec) DecodeInt256(data []byte) (*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt256}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].(*big.Int), nil
+}
+
+func (c *abiCodec) DecodeBytes1(data []byte) ([1]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes1}}.Unpack(data)
+	if err != nil {
+		return [1]byte{}, err
+	}
+	return values[0].([1]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes2(data []byte) ([2]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes2}}.Unpack(data)
+	if err != nil {
+		return [2]byte{}, err
+	}
+	return values[0].([2]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes3(data []byte) ([3]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes3}}.Unpack(data)
+	if err != nil {
+		return [3]byte{}, err
+	}
+	return values[0].([3]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes4(data []byte) ([4]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes4}}.Unpack(data)
+	if err != nil {
+		return [4]byte{}, err
+	}
+	return values[0].([4]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes5(data []byte) ([5]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes5}}.Unpack(data)
+	if err != nil {
+		return [5]byte{}, err
+	}
+	return values[0].([5]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes6(data []byte) ([6]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes6}}.Unpack(data)
+	if err != nil {
+		return [6]byte{}, err
+	}
+	return values[0].([6]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes7(data []byte) ([7]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes7}}.Unpack(data)
+	if err != nil {
+		return [7]byte{}, err
+	}
+	return values[0].([7]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes8(data []byte) ([8]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes8}}.Unpack(data)
+	if err != nil {
+		return [8]byte{}, err
+	}
+	return values[0].([8]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes9(data []byte) ([9]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes9}}.Unpack(data)
+	if err != nil {
+		return [9]byte{}, err
+	}
+	return values[0].([9]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes10(data []byte) ([10]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes10}}.Unpack(data)
+	if err != nil {
+		return [10]byte{}, err
+	}
+	return values[0].([10]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes11(data []byte) ([11]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes11}}.Unpack(data)
+	if err != nil {
+		return [11]byte{}, err
+	}
+	return values[0].([11]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes12(data []byte) ([12]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes12}}.Unpack(data)
+	if err != nil {
+		return [12]byte{}, err
+	}
+	return values[0].([12]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes13(data []byte) ([13]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes13}}.Unpack(data)
+	if err != nil {
+		return [13]byte{}, err
+	}
+	return values[0].([13]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes14(data []byte) ([14]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes14}}.Unpack(data)
+	if err != nil {
+		return [14]byte{}, err
+	}
+	return values[0].([14]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes15(data []byte) ([15]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes15}}.Unpack(data)
+	if err != nil {
+		return [15]byte{}, err
+	}
+	return values[0].([15]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes16(data []byte) ([16]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes16}}.Unpack(data)
+	if err != nil {
+		return [16]byte{}, err
+	}
+	return values[0].([16]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes17(data []byte) ([17]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes17}}.Unpack(data)
+	if err != nil {
+		return [17]byte{}, err
+	}
+	return values[0].([17]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes18(data []byte) ([18]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes18}}.Unpack(data)
+	if err != nil {
+		return [18]byte{}, err
+	}
+	return values[0].([18]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes19(data []byte) ([19]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes19}}.Unpack(data)
+	if err != nil {
+		return [19]byte{}, err
+	}
+	return values[0].([19]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes20(data []byte) ([20]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes20}}.Unpack(data)
+	if err != nil {
+		return [20]byte{}, err
+	}
+	return values[0].([20]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes21(data []byte) ([21]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes21}}.Unpack(data)
+	if err != nil {
+		return [21]byte{}, err
+	}
+	return values[0].([21]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes22(data []byte) ([22]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes22}}.Unpack(data)
+	if err != nil {
+		return [22]byte{}, err
+	}
+	return values[0].([22]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes23(data []byte) ([23]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes23}}.Unpack(data)
+	if err != nil {
+		return [23]byte{}, err
+	}
+	return values[0].([23]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes24(data []byte) ([24]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes24}}.Unpack(data)
+	if err != nil {
+		return [24]byte{}, err
+	}
+	return values[0].([24]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes25(data []byte) ([25]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes25}}.Unpack(data)
+	if err != nil {
+		return [25]byte{}, err
+	}
+	return values[0].([25]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes26(data []byte) ([26]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes26}}.Unpack(data)
+	if err != nil {
+		return [26]byte{}, err
+	}
+	return values[0].([26]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes27(data []byte) ([27]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes27}}.Unpack(data)
+	if err != nil {
+		return [27]byte{}, err
+	}
+	return values[0].([27]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes28(data []byte) ([28]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes28}}.Unpack(data)
+	if err != nil {
+		return [28]byte{}, err
+	}
+	return values[0].([28]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes29(data []byte) ([29]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes29}}.Unpack(data)
+	if err != nil {
+		return [29]byte{}, err
+	}
+	return values[0].([29]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes30(data []byte) ([30]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes30}}.Unpack(data)
+	if err != nil {
+		return [30]byte{}, err
+	}
+	return values[0].([30]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes31(data []byte) ([31]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes31}}.Unpack(data)
+	if err != nil {
+		return [31]byte{}, err
+	}
+	return values[0].([31]byte), nil
+}
+
+func (c *abiCodec) DecodeBytes32(data []byte) ([32]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes32}}.Unpack(data)
+	if err != nil {
+		return [32]byte{}, err
+	}
+	return values[0].([32]byte), nil
+}
+
+// -- Slice decoders --
+
+func (c *abiCodec) DecodeAddressSlice(data []byte) ([]common.Address, error) {
+	values, err := types.ABIArguments{{Type: types.ABIAddressSlice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]common.Address), nil
+}
+
+func (c *abiCodec) DecodeBoolSlice(data []byte) ([]bool, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBoolSlice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]bool), nil
+}
+
+func (c *abiCodec) DecodeStringSlice(data []byte) ([]string, error) {
+	values, err := types.ABIArguments{{Type: types.ABIStringSlice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]string), nil
+}
+
+func (c *abiCodec) DecodeBytesSlice(data []byte) ([][]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytesSlice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([][]byte), nil
+}
+
+func (c *abiCodec) DecodeUint8Slice(data []byte) ([]uint8, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint8Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]uint8), nil
+}
+
+func (c *abiCodec) DecodeUint16Slice(data []byte) ([]uint16, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint16Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]uint16), nil
+}
+
+func (c *abiCodec) DecodeUint32Slice(data []byte) ([]uint32, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint32Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]uint32), nil
+}
+
+func (c *abiCodec) DecodeUint64Slice(data []byte) ([]uint64, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint64Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]uint64), nil
+}
+
+func (c *abiCodec) DecodeUint128Slice(data []byte) ([]*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint128Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]*big.Int), nil
+}
+
+func (c *abiCodec) DecodeUint256Slice(data []byte) ([]*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIUint256Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]*big.Int), nil
+}
+
+func (c *abiCodec) DecodeInt8Slice(data []byte) ([]int8, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt8Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]int8), nil
+}
+
+func (c *abiCodec) DecodeInt16Slice(data []byte) ([]int16, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt16Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]int16), nil
+}
+
+func (c *abiCodec) DecodeInt32Slice(data []byte) ([]int32, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt32Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]int32), nil
+}
+
+func (c *abiCodec) DecodeInt64Slice(data []byte) ([]int64, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt64Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]int64), nil
+}
+
+func (c *abiCodec) DecodeInt128Slice(data []byte) ([]*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt128Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]*big.Int), nil
+}
+
+func (c *abiCodec) DecodeInt256Slice(data []byte) ([]*big.Int, error) {
+	values, err := types.ABIArguments{{Type: types.ABIInt256Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([]*big.Int), nil
+}
+
+func (c *abiCodec) DecodeBytes32Slice(data []byte) ([][32]byte, error) {
+	values, err := types.ABIArguments{{Type: types.ABIBytes32Slice}}.Unpack(data)
+	if err != nil {
+		return nil, err
+	}
+	return values[0].([][32]byte), nil
 }

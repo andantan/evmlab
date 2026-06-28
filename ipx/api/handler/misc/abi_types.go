@@ -79,10 +79,10 @@ func (r *DecodeResultRequest) ValidateRequest() error {
 func (r *DecodeResultRequest) ToData() []byte { return r.d }
 
 type DecodeResultResponse struct {
-	Values []string `json:"values"`
+	Values []any `json:"values"`
 }
 
-func NewDecodeResultResponse(v []string) *DecodeResultResponse {
+func NewDecodeResultResponse(v []any) *DecodeResultResponse {
 	return &DecodeResultResponse{
 		Values: v,
 	}
@@ -114,11 +114,11 @@ func (r *DecodeCallRequest) ValidateRequest() error {
 func (r *DecodeCallRequest) ToData() []byte { return r.d }
 
 type DecodeCallResponse struct {
-	Selector string            `json:"selector"`
-	Values   map[string]string `json:"values"`
+	Selector string         `json:"selector"`
+	Values   map[string]any `json:"values"`
 }
 
-func NewDecodeCallResponse(b []byte, v map[string]string) *DecodeCallResponse {
+func NewDecodeCallResponse(b []byte, v map[string]any) *DecodeCallResponse {
 	return &DecodeCallResponse{
 		Selector: "0x" + hex.EncodeToString(b[:4]),
 		Values:   v,
@@ -151,11 +151,11 @@ func (r *DecodeRevertRequest) ValidateRequest() error {
 func (r *DecodeRevertRequest) ToData() []byte { return r.d }
 
 type DecodeRevertResponse struct {
-	Error  string            `json:"error"`
-	Values map[string]string `json:"values"`
+	Error  string         `json:"error"`
+	Values map[string]any `json:"values"`
 }
 
-func NewDecodeRevertResponse(name string, v map[string]string) *DecodeRevertResponse {
+func NewDecodeRevertResponse(name string, v map[string]any) *DecodeRevertResponse {
 	return &DecodeRevertResponse{
 		Error:  name,
 		Values: v,

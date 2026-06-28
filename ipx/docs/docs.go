@@ -4913,9 +4913,7 @@ const docTemplate = `{
                 },
                 "values": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": {}
                 }
             }
         },
@@ -4942,9 +4940,7 @@ const docTemplate = `{
             "properties": {
                 "values": {
                     "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "items": {}
                 }
             }
         },
@@ -4969,9 +4965,7 @@ const docTemplate = `{
                 },
                 "values": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": {}
                 }
             }
         },

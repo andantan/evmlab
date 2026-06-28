@@ -81,6 +81,7 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 | POST   | `/evm/abi/encode`               | ABI-encode calldata from signature + args        |
 | POST   | `/evm/abi/decode/result`        | Decode eth_call return data by ABI types         |
 | POST   | `/evm/abi/decode/call`          | Decode calldata by function signature            |
+| POST   | `/evm/abi/decode/revert`        | Decode revert data by error signature            |
 | POST   | `/evm/abi/encode/eip712-domain` | `EIP712Domain` calldata                          |
 
 ### Contract — `/evm/contract`

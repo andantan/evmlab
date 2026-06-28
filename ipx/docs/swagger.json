@@ -4907,9 +4907,7 @@
                 },
                 "values": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": {}
                 }
             }
         },
@@ -4936,9 +4934,7 @@
             "properties": {
                 "values": {
                     "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "items": {}
                 }
             }
         },
@@ -4963,9 +4959,7 @@
                 },
                 "values": {
                     "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "additionalProperties": {}
                 }
             }
         },

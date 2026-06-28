@@ -51,18 +51,18 @@ func (h *SanctumHandler) decodeAccountInfo(b []byte) (*AccountInfo, error) {
 		return nil, err
 	}
 
-	addr, err := types.NewAddressFromHex(values[0])
+	addr, err := types.NewAddressFromHex(values[0].(string))
 	if err != nil {
 		return nil, fmt.Errorf("parse addr: %s", err)
 	}
 
-	roleVal, err := strconv.ParseUint(values[1], 10, 8)
+	roleVal, err := strconv.ParseUint(values[1].(string), 10, 8)
 	if err != nil {
 		return nil, fmt.Errorf("parse role: %s", err)
 	}
 
 	block := new(big.Int)
-	if _, ok := block.SetString(values[2], 10); !ok {
+	if _, ok := block.SetString(values[2].(string), 10); !ok {
 		return nil, fmt.Errorf("parse block: invalid uint256")
 	}
 

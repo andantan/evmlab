@@ -278,8 +278,7 @@ definitions:
       selector:
         type: string
       values:
-        additionalProperties:
-          type: string
+        additionalProperties: {}
         type: object
     type: object
   misc.DecodeResultRequest:
@@ -297,8 +296,7 @@ definitions:
   misc.DecodeResultResponse:
     properties:
       values:
-        items:
-          type: string
+        items: {}
         type: array
     type: object
   misc.DecodeRevertRequest:
@@ -315,8 +313,7 @@ definitions:
       error:
         type: string
       values:
-        additionalProperties:
-          type: string
+        additionalProperties: {}
         type: object
     type: object
   misc.DeriveKeyRequest:
