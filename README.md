@@ -55,23 +55,24 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 
 ### RPC — `/evm/rpc`
 
-| Method | Path                           | Description                      |
-|--------|--------------------------------|----------------------------------|
-| POST   | `/evm/rpc/`                    | Raw JSON-RPC proxy               |
-| POST   | `/evm/rpc/chain-id`            | eth_chainId                      |
-| POST   | `/evm/rpc/block-number`        | eth_blockNumber                  |
-| POST   | `/evm/rpc/nonce`               | eth_getTransactionCount          |
-| POST   | `/evm/rpc/balance`             | eth_getBalance                   |
-| POST   | `/evm/rpc/code`                | eth_getCode                      |
-| POST   | `/evm/rpc/transaction`         | eth_getTransactionByHash         |
-| POST   | `/evm/rpc/transaction/receipt` | eth_getTransactionReceipt        |
-| POST   | `/evm/rpc/transaction/send`    | eth_sendRawTransaction           |
-| POST   | `/evm/rpc/fee/base`            | baseFeePerGas from latest block  |
-| POST   | `/evm/rpc/fee/priority`        | eth_maxPriorityFeePerGas         |
-| POST   | `/evm/rpc/fee/max`             | maxFeePerGas (2×base + tip)      |
-| POST   | `/evm/rpc/gas/price`           | eth_gasPrice                     |
-| POST   | `/evm/rpc/gas/estimate`        | eth_estimateGas                  |
-| POST   | `/evm/rpc/call`                | eth_call                         |
+| Method | Path                           | Description                     |
+|--------|--------------------------------|---------------------------------|
+| POST   | `/evm/rpc/`                    | Raw JSON-RPC proxy              |
+| POST   | `/evm/rpc/chain-id`            | eth_chainId                     |
+| POST   | `/evm/rpc/block-number`        | eth_blockNumber                 |
+| POST   | `/evm/rpc/nonce`               | eth_getTransactionCount         |
+| POST   | `/evm/rpc/balance`             | eth_getBalance                  |
+| POST   | `/evm/rpc/code`                | eth_getCode                     |
+| POST   | `/evm/rpc/transaction`         | eth_getTransactionByHash        |
+| POST   | `/evm/rpc/transaction/receipt` | eth_getTransactionReceipt       |
+| POST   | `/evm/rpc/transaction/send`    | eth_sendRawTransaction          |
+| POST   | `/evm/rpc/transaction/status`  | Transaction status              |
+| POST   | `/evm/rpc/fee/base`            | baseFeePerGas from latest block |
+| POST   | `/evm/rpc/fee/priority`        | eth_maxPriorityFeePerGas        |
+| POST   | `/evm/rpc/fee/max`             | maxFeePerGas (2×base + tip)     |
+| POST   | `/evm/rpc/gas/price`           | eth_gasPrice                    |
+| POST   | `/evm/rpc/gas/estimate`        | eth_estimateGas                 |
+| POST   | `/evm/rpc/call`                | eth_call                        |
 
 ### ABI — `/evm/abi`
 

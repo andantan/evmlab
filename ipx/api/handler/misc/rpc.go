@@ -340,6 +340,10 @@ func (h *RPCHandler) Transaction(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get transaction: %s", err))
 		return
 	}
+	if result == nil {
+		handler.WriteError(w, http.StatusNotFound, "transaction not found")
+		return
+	}
 
 	handler.WriteJSON(w, http.StatusOK, result)
 }
@@ -369,6 +373,10 @@ func (h *RPCHandler) TransactionReceipt(w http.ResponseWriter, r *http.Request) 
 	result, err := h.client.TransactionReceipt(r.Context(), req.TxHash)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to get receipt: %s", err))
+		return
+	}
+	if result == nil {
+		handler.WriteError(w, http.StatusNotFound, "transaction not found")
 		return
 	}
 
@@ -441,6 +449,55 @@ func (h *RPCHandler) Call(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, map[string]string{"result": result})
+}
+
+// Status godoc
+// @Summary      Get transaction status
+// @Description  Returns pending, success, or fail for the given tx hash
+// @Tags         rpc
+// @Accept       json
+// @Produce      json
+// @Param        body  body      TransactionStatusRequest   true  "Transaction hash"
+// @Success      200   {object}  TransactionStatusResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      502   {object}  map[string]string
+// @Router       /evm/transaction/status [post]
+func (h *RPCHandler) TransactionStatus(w http.ResponseWriter, r *http.Request) {
+	var req TransactionStatusRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	tx, err := h.client.GetTransactionByHash(r.Context(), req.TxHash)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get transaction: %s", err))
+		return
+	}
+	if tx == nil {
+		handler.WriteJSON(w, http.StatusOK, NewTransactionStatusResponse(req.TxHash, "not_found"))
+		return
+	}
+	if tx["blockHash"] == nil {
+		handler.WriteJSON(w, http.StatusOK, NewTransactionStatusResponse(req.TxHash, "pending"))
+		return
+	}
+
+	receipt, err := h.client.TransactionReceipt(r.Context(), req.TxHash)
+	if err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to get receipt: %s", err))
+		return
+	}
+
+	if receipt != nil && receipt["status"] == "0x1" {
+		handler.WriteJSON(w, http.StatusOK, NewTransactionStatusResponse(req.TxHash, "success"))
+	} else {
+		handler.WriteJSON(w, http.StatusOK, NewTransactionStatusResponse(req.TxHash, "fail"))
+	}
 }
 
 // SendTransaction godoc

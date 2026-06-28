@@ -607,6 +607,19 @@ definitions:
         example: 0xabc123...
         type: string
     type: object
+  misc.TransactionStatusRequest:
+    properties:
+      tx_hash:
+        example: 0xabc123...
+        type: string
+    type: object
+  misc.TransactionStatusResponse:
+    properties:
+      status:
+        type: string
+      tx_hash:
+        type: string
+    type: object
   misc.UnitConvertRequest:
     properties:
       amount:
@@ -4193,6 +4206,40 @@ paths:
       summary: Convert amount between wei, gwei, and ether
       tags:
       - tool
+  /evm/transaction/status:
+    post:
+      consumes:
+      - application/json
+      description: Returns pending, success, or fail for the given tx hash
+      parameters:
+      - description: Transaction hash
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.TransactionStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.TransactionStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get transaction status
+      tags:
+      - rpc
   /evm/v1/transaction/eip1559/build:
     post:
       consumes:

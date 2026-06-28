@@ -3475,6 +3475,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/transaction/status": {
+            "post": {
+                "description": "Returns pending, success, or fail for the given tx hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get transaction status",
+                "parameters": [
+                    {
+                        "description": "Transaction hash",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.TransactionStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.TransactionStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/v1/transaction/eip1559/build": {
             "post": {
                 "description": "Constructs an unsigned EIP-1559 transaction for native ETH transfer and returns the encoded signing payload and signing hash",
@@ -5407,6 +5459,26 @@ const docTemplate = `{
                 "tx_hash": {
                     "type": "string",
                     "example": "0xabc123..."
+                }
+            }
+        },
+        "misc.TransactionStatusRequest": {
+            "type": "object",
+            "properties": {
+                "tx_hash": {
+                    "type": "string",
+                    "example": "0xabc123..."
+                }
+            }
+        },
+        "misc.TransactionStatusResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                },
+                "tx_hash": {
+                    "type": "string"
                 }
             }
         },

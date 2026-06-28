@@ -380,3 +380,28 @@ func NewSendTransactionResponse(s string) *SendTransactionResponse {
 		TxHash: s,
 	}
 }
+
+type TransactionStatusRequest struct {
+	TxHash string `json:"tx_hash" example:"0xabc123..."`
+}
+
+func (r *TransactionStatusRequest) ValidateRequest() error {
+	r.TxHash = strings.TrimSpace(r.TxHash)
+	if r.TxHash == "" {
+		return errors.New("tx_hash is required")
+	}
+	bare := strings.TrimPrefix(r.TxHash, "0x")
+	if len(bare) != types.HashHexLength {
+		return fmt.Errorf("tx_hash: must be %d hex chars (got %d)", types.HashHexLength, len(bare))
+	}
+	return nil
+}
+
+type TransactionStatusResponse struct {
+	TxHash string `json:"tx_hash"`
+	Status string `json:"status"`
+}
+
+func NewTransactionStatusResponse(txHash, status string) TransactionStatusResponse {
+	return TransactionStatusResponse{TxHash: txHash, Status: status}
+}
