@@ -44,7 +44,7 @@ func (h *RPCHandler) Raw(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var result any
-	if err := h.client.Call(r.Context(), req.Method, req.Params, &result); err != nil {
+	if err := h.client.Call(r.Context(), rpc.Elem{Method: req.Method, Params: req.Params, Result: &result}); err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

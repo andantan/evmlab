@@ -130,7 +130,7 @@ func (h *SanctumHandler) RegisterLegacy(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // RegisterEIP1559 godoc
@@ -263,7 +263,7 @@ func (h *SanctumHandler) RegisterEIP1559(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // RegisterForLegacy godoc
@@ -383,7 +383,7 @@ func (h *SanctumHandler) RegisterForLegacy(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterForLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterForLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // RegisterForEIP1559 godoc
@@ -516,7 +516,7 @@ func (h *SanctumHandler) RegisterForEIP1559(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterForEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRegisterForEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveRegisterLegacy godoc
@@ -636,7 +636,7 @@ func (h *SanctumHandler) ApproveRegisterLegacy(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveRegisterLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveRegisterLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveRegisterEIP1559 godoc
@@ -769,7 +769,7 @@ func (h *SanctumHandler) ApproveRegisterEIP1559(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveRegisterEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveRegisterEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // DeregisterLegacy godoc
@@ -885,7 +885,7 @@ func (h *SanctumHandler) DeregisterLegacy(w http.ResponseWriter, r *http.Request
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // DeregisterEIP1559 godoc
@@ -1014,7 +1014,7 @@ func (h *SanctumHandler) DeregisterEIP1559(w http.ResponseWriter, r *http.Reques
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // DeregisterForLegacy godoc
@@ -1130,7 +1130,7 @@ func (h *SanctumHandler) DeregisterForLegacy(w http.ResponseWriter, r *http.Requ
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterForLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterForLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // DeregisterForEIP1559 godoc
@@ -1259,7 +1259,7 @@ func (h *SanctumHandler) DeregisterForEIP1559(w http.ResponseWriter, r *http.Req
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterForEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDeregisterForEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // GetAccounts godoc

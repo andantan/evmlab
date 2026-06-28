@@ -54,13 +54,78 @@ func NewClient(url string) *Client {
 	}
 }
 
-func (c *Client) Call(ctx context.Context, method string, params any, result any) error {
+func (c *Client) Batch(ctx context.Context, elems *Elems) error {
+	n := elems.Len()
+	reqs := make([]Request, n)
+	ids := make([]uint64, n)
+	for i := range n {
+		id := atomic.AddUint64(&c.nextID, 1)
+		ids[i] = id
+		reqs[i] = Request{JSONRPC: "2.0", ID: id, Method: elems.GetMethod(i), Params: elems.GetParams(i)}
+	}
+
+	bodyBytes, err := json.Marshal(reqs)
+	if err != nil {
+		return fmt.Errorf("marshal batch request: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url, bytes.NewReader(bodyBytes))
+	if err != nil {
+		return fmt.Errorf("create http request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpResp, err := c.httpClient.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("send batch request: %w", err)
+	}
+	defer httpResp.Body.Close()
+
+	respBytes, err := io.ReadAll(httpResp.Body)
+	if err != nil {
+		return fmt.Errorf("read batch response: %w", err)
+	}
+
+	if httpResp.StatusCode < 200 || httpResp.StatusCode >= 300 {
+		return fmt.Errorf("http status %d: %s", httpResp.StatusCode, string(respBytes))
+	}
+
+	var responses []Response[json.RawMessage]
+	if err = json.Unmarshal(respBytes, &responses); err != nil {
+		return fmt.Errorf("decode batch response: %w: %s", err, string(respBytes))
+	}
+
+	byID := make(map[uint64]Response[json.RawMessage], len(responses))
+	for _, resp := range responses {
+		byID[resp.ID] = resp
+	}
+
+	for i, id := range ids {
+		resp, ok := byID[id]
+		if !ok {
+			return fmt.Errorf("missing response for %s", elems.GetMethod(i))
+		}
+		if resp.Error != nil {
+			return fmt.Errorf("%s: %w", elems.GetMethod(i), resp.Error)
+		}
+		if elems.GetResult(i) == nil {
+			continue
+		}
+		if err = json.Unmarshal(resp.Result, elems.GetResult(i)); err != nil {
+			return fmt.Errorf("decode result for %s: %w: %s", elems.GetMethod(i), err, string(resp.Result))
+		}
+	}
+
+	return nil
+}
+
+func (c *Client) Call(ctx context.Context, e Elem) error {
 	id := atomic.AddUint64(&c.nextID, 1)
 	reqBody := Request{
 		JSONRPC: "2.0",
 		ID:      id,
-		Method:  method,
-		Params:  params,
+		Method:  e.Method,
+		Params:  e.Params,
 	}
 
 	bodyBytes, err := json.Marshal(reqBody)
@@ -98,12 +163,12 @@ func (c *Client) Call(ctx context.Context, method string, params any, result any
 		return rpcResp.Error
 	}
 
-	if result == nil {
+	if e.Result == nil {
 		return nil
 	}
 
-	if err = json.Unmarshal(rpcResp.Result, result); err != nil {
-		return fmt.Errorf("decode rpc result for %s: %w: %s", method, err, string(rpcResp.Result))
+	if err = json.Unmarshal(rpcResp.Result, e.Result); err != nil {
+		return fmt.Errorf("decode rpc result for %s: %w: %s", e.Method, err, string(rpcResp.Result))
 	}
 
 	return nil

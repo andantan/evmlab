@@ -87,7 +87,7 @@ func (h *TransactionHandler) BuildNativeLegacyTransaction(w http.ResponseWriter,
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildNativeLegacyTransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildNativeLegacyTransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // BuildNativeEIP1559Transaction godoc
@@ -155,7 +155,7 @@ func (h *TransactionHandler) BuildNativeEIP1559Transaction(w http.ResponseWriter
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildNativeEIP1559TransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildNativeEIP1559TransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // BuildERC20LegacyTransaction godoc
@@ -224,7 +224,7 @@ func (h *TransactionHandler) BuildERC20LegacyTransaction(w http.ResponseWriter, 
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildERC20LegacyTransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildERC20LegacyTransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // BuildERC20EIP1559Transaction godoc
@@ -293,7 +293,7 @@ func (h *TransactionHandler) BuildERC20EIP1559Transaction(w http.ResponseWriter,
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildERC20EIP1559TransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildERC20EIP1559TransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // BuildContractCallLegacyTransaction godoc
@@ -361,7 +361,7 @@ func (h *TransactionHandler) BuildContractCallLegacyTransaction(w http.ResponseW
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallLegacyTransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallLegacyTransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // BuildContractCallEIP1559Transaction godoc
@@ -429,5 +429,5 @@ func (h *TransactionHandler) BuildContractCallEIP1559Transaction(w http.Response
 		return
 	}
 
-	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallEIP1559TransactionResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewBuildContractCallEIP1559TransactionResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }

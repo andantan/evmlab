@@ -8,31 +8,31 @@ import (
 
 func (c *Client) ChainID(ctx context.Context) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_chainId", []any{}, &result)
+	err := c.Call(ctx, ETHChainID(&result))
 	return result, err
 }
 
 func (c *Client) GasPrice(ctx context.Context) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_gasPrice", []any{}, &result)
+	err := c.Call(ctx, ETHGasPrice(&result))
 	return result, err
 }
 
 func (c *Client) BlockNumber(ctx context.Context) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_blockNumber", []any{}, &result)
+	err := c.Call(ctx, ETHBlockNumber(&result))
 	return result, err
 }
 
 func (c *Client) GetBalance(ctx context.Context, address string, block string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_getBalance", []any{address, block}, &result)
+	err := c.Call(ctx, ETHGetBalance(address, block, &result))
 	return result, err
 }
 
 func (c *Client) GetCode(ctx context.Context, address string, block string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_getCode", []any{address, block}, &result)
+	err := c.Call(ctx, ETHGetCode(address, block, &result))
 	return result, err
 }
 
@@ -47,43 +47,43 @@ func (c *Client) IsContract(ctx context.Context, address string, block string) (
 
 func (c *Client) CallContract(ctx context.Context, params any, block string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_call", []any{params, block}, &result)
+	err := c.Call(ctx, ETHCall(params, block, &result))
 	return result, err
 }
 
 func (c *Client) EstimateGas(ctx context.Context, params any, block string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_estimateGas", []any{params, block}, &result)
+	err := c.Call(ctx, ETHEstimateGas(params, block, &result))
 	return result, err
 }
 
 func (c *Client) GetTransactionCount(ctx context.Context, address string, block string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_getTransactionCount", []any{address, block}, &result)
+	err := c.Call(ctx, ETHGetTransactionCount(address, block, &result))
 	return result, err
 }
 
 func (c *Client) MaxPriorityFeePerGas(ctx context.Context) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_maxPriorityFeePerGas", []any{}, &result)
+	err := c.Call(ctx, ETHMaxPriorityFeePerGas(&result))
 	return result, err
 }
 
 func (c *Client) SendRawTransaction(ctx context.Context, rawTx string) (string, error) {
 	var result string
-	err := c.Call(ctx, "eth_sendRawTransaction", []any{rawTx}, &result)
+	err := c.Call(ctx, ETHSendRawTransaction(rawTx, &result))
 	return result, err
 }
 
 func (c *Client) BlockByNumber(ctx context.Context, block string) (map[string]any, error) {
 	var result map[string]any
-	err := c.Call(ctx, "eth_getBlockByNumber", []any{block, false}, &result)
+	err := c.Call(ctx, ETHGetBlockByNumber(block, false, &result))
 	return result, err
 }
 
 func (c *Client) BaseFeePerGas(ctx context.Context) (string, error) {
 	var result map[string]any
-	if err := c.Call(ctx, "eth_getBlockByNumber", []any{"latest", false}, &result); err != nil {
+	if err := c.Call(ctx, ETHGetBlockByNumber("latest", false, &result)); err != nil {
 		return "", err
 	}
 
@@ -97,13 +97,13 @@ func (c *Client) BaseFeePerGas(ctx context.Context) (string, error) {
 
 func (c *Client) GetTransactionByHash(ctx context.Context, txHash string) (map[string]any, error) {
 	var result map[string]any
-	err := c.Call(ctx, "eth_getTransactionByHash", []any{txHash}, &result)
+	err := c.Call(ctx, ETHGetTransactionByHash(txHash, &result))
 	return result, err
 }
 
 func (c *Client) TransactionReceipt(ctx context.Context, txHash string) (map[string]any, error) {
 	var result map[string]any
-	err := c.Call(ctx, "eth_getTransactionReceipt", []any{txHash}, &result)
+	err := c.Call(ctx, ETHGetTransactionReceipt(txHash, &result))
 	return result, err
 }
 

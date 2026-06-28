@@ -83,7 +83,6 @@ func (s *EIP1559TransactionState) ToTx() *types.DynamicFeeTx {
 }
 
 func GenerateLegacyTransactionState(ctx context.Context, client *rpc.Client, msg CallMsg) (*LegacyTransactionState, error) {
-	var err error
 	s := &LegacyTransactionState{
 		From:  msg.From,
 		To:    msg.To,
@@ -91,37 +90,30 @@ func GenerateLegacyTransactionState(ctx context.Context, client *rpc.Client, msg
 		Data:  msg.Data,
 	}
 
-	chainIDHex, err := client.ChainID(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("get chain id: %w", err)
+	var chainIDHex, nonceHex, gasPriceHex, gasEstHex string
+	if err := client.Batch(ctx, new(rpc.Elems).
+		With(rpc.ETHChainID(&chainIDHex)).
+		With(rpc.ETHGetTransactionCount(msg.From.String(), "pending", &nonceHex)).
+		With(rpc.ETHGasPrice(&gasPriceHex)).
+		With(rpc.ETHEstimateGas(msg.Map(), "latest", &gasEstHex)),
+	); err != nil {
+		return nil, err
 	}
+
+	var err error
 	s.ChainID, err = util.HexToBigInt(chainIDHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse chain id: %w", err)
-	}
-
-	nonceHex, err := client.GetTransactionCount(ctx, msg.From.String(), "pending")
-	if err != nil {
-		return nil, fmt.Errorf("get nonce: %w", err)
 	}
 	s.Nonce, err = util.HexToUint64(nonceHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse nonce: %w", err)
 	}
-
-	gasPriceHex, err := client.GasPrice(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("get gas price: %w", err)
-	}
 	s.GasPrice, err = util.HexToBigInt(gasPriceHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse gas price: %w", err)
 	}
-
-	gasEstHex, err := client.EstimateGas(ctx, msg.Map(), "latest")
-	if err != nil {
-		return nil, fmt.Errorf("estimate gas: %w", err)
-	}
+	s.GasPrice = new(big.Int).Div(new(big.Int).Mul(s.GasPrice, big.NewInt(11)), big.NewInt(10))
 	gasEst, err := util.HexToUint64(gasEstHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse gas estimate: %w", err)
@@ -132,7 +124,6 @@ func GenerateLegacyTransactionState(ctx context.Context, client *rpc.Client, msg
 }
 
 func GenerateEIP1559TransactionState(ctx context.Context, client *rpc.Client, msg CallMsg) (*EIP1559TransactionState, error) {
-	var err error
 	s := &EIP1559TransactionState{
 		From:  msg.From,
 		To:    msg.To,
@@ -140,36 +131,35 @@ func GenerateEIP1559TransactionState(ctx context.Context, client *rpc.Client, ms
 		Data:  msg.Data,
 	}
 
-	chainIDHex, err := client.ChainID(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("get chain id: %w", err)
+	var chainIDHex, nonceHex, tipCapHex, gasEstHex string
+	var block map[string]any
+	if err := client.Batch(ctx, new(rpc.Elems).
+		With(rpc.ETHChainID(&chainIDHex)).
+		With(rpc.ETHGetTransactionCount(msg.From.String(), "pending", &nonceHex)).
+		With(rpc.ETHMaxPriorityFeePerGas(&tipCapHex)).
+		With(rpc.ETHGetBlockByNumber("latest", false, &block)).
+		With(rpc.ETHEstimateGas(msg.Map(), "latest", &gasEstHex)),
+	); err != nil {
+		return nil, err
 	}
+
+	var err error
 	s.ChainID, err = util.HexToBigInt(chainIDHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse chain id: %w", err)
 	}
-
-	nonceHex, err := client.GetTransactionCount(ctx, msg.From.String(), "pending")
-	if err != nil {
-		return nil, fmt.Errorf("get nonce: %w", err)
-	}
 	s.Nonce, err = util.HexToUint64(nonceHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse nonce: %w", err)
-	}
-
-	tipCapHex, err := client.MaxPriorityFeePerGas(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("get tip cap: %w", err)
 	}
 	s.GasTipCap, err = util.HexToBigInt(tipCapHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse tip cap: %w", err)
 	}
 
-	baseFeeHex, err := client.BaseFeePerGas(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("get base fee: %w", err)
+	baseFeeHex, ok := block["baseFeePerGas"].(string)
+	if !ok || baseFeeHex == "" {
+		return nil, fmt.Errorf("baseFeePerGas not found in latest block")
 	}
 	baseFee, err := util.HexToBigInt(baseFeeHex)
 	if err != nil {
@@ -177,10 +167,6 @@ func GenerateEIP1559TransactionState(ctx context.Context, client *rpc.Client, ms
 	}
 	s.GasFeeCap = new(big.Int).Add(new(big.Int).Mul(baseFee, big.NewInt(2)), s.GasTipCap)
 
-	gasEstHex, err := client.EstimateGas(ctx, msg.Map(), "latest")
-	if err != nil {
-		return nil, fmt.Errorf("estimate gas: %w", err)
-	}
 	gasEst, err := util.HexToUint64(gasEstHex)
 	if err != nil {
 		return nil, fmt.Errorf("parse gas estimate: %w", err)

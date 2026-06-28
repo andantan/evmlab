@@ -127,7 +127,7 @@ func (h *SanctumHandler) DepositNativeLegacy(w http.ResponseWriter, r *http.Requ
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDepositNativeLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDepositNativeLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // DepositNativeEIP1559 godoc
@@ -257,7 +257,7 @@ func (h *SanctumHandler) DepositNativeEIP1559(w http.ResponseWriter, r *http.Req
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumDepositNativeEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumDepositNativeEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // RequestNativeLegacy godoc
@@ -373,7 +373,7 @@ func (h *SanctumHandler) RequestNativeLegacy(w http.ResponseWriter, r *http.Requ
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRequestNativeLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRequestNativeLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // RequestNativeEIP1559 godoc
@@ -502,7 +502,7 @@ func (h *SanctumHandler) RequestNativeEIP1559(w http.ResponseWriter, r *http.Req
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumRequestNativeEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumRequestNativeEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveNativeLegacy godoc
@@ -618,7 +618,7 @@ func (h *SanctumHandler) ApproveNativeLegacy(w http.ResponseWriter, r *http.Requ
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveNativeEIP1559 godoc
@@ -747,7 +747,7 @@ func (h *SanctumHandler) ApproveNativeEIP1559(w http.ResponseWriter, r *http.Req
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveNativeAllLegacy godoc
@@ -863,7 +863,7 @@ func (h *SanctumHandler) ApproveNativeAllLegacy(w http.ResponseWriter, r *http.R
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeAllLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeAllLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // ApproveNativeAllEIP1559 godoc
@@ -992,7 +992,7 @@ func (h *SanctumHandler) ApproveNativeAllEIP1559(w http.ResponseWriter, r *http.
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeAllEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumApproveNativeAllEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // WithdrawNativeLegacy godoc
@@ -1108,7 +1108,7 @@ func (h *SanctumHandler) WithdrawNativeLegacy(w http.ResponseWriter, r *http.Req
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // WithdrawNativeEIP1559 godoc
@@ -1237,7 +1237,7 @@ func (h *SanctumHandler) WithdrawNativeEIP1559(w http.ResponseWriter, r *http.Re
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // WithdrawNativeAllLegacy godoc
@@ -1353,7 +1353,7 @@ func (h *SanctumHandler) WithdrawNativeAllLegacy(w http.ResponseWriter, r *http.
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeAllLegacyResponse(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeAllLegacyResponse(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // WithdrawNativeAllEIP1559 godoc
@@ -1482,7 +1482,7 @@ func (h *SanctumHandler) WithdrawNativeAllEIP1559(w http.ResponseWriter, r *http
 		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("failed to send transaction: %s", err))
 		return
 	}
-	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeAllEIP1559Response(unsigned, signed, txHash, sig))
+	handler.WriteJSON(w, http.StatusOK, NewSanctumWithdrawNativeAllEIP1559Response(unsigned, signed, core.Hasher.Hash(signed), sig))
 }
 
 // NativeBalance godoc
