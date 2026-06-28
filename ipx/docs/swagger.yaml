@@ -153,6 +153,36 @@ definitions:
       total_supply:
         type: string
     type: object
+  contract.Multicall3Aggregate3Request:
+    properties:
+      calls:
+        items:
+          $ref: '#/definitions/contract.Multicall3Call'
+        type: array
+      target:
+        type: string
+    type: object
+  contract.Multicall3Aggregate3Response:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/contract.Multicall3Aggregate3Result'
+        type: array
+    type: object
+  contract.Multicall3Aggregate3Result:
+    properties:
+      return_data:
+        type: string
+      success:
+        type: boolean
+    type: object
+  contract.Multicall3Call:
+    properties:
+      data:
+        type: string
+      to:
+        type: string
+    type: object
   contract.TransferCalldataRequest:
     properties:
       amount:
@@ -2413,6 +2443,41 @@ paths:
               type: string
             type: object
       summary: Fetch ERC-20 token metadata
+      tags:
+      - contract
+  /evm/contract/multicall3/aggregate3:
+    post:
+      consumes:
+      - application/json
+      description: Batch multiple eth_call invocations via Multicall3 aggregate3.
+        allow_failure is always true.
+      parameters:
+      - description: Multicall3 target and calls
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.Multicall3Aggregate3Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.Multicall3Aggregate3Response'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Multicall3 aggregate3
       tags:
       - contract
   /evm/hash/keccak256/eip191:

@@ -8,10 +8,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const Multicall3CanonicalAddress = "0xcA11bde05977b3631167028862bE2a173976CA11"
+
 type Config struct {
 	RPCURL     string `yaml:"rpc_url"`
 	ChainID    int64  `yaml:"chain_id"`
 	ServerAddr string `yaml:"server_addr"`
+	Multicall3 string `yaml:"multicall3"`
 	Keys       []Key  `yaml:"keys"`
 }
 

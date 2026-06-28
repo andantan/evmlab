@@ -13,19 +13,21 @@ func (s Selector) String() string {
 	return fmt.Sprintf("0x%x", s[:])
 }
 
+// Canonical selectors
 var (
-	BalanceOfSelector    = Selector{0x70, 0xa0, 0x82, 0x31} // balanceOf(address)
-	ApproveSelector      = Selector{0x09, 0x5e, 0xa7, 0xb3} // approve(address,uint256)
-	TransferSelector     = Selector{0xa9, 0x05, 0x9c, 0xbb} // transfer(address,uint256)
-	AllowanceSelector    = Selector{0xdd, 0x62, 0xed, 0x3e} // allowance(address,address)
-	TransferFromSelector = Selector{0x23, 0xb8, 0x72, 0xdd} // transferFrom(address,address,uint256)
-	EIP712DomainSelector = Selector{0x84, 0xb0, 0x19, 0x6e} // eip712Domain()
-	NoncesSelector       = Selector{0x7e, 0xce, 0xbe, 0x00} // nonces(address)
-	NameSelector         = Selector{0x06, 0xfd, 0xde, 0x03} // name()
-	VersionSelector      = Selector{0x54, 0xfd, 0x4d, 0x50} // version()
-	SymbolSelector       = Selector{0x95, 0xd8, 0x9b, 0x41} // symbol()
-	DecimalsSelector     = Selector{0x31, 0x3c, 0xe5, 0x67} // decimals()
-	TotalSupplySelector  = Selector{0x18, 0x16, 0x0d, 0xdd} // totalSupply()
+	BalanceOfSelector            = Selector{0x70, 0xa0, 0x82, 0x31} // balanceOf(address)
+	ApproveSelector              = Selector{0x09, 0x5e, 0xa7, 0xb3} // approve(address,uint256)
+	TransferSelector             = Selector{0xa9, 0x05, 0x9c, 0xbb} // transfer(address,uint256)
+	AllowanceSelector            = Selector{0xdd, 0x62, 0xed, 0x3e} // allowance(address,address)
+	TransferFromSelector         = Selector{0x23, 0xb8, 0x72, 0xdd} // transferFrom(address,address,uint256)
+	EIP712DomainSelector         = Selector{0x84, 0xb0, 0x19, 0x6e} // eip712Domain()
+	NoncesSelector               = Selector{0x7e, 0xce, 0xbe, 0x00} // nonces(address)
+	NameSelector                 = Selector{0x06, 0xfd, 0xde, 0x03} // name()
+	VersionSelector              = Selector{0x54, 0xfd, 0x4d, 0x50} // version()
+	SymbolSelector               = Selector{0x95, 0xd8, 0x9b, 0x41} // symbol()
+	DecimalsSelector             = Selector{0x31, 0x3c, 0xe5, 0x67} // decimals()
+	TotalSupplySelector          = Selector{0x18, 0x16, 0x0d, 0xdd} // totalSupply()
+	MultiCall3Aggregate3Selector = Selector{0x82, 0xad, 0x56, 0xcb} // aggregate3((address,bool,bytes)[])
 )
 
 // Sanctum selectors

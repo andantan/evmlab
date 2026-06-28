@@ -42,6 +42,61 @@ func TransferFromCalldata(from, to *types.Address, amount *big.Int) []byte {
 	return data
 }
 
+// Multicall3Aggregator3CallData builds calldata for aggregate3((address,bool,bytes)[]).
+func Multicall3Aggregator3CallData(calls []types.Aggregate3) []byte {
+	n := len(calls)
+
+	elemSizes := make([]int, n)
+	totalElemBytes := 0
+	for i, c := range calls {
+		elemSizes[i] = 96 + 32 + (len(c.CallData)+31)&^31
+		totalElemBytes += elemSizes[i]
+	}
+
+	b := make([]byte, 4+32+32+n*32+totalElemBytes)
+
+	copy(b[0:4], types.MultiCall3Aggregate3Selector.Bytes())
+
+	b[35] = 0x20 // offset to array = 32
+
+	v := uint64(n)
+	b[60], b[61], b[62], b[63] = byte(v>>56), byte(v>>48), byte(v>>40), byte(v>>32)
+	b[64], b[65], b[66], b[67] = byte(v>>24), byte(v>>16), byte(v>>8), byte(v)
+
+	off := uint64(n * 32)
+	for i := range n {
+		base := 68 + i*32
+		o := off
+		b[base+24], b[base+25], b[base+26], b[base+27] = byte(o>>56), byte(o>>48), byte(o>>40), byte(o>>32)
+		b[base+28], b[base+29], b[base+30], b[base+31] = byte(o>>24), byte(o>>16), byte(o>>8), byte(o)
+		off += uint64(elemSizes[i])
+	}
+
+	pos := 68 + n*32
+	for _, c := range calls {
+		copy(b[pos+12:pos+32], c.Target.Bytes())
+		pos += 32
+
+		if c.AllowFail {
+			b[pos+31] = 1
+		}
+		pos += 32
+
+		b[pos+31] = 96 // offset to bytes within tuple
+		pos += 32
+
+		l := uint64(len(c.CallData))
+		b[pos+24], b[pos+25], b[pos+26], b[pos+27] = byte(l>>56), byte(l>>48), byte(l>>40), byte(l>>32)
+		b[pos+28], b[pos+29], b[pos+30], b[pos+31] = byte(l>>24), byte(l>>16), byte(l>>8), byte(l)
+		pos += 32
+
+		copy(b[pos:pos+len(c.CallData)], c.CallData)
+		pos += (len(c.CallData) + 31) &^ 31
+	}
+
+	return b
+}
+
 // EIP712DomainCalldata builds calldata for eip712Domain().
 func EIP712DomainCalldata() []byte {
 	data := make([]byte, 4)

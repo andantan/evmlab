@@ -109,6 +109,9 @@ func run() error {
 	})
 
 	r.Route("/evm/contract", func(r chi.Router) {
+		mc3 := contract.NewMulticall3Handler(client)
+		r.Post("/multicall3/aggregate3", mc3.Aggregate3)
+
 		eip := contract.NewEIPHandler(client)
 		r.Post("/eip712/domain", eip.EIP712Domain)
 		r.Post("/eip2612/nonces", eip.EIP2612Nonces)

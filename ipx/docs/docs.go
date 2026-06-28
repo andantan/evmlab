@@ -777,6 +777,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/contract/multicall3/aggregate3": {
+            "post": {
+                "description": "Batch multiple eth_call invocations via Multicall3 aggregate3. allow_failure is always true.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Multicall3 aggregate3",
+                "parameters": [
+                    {
+                        "description": "Multicall3 target and calls",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.Multicall3Aggregate3Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.Multicall3Aggregate3Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/hash/keccak256/eip191": {
             "post": {
                 "description": "Prepends the EIP-191 personal sign prefix (\"\\x19Ethereum Signed Message:\\n\" + length) to the message and returns the Keccak256 hash — matches the digest produced by eth_sign / personal_sign",
@@ -4826,6 +4878,53 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total_supply": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.Multicall3Aggregate3Request": {
+            "type": "object",
+            "properties": {
+                "calls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/contract.Multicall3Call"
+                    }
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.Multicall3Aggregate3Response": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/contract.Multicall3Aggregate3Result"
+                    }
+                }
+            }
+        },
+        "contract.Multicall3Aggregate3Result": {
+            "type": "object",
+            "properties": {
+                "return_data": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "contract.Multicall3Call": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "to": {
                     "type": "string"
                 }
             }
