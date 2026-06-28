@@ -219,6 +219,26 @@ definitions:
       wei:
         type: string
     type: object
+  misc.BatchRPCRequest:
+    properties:
+      calls:
+        items:
+          $ref: '#/definitions/misc.RawRPCRequest'
+        type: array
+    type: object
+  misc.BatchRPCResponse:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/misc.BatchRPCResultItem'
+        type: array
+    type: object
+  misc.BatchRPCResultItem:
+    properties:
+      method:
+        type: string
+      result: {}
+    type: object
   misc.BlockNumberResponse:
     properties:
       block_number:
@@ -2554,6 +2574,41 @@ paths:
       summary: Get balance for address
       tags:
       - rpc
+  /evm/rpc/batch:
+    post:
+      consumes:
+      - application/json
+      description: Executes multiple JSON-RPC calls in a single request and returns
+        results in order
+      parameters:
+      - description: List of JSON-RPC calls
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.BatchRPCRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.BatchRPCResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Batch JSON-RPC calls
+      tags:
+      - rpc
   /evm/rpc/block-number:
     post:
       description: Returns the latest block number in decimal and hex
@@ -2910,6 +2965,40 @@ paths:
               type: string
             type: object
       summary: Send signed raw transaction
+      tags:
+      - rpc
+  /evm/rpc/transaction/status:
+    post:
+      consumes:
+      - application/json
+      description: Returns pending, success, or fail for the given tx hash
+      parameters:
+      - description: Transaction hash
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/misc.TransactionStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/misc.TransactionStatusResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get transaction status
       tags:
       - rpc
   /evm/sanctum/nexus/account/count:
@@ -4206,40 +4295,6 @@ paths:
       summary: Convert amount between wei, gwei, and ether
       tags:
       - tool
-  /evm/transaction/status:
-    post:
-      consumes:
-      - application/json
-      description: Returns pending, success, or fail for the given tx hash
-      parameters:
-      - description: Transaction hash
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/misc.TransactionStatusRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/misc.TransactionStatusResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "502":
-          description: Bad Gateway
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get transaction status
-      tags:
-      - rpc
   /evm/v1/transaction/eip1559/build:
     post:
       consumes:

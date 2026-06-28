@@ -67,6 +67,7 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 | POST   | `/evm/rpc/transaction/receipt` | eth_getTransactionReceipt       |
 | POST   | `/evm/rpc/transaction/send`    | eth_sendRawTransaction          |
 | POST   | `/evm/rpc/transaction/status`  | Transaction status              |
+| POST   | `/evm/rpc/batch`               | Batch JSON-RPC proxy            |
 | POST   | `/evm/rpc/fee/base`            | baseFeePerGas from latest block |
 | POST   | `/evm/rpc/fee/priority`        | eth_maxPriorityFeePerGas        |
 | POST   | `/evm/rpc/fee/max`             | maxFeePerGas (2×base + tip)     |

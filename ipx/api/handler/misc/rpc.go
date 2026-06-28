@@ -461,7 +461,7 @@ func (h *RPCHandler) Call(w http.ResponseWriter, r *http.Request) {
 // @Success      200   {object}  TransactionStatusResponse
 // @Failure      400   {object}  map[string]string
 // @Failure      502   {object}  map[string]string
-// @Router       /evm/transaction/status [post]
+// @Router       /evm/rpc/transaction/status [post]
 func (h *RPCHandler) TransactionStatus(w http.ResponseWriter, r *http.Request) {
 	var req TransactionStatusRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -529,4 +529,40 @@ func (h *RPCHandler) SendTransaction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	handler.WriteJSON(w, http.StatusOK, NewSendTransactionResponse(txHash))
+}
+
+// Batch godoc
+// @Summary      Batch JSON-RPC calls
+// @Description  Executes multiple JSON-RPC calls in a single request and returns results in order
+// @Tags         rpc
+// @Accept       json
+// @Produce      json
+// @Param        body  body      BatchRPCRequest  true  "List of JSON-RPC calls"
+// @Success      200   {object}  BatchRPCResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      502   {object}  map[string]string
+// @Router       /evm/rpc/batch [post]
+func (h *RPCHandler) Batch(w http.ResponseWriter, r *http.Request) {
+	var req BatchRPCRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	results := make([]any, len(req.Calls))
+	elems := new(rpc.Elems)
+	for i, call := range req.Calls {
+		elems.With(rpc.Elem{Method: call.Method, Params: call.Params, Result: &results[i]})
+	}
+
+	if err := h.client.Batch(r.Context(), elems); err != nil {
+		handler.WriteError(w, http.StatusBadGateway, fmt.Sprintf("batch rpc failed: %s", err))
+		return
+	}
+
+	handler.WriteJSON(w, http.StatusOK, NewBatchRPCResponse(req.Calls, results))
 }

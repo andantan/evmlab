@@ -405,3 +405,37 @@ type TransactionStatusResponse struct {
 func NewTransactionStatusResponse(txHash, status string) TransactionStatusResponse {
 	return TransactionStatusResponse{TxHash: txHash, Status: status}
 }
+
+type BatchRPCRequest struct {
+	Calls []RawRPCRequest `json:"calls"`
+}
+
+func (r *BatchRPCRequest) ValidateRequest() error {
+	if len(r.Calls) == 0 {
+		return errors.New("calls is required")
+	}
+	for i := range r.Calls {
+		r.Calls[i].Method = strings.TrimSpace(r.Calls[i].Method)
+		if r.Calls[i].Method == "" {
+			return fmt.Errorf("calls[%d]: method is required", i)
+		}
+	}
+	return nil
+}
+
+type BatchRPCResultItem struct {
+	Method string `json:"method"`
+	Result any    `json:"result"`
+}
+
+type BatchRPCResponse struct {
+	Results []BatchRPCResultItem `json:"results"`
+}
+
+func NewBatchRPCResponse(calls []RawRPCRequest, results []any) BatchRPCResponse {
+	items := make([]BatchRPCResultItem, len(calls))
+	for i, call := range calls {
+		items[i] = BatchRPCResultItem{Method: call.Method, Result: results[i]}
+	}
+	return BatchRPCResponse{Results: items}
+}

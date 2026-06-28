@@ -1010,6 +1010,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/rpc/batch": {
+            "post": {
+                "description": "Executes multiple JSON-RPC calls in a single request and returns results in order",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Batch JSON-RPC calls",
+                "parameters": [
+                    {
+                        "description": "List of JSON-RPC calls",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.BatchRPCRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.BatchRPCResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/rpc/block-number": {
             "post": {
                 "description": "Returns the latest block number in decimal and hex",
@@ -1543,6 +1595,58 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/evm/rpc/transaction/status": {
+            "post": {
+                "description": "Returns pending, success, or fail for the given tx hash",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "rpc"
+                ],
+                "summary": "Get transaction status",
+                "parameters": [
+                    {
+                        "description": "Transaction hash",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/misc.TransactionStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/misc.TransactionStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -3475,58 +3579,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/evm/transaction/status": {
-            "post": {
-                "description": "Returns pending, success, or fail for the given tx hash",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "rpc"
-                ],
-                "summary": "Get transaction status",
-                "parameters": [
-                    {
-                        "description": "Transaction hash",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/misc.TransactionStatusRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/misc.TransactionStatusResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "502": {
-                        "description": "Bad Gateway",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/evm/v1/transaction/eip1559/build": {
             "post": {
                 "description": "Constructs an unsigned EIP-1559 transaction for native ETH transfer and returns the encoded signing payload and signing hash",
@@ -4875,6 +4927,37 @@ const docTemplate = `{
                 "wei": {
                     "type": "string"
                 }
+            }
+        },
+        "misc.BatchRPCRequest": {
+            "type": "object",
+            "properties": {
+                "calls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/misc.RawRPCRequest"
+                    }
+                }
+            }
+        },
+        "misc.BatchRPCResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/misc.BatchRPCResultItem"
+                    }
+                }
+            }
+        },
+        "misc.BatchRPCResultItem": {
+            "type": "object",
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "result": {}
             }
         },
         "misc.BlockNumberResponse": {

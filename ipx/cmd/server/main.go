@@ -65,6 +65,7 @@ func run() error {
 		r.Post("/transaction/receipt", rpcHandler.TransactionReceipt)
 		r.Post("/transaction/send", rpcHandler.SendTransaction)
 		r.Post("/transaction/status", rpcHandler.TransactionStatus)
+		r.Post("/batch", rpcHandler.Batch)
 		r.Post("/fee/base", rpcHandler.BaseFeePerGas)
 		r.Post("/fee/priority", rpcHandler.MaxPriorityFeePerGas)
 		r.Post("/fee/max", rpcHandler.MaxFeePerGas)
