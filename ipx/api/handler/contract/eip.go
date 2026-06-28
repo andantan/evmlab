@@ -75,7 +75,7 @@ func (h *EIPHandler) EIP712Domain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if name, err = core.ABI.DecodeString(data); err != nil {
+	if name, err = types.DecodeString(data); err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode response: %s", err))
 		return
 	}
@@ -94,7 +94,7 @@ func (h *EIPHandler) EIP712Domain(w http.ResponseWriter, r *http.Request) {
 	if data, err = util.ParseHex(raw); err != nil {
 		goto respond
 	}
-	if d.Version, err = core.ABI.DecodeString(data); err != nil {
+	if d.Version, err = types.DecodeString(data); err != nil {
 		goto respond
 	}
 
@@ -141,7 +141,7 @@ func (h *EIPHandler) EIP2612Nonces(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	nonce, err := core.ABI.DecodeUint256(data)
+	nonce, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode response: %s", err))
 		return

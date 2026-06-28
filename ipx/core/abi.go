@@ -96,8 +96,7 @@ func (c *abiCodec) EncodeArgs(typeStrs []string, args []string) ([]byte, error) 
 }
 
 // EncodeCall ABI-encodes a function call: 4-byte selector + packed arguments.
-// TODO: tuple, array, slice types are not yet supported.
-func (c *abiCodec) EncodeCall(fn *types.Function, args []string) ([]byte, error) {
+func (c *abiCodec) EncodeCall(fn *types.Function, args []any) ([]byte, error) {
 	if len(fn.Types) != len(args) {
 		return nil, fmt.Errorf("signature has %d param(s) but got %d arg(s)", len(fn.Types), len(args))
 	}
@@ -374,608 +373,175 @@ func formatDecodedMap(values []any, names []string) (map[string]any, error) {
 	return result, nil
 }
 
-func convertArg(t abi.Type, arg string) (any, error) {
-	arg = strings.TrimSpace(arg)
+func convertArg(t abi.Type, arg any) (any, error) {
+	switch t.T {
+	case abi.SliceTy:
+		items, ok := arg.([]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid slice: expected array")
+		}
+		slice := reflect.MakeSlice(reflect.SliceOf(t.Elem.GetType()), len(items), len(items))
+		for i, item := range items {
+			v, err := convertArg(*t.Elem, item)
+			if err != nil {
+				return nil, fmt.Errorf("[%d]: %s", i, err)
+			}
+			slice.Index(i).Set(reflect.ValueOf(v))
+		}
+		return slice.Interface(), nil
+
+	case abi.ArrayTy:
+		items, ok := arg.([]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid array: expected array")
+		}
+		if len(items) != t.Size {
+			return nil, fmt.Errorf("array[%d] expects %d elements, got %d", t.Size, t.Size, len(items))
+		}
+		array := reflect.New(reflect.ArrayOf(t.Size, t.Elem.GetType())).Elem()
+		for i, item := range items {
+			v, err := convertArg(*t.Elem, item)
+			if err != nil {
+				return nil, fmt.Errorf("[%d]: %s", i, err)
+			}
+			array.Index(i).Set(reflect.ValueOf(v))
+		}
+		return array.Interface(), nil
+
+	case abi.TupleTy:
+		items, ok := arg.([]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid tuple: expected array")
+		}
+		if len(items) != len(t.TupleElems) {
+			return nil, fmt.Errorf("tuple expects %d elements, got %d", len(t.TupleElems), len(items))
+		}
+		tuple := reflect.New(t.TupleType).Elem()
+		for i, elem := range t.TupleElems {
+			v, err := convertArg(*elem, items[i])
+			if err != nil {
+				return nil, fmt.Errorf("tuple[%d]: %s", i, err)
+			}
+			tuple.Field(i).Set(reflect.ValueOf(v))
+		}
+		return tuple.Interface(), nil
+
+	default:
+		s, ok := arg.(string)
+		if !ok {
+			return nil, fmt.Errorf("expected string value")
+		}
+		s = strings.TrimSpace(s)
+		return convertScalarArg(t, s)
+	}
+}
+
+func convertScalarArg(t abi.Type, arg string) (any, error) {
 	switch t.T {
 	case abi.AddressTy:
-		if !common.IsHexAddress(arg) {
-			return nil, fmt.Errorf("invalid address: %s", arg)
-		}
-		return common.HexToAddress(arg), nil
-
+		return types.EncodeAddress(arg)
 	case abi.UintTy:
-		n := new(big.Int)
-		if _, ok := n.SetString(arg, 0); !ok {
-			return nil, fmt.Errorf("invalid uint: %s", arg)
-		}
-
 		switch t.Size {
 		case 8:
-			return uint8(n.Uint64()), nil
+			return types.EncodeUint8(arg)
 		case 16:
-			return uint16(n.Uint64()), nil
+			return types.EncodeUint16(arg)
 		case 32:
-			return uint32(n.Uint64()), nil
+			return types.EncodeUint32(arg)
 		case 64:
-			return n.Uint64(), nil
+			return types.EncodeUint64(arg)
 		default:
-			return n, nil
+			return types.EncodeUint256(arg)
 		}
-
 	case abi.IntTy:
-		n := new(big.Int)
-		if _, ok := n.SetString(arg, 0); !ok {
-			return nil, fmt.Errorf("invalid int: %s", arg)
-		}
-
 		switch t.Size {
 		case 8:
-			return int8(n.Int64()), nil
+			return types.EncodeInt8(arg)
 		case 16:
-			return int16(n.Int64()), nil
+			return types.EncodeInt16(arg)
 		case 32:
-			return int32(n.Int64()), nil
+			return types.EncodeInt32(arg)
 		case 64:
-			return n.Int64(), nil
+			return types.EncodeInt64(arg)
 		default:
-			return n, nil
+			return types.EncodeInt256(arg)
 		}
-
 	case abi.BoolTy:
-		switch strings.ToLower(arg) {
-		case "true", "1":
-			return true, nil
-		case "false", "0":
-			return false, nil
-		default:
-			return nil, fmt.Errorf("invalid bool: %s", arg)
-		}
-
+		return types.EncodeBool(arg)
 	case abi.StringTy:
-		return arg, nil
-
+		return types.EncodeString(arg)
 	case abi.BytesTy:
-		b, err := hexutil.Decode(arg)
-		if err != nil {
-			return nil, fmt.Errorf("invalid bytes: %s", err)
-		}
-		return b, nil
-
+		return types.EncodeBytes(arg)
 	case abi.FixedBytesTy:
-		b, err := hexutil.Decode(arg)
-		if err != nil {
-			return nil, fmt.Errorf("invalid bytes%d: %s", t.Size, err)
+		switch t.Size {
+		case 1:
+			return types.EncodeBytes1(arg)
+		case 2:
+			return types.EncodeBytes2(arg)
+		case 3:
+			return types.EncodeBytes3(arg)
+		case 4:
+			return types.EncodeBytes4(arg)
+		case 5:
+			return types.EncodeBytes5(arg)
+		case 6:
+			return types.EncodeBytes6(arg)
+		case 7:
+			return types.EncodeBytes7(arg)
+		case 8:
+			return types.EncodeBytes8(arg)
+		case 9:
+			return types.EncodeBytes9(arg)
+		case 10:
+			return types.EncodeBytes10(arg)
+		case 11:
+			return types.EncodeBytes11(arg)
+		case 12:
+			return types.EncodeBytes12(arg)
+		case 13:
+			return types.EncodeBytes13(arg)
+		case 14:
+			return types.EncodeBytes14(arg)
+		case 15:
+			return types.EncodeBytes15(arg)
+		case 16:
+			return types.EncodeBytes16(arg)
+		case 17:
+			return types.EncodeBytes17(arg)
+		case 18:
+			return types.EncodeBytes18(arg)
+		case 19:
+			return types.EncodeBytes19(arg)
+		case 20:
+			return types.EncodeBytes20(arg)
+		case 21:
+			return types.EncodeBytes21(arg)
+		case 22:
+			return types.EncodeBytes22(arg)
+		case 23:
+			return types.EncodeBytes23(arg)
+		case 24:
+			return types.EncodeBytes24(arg)
+		case 25:
+			return types.EncodeBytes25(arg)
+		case 26:
+			return types.EncodeBytes26(arg)
+		case 27:
+			return types.EncodeBytes27(arg)
+		case 28:
+			return types.EncodeBytes28(arg)
+		case 29:
+			return types.EncodeBytes29(arg)
+		case 30:
+			return types.EncodeBytes30(arg)
+		case 31:
+			return types.EncodeBytes31(arg)
+		case 32:
+			return types.EncodeBytes32(arg)
+		default:
+			return nil, fmt.Errorf("unsupported bytesN size: %d", t.Size)
 		}
-		arrType := reflect.ArrayOf(t.Size, reflect.TypeOf(byte(0)))
-		arr := reflect.New(arrType).Elem()
-		for i := 0; i < len(b) && i < t.Size; i++ {
-			arr.Index(i).Set(reflect.ValueOf(b[i]))
-		}
-		return arr.Interface(), nil
-
 	default:
 		return nil, fmt.Errorf("unsupported type: %v", t)
 	}
-}
-
-func (c *abiCodec) DecodeAddress(data []byte) (common.Address, error) {
-	values, err := types.ABIArguments{{Type: types.ABIAddress}}.Unpack(data)
-	if err != nil {
-		return common.Address{}, err
-	}
-	return values[0].(common.Address), nil
-}
-
-func (c *abiCodec) DecodeBool(data []byte) (bool, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBool}}.Unpack(data)
-	if err != nil {
-		return false, err
-	}
-	return values[0].(bool), nil
-}
-
-func (c *abiCodec) DecodeString(data []byte) (string, error) {
-	values, err := types.ABIArguments{{Type: types.ABIString}}.Unpack(data)
-	if err != nil {
-		return "", err
-	}
-	return values[0].(string), nil
-}
-
-func (c *abiCodec) DecodeBytes(data []byte) ([]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]byte), nil
-}
-
-func (c *abiCodec) DecodeUint8(data []byte) (uint8, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint8}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(uint8), nil
-}
-
-func (c *abiCodec) DecodeUint16(data []byte) (uint16, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint16}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(uint16), nil
-}
-
-func (c *abiCodec) DecodeUint32(data []byte) (uint32, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint32}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(uint32), nil
-}
-
-func (c *abiCodec) DecodeUint64(data []byte) (uint64, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint64}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(uint64), nil
-}
-
-func (c *abiCodec) DecodeUint128(data []byte) (*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint128}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].(*big.Int), nil
-}
-
-func (c *abiCodec) DecodeUint256(data []byte) (*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint256}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].(*big.Int), nil
-}
-
-func (c *abiCodec) DecodeInt8(data []byte) (int8, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt8}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(int8), nil
-}
-
-func (c *abiCodec) DecodeInt16(data []byte) (int16, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt16}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(int16), nil
-}
-
-func (c *abiCodec) DecodeInt32(data []byte) (int32, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt32}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(int32), nil
-}
-
-func (c *abiCodec) DecodeInt64(data []byte) (int64, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt64}}.Unpack(data)
-	if err != nil {
-		return 0, err
-	}
-	return values[0].(int64), nil
-}
-
-func (c *abiCodec) DecodeInt128(data []byte) (*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt128}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].(*big.Int), nil
-}
-
-func (c *abiCodec) DecodeInt256(data []byte) (*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt256}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].(*big.Int), nil
-}
-
-func (c *abiCodec) DecodeBytes1(data []byte) ([1]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes1}}.Unpack(data)
-	if err != nil {
-		return [1]byte{}, err
-	}
-	return values[0].([1]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes2(data []byte) ([2]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes2}}.Unpack(data)
-	if err != nil {
-		return [2]byte{}, err
-	}
-	return values[0].([2]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes3(data []byte) ([3]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes3}}.Unpack(data)
-	if err != nil {
-		return [3]byte{}, err
-	}
-	return values[0].([3]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes4(data []byte) ([4]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes4}}.Unpack(data)
-	if err != nil {
-		return [4]byte{}, err
-	}
-	return values[0].([4]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes5(data []byte) ([5]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes5}}.Unpack(data)
-	if err != nil {
-		return [5]byte{}, err
-	}
-	return values[0].([5]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes6(data []byte) ([6]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes6}}.Unpack(data)
-	if err != nil {
-		return [6]byte{}, err
-	}
-	return values[0].([6]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes7(data []byte) ([7]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes7}}.Unpack(data)
-	if err != nil {
-		return [7]byte{}, err
-	}
-	return values[0].([7]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes8(data []byte) ([8]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes8}}.Unpack(data)
-	if err != nil {
-		return [8]byte{}, err
-	}
-	return values[0].([8]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes9(data []byte) ([9]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes9}}.Unpack(data)
-	if err != nil {
-		return [9]byte{}, err
-	}
-	return values[0].([9]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes10(data []byte) ([10]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes10}}.Unpack(data)
-	if err != nil {
-		return [10]byte{}, err
-	}
-	return values[0].([10]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes11(data []byte) ([11]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes11}}.Unpack(data)
-	if err != nil {
-		return [11]byte{}, err
-	}
-	return values[0].([11]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes12(data []byte) ([12]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes12}}.Unpack(data)
-	if err != nil {
-		return [12]byte{}, err
-	}
-	return values[0].([12]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes13(data []byte) ([13]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes13}}.Unpack(data)
-	if err != nil {
-		return [13]byte{}, err
-	}
-	return values[0].([13]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes14(data []byte) ([14]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes14}}.Unpack(data)
-	if err != nil {
-		return [14]byte{}, err
-	}
-	return values[0].([14]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes15(data []byte) ([15]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes15}}.Unpack(data)
-	if err != nil {
-		return [15]byte{}, err
-	}
-	return values[0].([15]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes16(data []byte) ([16]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes16}}.Unpack(data)
-	if err != nil {
-		return [16]byte{}, err
-	}
-	return values[0].([16]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes17(data []byte) ([17]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes17}}.Unpack(data)
-	if err != nil {
-		return [17]byte{}, err
-	}
-	return values[0].([17]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes18(data []byte) ([18]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes18}}.Unpack(data)
-	if err != nil {
-		return [18]byte{}, err
-	}
-	return values[0].([18]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes19(data []byte) ([19]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes19}}.Unpack(data)
-	if err != nil {
-		return [19]byte{}, err
-	}
-	return values[0].([19]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes20(data []byte) ([20]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes20}}.Unpack(data)
-	if err != nil {
-		return [20]byte{}, err
-	}
-	return values[0].([20]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes21(data []byte) ([21]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes21}}.Unpack(data)
-	if err != nil {
-		return [21]byte{}, err
-	}
-	return values[0].([21]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes22(data []byte) ([22]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes22}}.Unpack(data)
-	if err != nil {
-		return [22]byte{}, err
-	}
-	return values[0].([22]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes23(data []byte) ([23]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes23}}.Unpack(data)
-	if err != nil {
-		return [23]byte{}, err
-	}
-	return values[0].([23]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes24(data []byte) ([24]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes24}}.Unpack(data)
-	if err != nil {
-		return [24]byte{}, err
-	}
-	return values[0].([24]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes25(data []byte) ([25]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes25}}.Unpack(data)
-	if err != nil {
-		return [25]byte{}, err
-	}
-	return values[0].([25]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes26(data []byte) ([26]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes26}}.Unpack(data)
-	if err != nil {
-		return [26]byte{}, err
-	}
-	return values[0].([26]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes27(data []byte) ([27]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes27}}.Unpack(data)
-	if err != nil {
-		return [27]byte{}, err
-	}
-	return values[0].([27]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes28(data []byte) ([28]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes28}}.Unpack(data)
-	if err != nil {
-		return [28]byte{}, err
-	}
-	return values[0].([28]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes29(data []byte) ([29]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes29}}.Unpack(data)
-	if err != nil {
-		return [29]byte{}, err
-	}
-	return values[0].([29]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes30(data []byte) ([30]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes30}}.Unpack(data)
-	if err != nil {
-		return [30]byte{}, err
-	}
-	return values[0].([30]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes31(data []byte) ([31]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes31}}.Unpack(data)
-	if err != nil {
-		return [31]byte{}, err
-	}
-	return values[0].([31]byte), nil
-}
-
-func (c *abiCodec) DecodeBytes32(data []byte) ([32]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes32}}.Unpack(data)
-	if err != nil {
-		return [32]byte{}, err
-	}
-	return values[0].([32]byte), nil
-}
-
-// -- Slice decoders --
-
-func (c *abiCodec) DecodeAddressSlice(data []byte) ([]common.Address, error) {
-	values, err := types.ABIArguments{{Type: types.ABIAddressSlice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]common.Address), nil
-}
-
-func (c *abiCodec) DecodeBoolSlice(data []byte) ([]bool, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBoolSlice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]bool), nil
-}
-
-func (c *abiCodec) DecodeStringSlice(data []byte) ([]string, error) {
-	values, err := types.ABIArguments{{Type: types.ABIStringSlice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]string), nil
-}
-
-func (c *abiCodec) DecodeBytesSlice(data []byte) ([][]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytesSlice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([][]byte), nil
-}
-
-func (c *abiCodec) DecodeUint8Slice(data []byte) ([]uint8, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint8Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]uint8), nil
-}
-
-func (c *abiCodec) DecodeUint16Slice(data []byte) ([]uint16, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint16Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]uint16), nil
-}
-
-func (c *abiCodec) DecodeUint32Slice(data []byte) ([]uint32, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint32Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]uint32), nil
-}
-
-func (c *abiCodec) DecodeUint64Slice(data []byte) ([]uint64, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint64Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]uint64), nil
-}
-
-func (c *abiCodec) DecodeUint128Slice(data []byte) ([]*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint128Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]*big.Int), nil
-}
-
-func (c *abiCodec) DecodeUint256Slice(data []byte) ([]*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIUint256Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]*big.Int), nil
-}
-
-func (c *abiCodec) DecodeInt8Slice(data []byte) ([]int8, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt8Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]int8), nil
-}
-
-func (c *abiCodec) DecodeInt16Slice(data []byte) ([]int16, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt16Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]int16), nil
-}
-
-func (c *abiCodec) DecodeInt32Slice(data []byte) ([]int32, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt32Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]int32), nil
-}
-
-func (c *abiCodec) DecodeInt64Slice(data []byte) ([]int64, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt64Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]int64), nil
-}
-
-func (c *abiCodec) DecodeInt128Slice(data []byte) ([]*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt128Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]*big.Int), nil
-}
-
-func (c *abiCodec) DecodeInt256Slice(data []byte) ([]*big.Int, error) {
-	values, err := types.ABIArguments{{Type: types.ABIInt256Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([]*big.Int), nil
-}
-
-func (c *abiCodec) DecodeBytes32Slice(data []byte) ([][32]byte, error) {
-	values, err := types.ABIArguments{{Type: types.ABIBytes32Slice}}.Unpack(data)
-	if err != nil {
-		return nil, err
-	}
-	return values[0].([][32]byte), nil
 }

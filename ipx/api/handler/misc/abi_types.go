@@ -31,8 +31,8 @@ func NewSelectorResponse(s []byte) *SelectorResponse {
 }
 
 type EncodeRequest struct {
-	Signature string   `json:"signature" example:"transfer(address,uint256)"`
-	Args      []string `json:"args"      example:"[\"0xDa70aA79...\",\"1000000000000000000\"]"`
+	Signature string `json:"signature" example:"transfer(address,uint256)"`
+	Args      []any  `json:"args"      example:"[\"0xDa70aA79...\",\"1000000000000000000\"]"`
 }
 
 func (r *EncodeRequest) ValidateRequest() error {

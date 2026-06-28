@@ -1523,7 +1523,7 @@ func (h *SanctumHandler) NativeBalance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	balance, err := core.ABI.DecodeUint256(data)
+	balance, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode balance: %s", err))
 		return
@@ -1569,7 +1569,7 @@ func (h *SanctumHandler) NativeAvailable(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	available, err := core.ABI.DecodeUint256(data)
+	available, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode available: %s", err))
 		return
@@ -1615,7 +1615,7 @@ func (h *SanctumHandler) NativeAllocation(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	allocation, err := core.ABI.DecodeUint256(data)
+	allocation, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode allocation: %s", err))
 		return
@@ -1661,7 +1661,7 @@ func (h *SanctumHandler) NativePending(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pending, err := core.ABI.DecodeUint256(data)
+	pending, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode pending: %s", err))
 		return

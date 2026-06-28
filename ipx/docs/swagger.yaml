@@ -364,17 +364,6 @@ definitions:
         type: string
     type: object
   misc.EncodeRequest:
-    properties:
-      args:
-        example:
-        - '["0xDa70aA79..."'
-        - '"1000000000000000000"]'
-        items:
-          type: string
-        type: array
-      signature:
-        example: transfer(address,uint256)
-        type: string
     type: object
   misc.EncodeResponse:
     properties:
@@ -4338,7 +4327,7 @@ paths:
       - application/json
       description: Builds transfer(address,uint256) calldata internally and returns
         the unsigned RLP-encoded EIP-1559 transaction. Gas limit is estimated on-chain
-        with a 20% buffer.
+        with a 2x buffer.
       parameters:
       - description: ERC-20 transfer request
         in: body
@@ -4374,7 +4363,7 @@ paths:
       - application/json
       description: Builds transfer(address,uint256) calldata internally and returns
         the unsigned RLP-encoded EIP-155 legacy transaction. Gas limit is estimated
-        on-chain with a 20% buffer.
+        on-chain with a 2x buffer.
       parameters:
       - description: ERC-20 transfer request
         in: body

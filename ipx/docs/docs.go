@@ -3667,7 +3667,7 @@ const docTemplate = `{
         },
         "/evm/v2/transaction/erc20/eip1559": {
             "post": {
-                "description": "Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-1559 transaction. Gas limit is estimated on-chain with a 20% buffer.",
+                "description": "Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-1559 transaction. Gas limit is estimated on-chain with a 2x buffer.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3719,7 +3719,7 @@ const docTemplate = `{
         },
         "/evm/v2/transaction/erc20/legacy": {
             "post": {
-                "description": "Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-155 legacy transaction. Gas limit is estimated on-chain with a 20% buffer.",
+                "description": "Builds transfer(address,uint256) calldata internally and returns the unsigned RLP-encoded EIP-155 legacy transaction. Gas limit is estimated on-chain with a 2x buffer.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5042,23 +5042,7 @@ const docTemplate = `{
             }
         },
         "misc.EncodeRequest": {
-            "type": "object",
-            "properties": {
-                "args": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    },
-                    "example": [
-                        "[\"0xDa70aA79...\"",
-                        "\"1000000000000000000\"]"
-                    ]
-                },
-                "signature": {
-                    "type": "string",
-                    "example": "transfer(address,uint256)"
-                }
-            }
+            "type": "object"
         },
         "misc.EncodeResponse": {
             "type": "object",

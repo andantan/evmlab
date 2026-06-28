@@ -1300,7 +1300,7 @@ func (h *SanctumHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addrs, err := core.ABI.DecodeAddressSlice(data)
+	addrs, err := types.DecodeAddressSlice(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode accounts: %s", err))
 		return
@@ -1351,7 +1351,7 @@ func (h *SanctumHandler) AccountCount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	count, err := core.ABI.DecodeUint256(data)
+	count, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode count: %s", err))
 		return

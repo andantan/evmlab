@@ -8,6 +8,7 @@ import (
 
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
+	"github.com/andantan/evmlab/core/types"
 	"github.com/andantan/evmlab/internal/rpc"
 	"github.com/andantan/evmlab/internal/util"
 )
@@ -68,7 +69,7 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	name, err := core.ABI.DecodeString(data)
+	name, err := types.DecodeString(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode name: %s", err))
 		return
@@ -83,7 +84,7 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	symbol, err := core.ABI.DecodeString(data)
+	symbol, err := types.DecodeString(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode symbol: %s", err))
 		return
@@ -98,7 +99,7 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	decimals, err := core.ABI.DecodeUint8(data)
+	decimals, err := types.DecodeUint8(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode decimals: %s", err))
 		return
@@ -113,7 +114,7 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	totalSupply, err := core.ABI.DecodeUint256(data)
+	totalSupply, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode totalSupply: %s", err))
 		return
@@ -170,7 +171,7 @@ func (h *ERC20Handler) Balance(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	decimals, err := core.ABI.DecodeUint8(data)
+	decimals, err := types.DecodeUint8(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode decimals: %s", err))
 		return
@@ -185,7 +186,7 @@ func (h *ERC20Handler) Balance(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	amount, err := core.ABI.DecodeUint256(data)
+	amount, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode balance: %s", err))
 		return
@@ -242,7 +243,7 @@ func (h *ERC20Handler) Allowance(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	decimals, err := core.ABI.DecodeUint8(data)
+	decimals, err := types.DecodeUint8(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode decimals: %s", err))
 		return
@@ -257,7 +258,7 @@ func (h *ERC20Handler) Allowance(w http.ResponseWriter, r *http.Request) {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
 		return
 	}
-	amount, err := core.ABI.DecodeUint256(data)
+	amount, err := types.DecodeUint256(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode allowance: %s", err))
 		return
@@ -315,7 +316,7 @@ func (h *ERC20Handler) Approved(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	approved, err := core.ABI.DecodeBool(data)
+	approved, err := types.DecodeBool(data)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode response: %s", err))
 		return
