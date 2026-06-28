@@ -4,7 +4,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"net/http"
+	"strings"
 
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
@@ -451,4 +453,157 @@ func (h *ERC20Handler) TransferFromCalldata(w http.ResponseWriter, r *http.Reque
 
 	data := core.TransferFromCalldata(req.ToFrom(), req.ToTo(), req.ToAmount())
 	handler.WriteJSON(w, http.StatusOK, NewTransferFromCalldataResponse(data))
+}
+
+// Detect godoc
+// @Summary      Detect ERC-20-like contract
+// @Description  Heuristically determines if a contract is ERC-20-like via eth_getCode, multicall3 read checks, and write simulation.
+// @Tags         contract
+// @Accept       json
+// @Produce      json
+// @Param        body  body      ERC20DetectRequest   true  "Contract address and optional probe address"
+// @Success      200   {object}  ERC20DetectResponse
+// @Failure      400   {object}  map[string]string
+// @Failure      500   {object}  map[string]string
+// @Router       /evm/contract/erc20/detect [post]
+func (h *ERC20Handler) Detect(w http.ResponseWriter, r *http.Request) {
+	req := new(ERC20DetectRequest)
+	if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, fmt.Sprintf("invalid request body: %s", err))
+		return
+	}
+	if err := req.ValidateRequest(); err != nil {
+		handler.WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := &ERC20DetectResponse{
+		Contract: req.Contract,
+		Probe:    req.Probe,
+	}
+
+	isContract, err := h.client.IsContract(r.Context(), req.Contract, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_getCode failed: %s", err))
+		return
+	}
+	resp.IsContract = isContract
+	if !isContract {
+		handler.WriteJSON(w, http.StatusOK, resp)
+		return
+	}
+
+	// index: 0=name, 1=symbol, 2=decimals, 3=totalSupply, 4=balanceOf(probe), 5=allowance(probe,probe)
+	calls := new(types.Aggregate3s).
+		With(req.ToContract(), core.NameCalldata()).
+		With(req.ToContract(), core.SymbolCalldata()).
+		With(req.ToContract(), core.DecimalsCalldata()).
+		With(req.ToContract(), core.TotalSupplyCalldata()).
+		With(req.ToContract(), core.BalanceOfCalldata(req.ToProbe())).
+		With(req.ToContract(), core.AllowanceCalldata(req.ToProbe(), req.ToProbe()))
+
+	p := map[string]string{
+		"to":   h.multicall3Addr.String(),
+		"data": "0x" + hex.EncodeToString(core.Multicall3Aggregator3CallData(*calls)),
+	}
+	raw, err := h.client.CallContract(r.Context(), p, "latest")
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("multicall3 failed: %s", err))
+		return
+	}
+	resultBytes, err := util.ParseHex(raw)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("parse response: %s", err))
+		return
+	}
+	results, err := types.DecodeAggregate3Results(resultBytes)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("decode results: %s", err))
+		return
+	}
+
+	// name (0): dynamic string, fallback to bytes32 for old tokens (e.g. MKR)
+	if results[0].Success {
+		if name, e := types.DecodeString(results[0].ReturnData); e == nil {
+			resp.Checks.Metadata.Name = true
+			resp.Metadata.Name = name
+		} else if len(results[0].ReturnData) == 32 {
+			if s := strings.TrimRight(string(results[0].ReturnData), "\x00"); len(s) > 0 {
+				resp.Checks.Metadata.Name = true
+				resp.Metadata.Name = s
+			}
+		}
+	}
+
+	// symbol (1): same bytes32 fallback
+	if results[1].Success {
+		if symbol, e := types.DecodeString(results[1].ReturnData); e == nil {
+			resp.Checks.Metadata.Symbol = true
+			resp.Metadata.Symbol = symbol
+		} else if len(results[1].ReturnData) == 32 {
+			if s := strings.TrimRight(string(results[1].ReturnData), "\x00"); len(s) > 0 {
+				resp.Checks.Metadata.Symbol = true
+				resp.Metadata.Symbol = s
+			}
+		}
+	}
+
+	// decimals (2)
+	if results[2].Success {
+		if decimals, e := types.DecodeUint8(results[2].ReturnData); e == nil {
+			resp.Checks.Metadata.Decimals = true
+			resp.Metadata.Decimals = decimals
+		}
+	}
+
+	// totalSupply (3)
+	if results[3].Success {
+		if ts, e := types.DecodeUint256(results[3].ReturnData); e == nil {
+			resp.Checks.Read.TotalSupply = true
+			resp.Metadata.TotalSupply = ts.String()
+		}
+	}
+
+	// balanceOf(probe) (4)
+	if results[4].Success {
+		if bal, e := types.DecodeUint256(results[4].ReturnData); e == nil {
+			resp.Checks.Read.BalanceOf = true
+			resp.ProbeResult.Balance = bal.String()
+		}
+	}
+
+	// allowance(probe, probe) (5)
+	if results[5].Success {
+		if al, e := types.DecodeUint256(results[5].ReturnData); e == nil {
+			resp.Checks.Read.Allowance = true
+			resp.ProbeResult.Allowance = al.String()
+		}
+	}
+
+	wp := map[string]string{
+		"from": req.Probe,
+		"to":   req.Contract,
+	}
+
+	wp["data"] = "0x" + hex.EncodeToString(core.TransferCalldata(req.ToProbe(), new(big.Int)))
+	_, err = h.client.CallContract(r.Context(), wp, "latest")
+	resp.Checks.WriteSimulation.TransferZero = err == nil
+
+	wp["data"] = "0x" + hex.EncodeToString(core.ApproveCalldata(req.ToProbe(), new(big.Int)))
+	_, err = h.client.CallContract(r.Context(), wp, "latest")
+	resp.Checks.WriteSimulation.ApproveZero = err == nil
+
+	wp["data"] = "0x" + hex.EncodeToString(core.TransferFromCalldata(req.ToProbe(), req.ToProbe(), new(big.Int)))
+	_, err = h.client.CallContract(r.Context(), wp, "latest")
+	resp.Checks.WriteSimulation.TransferFromZero = err == nil
+
+	resp.IsERC20Like = resp.Checks.Read.TotalSupply &&
+		resp.Checks.Read.BalanceOf &&
+		resp.Checks.Read.Allowance
+
+	resp.MetadataSupported = resp.Checks.Metadata.Name &&
+		resp.Checks.Metadata.Symbol &&
+		resp.Checks.Metadata.Decimals
+
+	handler.WriteJSON(w, http.StatusOK, resp)
 }

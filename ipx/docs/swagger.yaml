@@ -133,6 +133,86 @@ definitions:
       balance:
         type: string
     type: object
+  contract.ERC20DetectChecks:
+    properties:
+      metadata:
+        $ref: '#/definitions/contract.ERC20DetectChecksMetadata'
+      read:
+        $ref: '#/definitions/contract.ERC20DetectChecksRead'
+      write_simulation:
+        $ref: '#/definitions/contract.ERC20DetectChecksWriteSimulation'
+    type: object
+  contract.ERC20DetectChecksMetadata:
+    properties:
+      decimals:
+        type: boolean
+      name:
+        type: boolean
+      symbol:
+        type: boolean
+    type: object
+  contract.ERC20DetectChecksRead:
+    properties:
+      allowance:
+        type: boolean
+      balance_of:
+        type: boolean
+      total_supply:
+        type: boolean
+    type: object
+  contract.ERC20DetectChecksWriteSimulation:
+    properties:
+      approve_zero:
+        type: boolean
+      transfer_from_zero:
+        type: boolean
+      transfer_zero:
+        type: boolean
+    type: object
+  contract.ERC20DetectMetadata:
+    properties:
+      decimals:
+        type: integer
+      name:
+        type: string
+      symbol:
+        type: string
+      total_supply:
+        type: string
+    type: object
+  contract.ERC20DetectProbeResult:
+    properties:
+      allowance:
+        type: string
+      balance:
+        type: string
+    type: object
+  contract.ERC20DetectRequest:
+    properties:
+      contract:
+        type: string
+      probe:
+        type: string
+    type: object
+  contract.ERC20DetectResponse:
+    properties:
+      checks:
+        $ref: '#/definitions/contract.ERC20DetectChecks'
+      contract:
+        type: string
+      is_contract:
+        type: boolean
+      is_erc20_like:
+        type: boolean
+      metadata:
+        $ref: '#/definitions/contract.ERC20DetectMetadata'
+      metadata_supported:
+        type: boolean
+      probe:
+        type: string
+      probe_result:
+        $ref: '#/definitions/contract.ERC20DetectProbeResult'
+    type: object
   contract.ERC20MetadataRequest:
     properties:
       block:
@@ -2407,6 +2487,41 @@ paths:
               type: string
             type: object
       summary: Build transferFrom calldata
+      tags:
+      - contract
+  /evm/contract/erc20/detect:
+    post:
+      consumes:
+      - application/json
+      description: Heuristically determines if a contract is ERC-20-like via eth_getCode,
+        multicall3 read checks, and write simulation.
+      parameters:
+      - description: Contract address and optional probe address
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/contract.ERC20DetectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/contract.ERC20DetectResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Detect ERC-20-like contract
       tags:
       - contract
   /evm/contract/erc20/metadata:

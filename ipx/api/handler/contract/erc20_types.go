@@ -345,3 +345,77 @@ type TransferFromCalldataResponse struct {
 func NewTransferFromCalldataResponse(b []byte) *TransferFromCalldataResponse {
 	return &TransferFromCalldataResponse{Data: "0x" + hex.EncodeToString(b)}
 }
+
+type ERC20DetectRequest struct {
+	Contract string `json:"contract"`
+	Probe    string `json:"probe"`
+
+	contract *types.Address
+	probe    *types.Address
+}
+
+func (r *ERC20DetectRequest) ValidateRequest() error {
+	r.Contract = strings.TrimSpace(r.Contract)
+	var err error
+	if r.contract, err = types.NewAddressFromHex(r.Contract); err != nil {
+		return errors.New("contract: invalid address")
+	}
+	r.Probe = strings.TrimSpace(r.Probe)
+	if r.Probe == "" {
+		r.Probe = types.SystemAddress
+	}
+	if r.probe, err = types.NewAddressFromHex(r.Probe); err != nil {
+		return errors.New("probe: invalid address")
+	}
+	return nil
+}
+
+func (r *ERC20DetectRequest) ToContract() *types.Address { return r.contract }
+func (r *ERC20DetectRequest) ToProbe() *types.Address    { return r.probe }
+
+type ERC20DetectChecksMetadata struct {
+	Name     bool `json:"name"`
+	Symbol   bool `json:"symbol"`
+	Decimals bool `json:"decimals"`
+}
+
+type ERC20DetectChecksRead struct {
+	TotalSupply bool `json:"total_supply"`
+	BalanceOf   bool `json:"balance_of"`
+	Allowance   bool `json:"allowance"`
+}
+
+type ERC20DetectChecksWriteSimulation struct {
+	TransferZero     bool `json:"transfer_zero"`
+	ApproveZero      bool `json:"approve_zero"`
+	TransferFromZero bool `json:"transfer_from_zero"`
+}
+
+type ERC20DetectChecks struct {
+	Metadata        ERC20DetectChecksMetadata        `json:"metadata"`
+	Read            ERC20DetectChecksRead            `json:"read"`
+	WriteSimulation ERC20DetectChecksWriteSimulation `json:"write_simulation"`
+}
+
+type ERC20DetectMetadata struct {
+	Name        string `json:"name"`
+	Symbol      string `json:"symbol"`
+	Decimals    uint8  `json:"decimals"`
+	TotalSupply string `json:"total_supply"`
+}
+
+type ERC20DetectProbeResult struct {
+	Balance   string `json:"balance"`
+	Allowance string `json:"allowance"`
+}
+
+type ERC20DetectResponse struct {
+	Contract          string                 `json:"contract"`
+	Probe             string                 `json:"probe"`
+	IsContract        bool                   `json:"is_contract"`
+	IsERC20Like       bool                   `json:"is_erc20_like"`
+	MetadataSupported bool                   `json:"metadata_supported"`
+	Checks            ERC20DetectChecks      `json:"checks"`
+	Metadata          ERC20DetectMetadata    `json:"metadata"`
+	ProbeResult       ERC20DetectProbeResult `json:"probe_result"`
+}

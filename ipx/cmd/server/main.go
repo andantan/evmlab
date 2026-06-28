@@ -117,6 +117,7 @@ func run() error {
 		r.Post("/eip2612/nonces", eip.EIP2612Nonces)
 
 		erc20 := contract.NewERC20Handler(cfg, client)
+		r.Post("/erc20/detect", erc20.Detect)
 		r.Post("/erc20/metadata", erc20.Metadata)
 		r.Post("/erc20/balance", erc20.Balance)
 		r.Post("/erc20/allowance", erc20.Allowance)

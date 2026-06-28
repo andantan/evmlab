@@ -53,7 +53,7 @@ func Multicall3Aggregator3CallData(calls types.Aggregate3s) []byte {
 		totalElemBytes += elemSizes[i]
 	}
 
-	b := make([]byte, 4+32+32+n*32+totalElemBytes)
+	b := make([]byte, 4+32+32+n*32+totalElemBytes) // Maybe??
 
 	copy(b[0:4], types.MultiCall3Aggregate3Selector.Bytes())
 
@@ -82,7 +82,7 @@ func Multicall3Aggregator3CallData(calls types.Aggregate3s) []byte {
 		}
 		pos += 32
 
-		b[pos+31] = 96 // offset to bytes within tuple
+		b[pos+31] = 96 // offset to bytes within tuple, maybe 96??
 		pos += 32
 
 		l := uint64(len(c.CallData))

@@ -725,6 +725,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/evm/contract/erc20/detect": {
+            "post": {
+                "description": "Heuristically determines if a contract is ERC-20-like via eth_getCode, multicall3 read checks, and write simulation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contract"
+                ],
+                "summary": "Detect ERC-20-like contract",
+                "parameters": [
+                    {
+                        "description": "Contract address and optional probe address",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20DetectRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/contract.ERC20DetectResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/evm/contract/erc20/metadata": {
             "post": {
                 "description": "Returns name, symbol, and decimals for an ERC-20 contract",
@@ -4849,6 +4901,130 @@ const docTemplate = `{
             "properties": {
                 "balance": {
                     "type": "string"
+                }
+            }
+        },
+        "contract.ERC20DetectChecks": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "$ref": "#/definitions/contract.ERC20DetectChecksMetadata"
+                },
+                "read": {
+                    "$ref": "#/definitions/contract.ERC20DetectChecksRead"
+                },
+                "write_simulation": {
+                    "$ref": "#/definitions/contract.ERC20DetectChecksWriteSimulation"
+                }
+            }
+        },
+        "contract.ERC20DetectChecksMetadata": {
+            "type": "object",
+            "properties": {
+                "decimals": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "boolean"
+                },
+                "symbol": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "contract.ERC20DetectChecksRead": {
+            "type": "object",
+            "properties": {
+                "allowance": {
+                    "type": "boolean"
+                },
+                "balance_of": {
+                    "type": "boolean"
+                },
+                "total_supply": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "contract.ERC20DetectChecksWriteSimulation": {
+            "type": "object",
+            "properties": {
+                "approve_zero": {
+                    "type": "boolean"
+                },
+                "transfer_from_zero": {
+                    "type": "boolean"
+                },
+                "transfer_zero": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "contract.ERC20DetectMetadata": {
+            "type": "object",
+            "properties": {
+                "decimals": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "symbol": {
+                    "type": "string"
+                },
+                "total_supply": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20DetectProbeResult": {
+            "type": "object",
+            "properties": {
+                "allowance": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20DetectRequest": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "type": "string"
+                },
+                "probe": {
+                    "type": "string"
+                }
+            }
+        },
+        "contract.ERC20DetectResponse": {
+            "type": "object",
+            "properties": {
+                "checks": {
+                    "$ref": "#/definitions/contract.ERC20DetectChecks"
+                },
+                "contract": {
+                    "type": "string"
+                },
+                "is_contract": {
+                    "type": "boolean"
+                },
+                "is_erc20_like": {
+                    "type": "boolean"
+                },
+                "metadata": {
+                    "$ref": "#/definitions/contract.ERC20DetectMetadata"
+                },
+                "metadata_supported": {
+                    "type": "boolean"
+                },
+                "probe": {
+                    "type": "string"
+                },
+                "probe_result": {
+                    "$ref": "#/definitions/contract.ERC20DetectProbeResult"
                 }
             }
         },

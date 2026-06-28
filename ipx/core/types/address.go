@@ -14,6 +14,10 @@ const (
 	AddressHexLength = 40
 )
 
+const (
+	SystemAddress = "0xfffffffffffffffffffffffffffffffffffffffe" // EIP-7002
+)
+
 type Address struct {
 	Addr common.Address
 

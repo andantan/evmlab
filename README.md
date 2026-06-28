@@ -93,6 +93,7 @@ Swagger UI: `http://localhost:33152/swagger/index.html`
 | POST   | `/evm/contract/multicall3/aggregate3`        | Multicall3 aggregate3 batch eth_call             |
 | POST   | `/evm/contract/eip712/domain`                | Fetch EIP-712 domain from contract               |
 | POST   | `/evm/contract/eip2612/nonces`               | Fetch EIP-2612 permit nonce                      |
+| POST   | `/evm/contract/erc20/detect`                 | Heuristic ERC-20-like detection                  |
 | POST   | `/evm/contract/erc20/metadata`               | Fetch ERC-20 name, symbol, decimals, totalSupply |
 | POST   | `/evm/contract/erc20/balance`                | `balanceOf(address)`                             |
 | POST   | `/evm/contract/erc20/allowance`              | `allowance(address,address)`                     |
