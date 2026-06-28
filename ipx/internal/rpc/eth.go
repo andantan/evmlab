@@ -42,6 +42,11 @@ func (c *Client) IsContract(ctx context.Context, address string, block string) (
 		return false, err
 	}
 
+	// EIP-7702: 0xef0100 + 20-byte address
+	if len(r) == 48 && r[:8] == "0xef0100" {
+		return false, nil
+	}
+
 	return r != "0x", nil
 }
 
