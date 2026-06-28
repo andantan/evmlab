@@ -792,7 +792,7 @@ const docTemplate = `{
                 "summary": "Multicall3 aggregate3",
                 "parameters": [
                     {
-                        "description": "Multicall3 target and calls",
+                        "description": "Multicall3 calls",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -4890,9 +4890,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/contract.Multicall3Call"
                     }
-                },
-                "target": {
-                    "type": "string"
                 }
             }
         },

@@ -11,6 +11,13 @@ type Aggregate3 struct {
 	CallData  []byte
 }
 
+type Aggregate3s []Aggregate3
+
+func (a *Aggregate3s) With(target *Address, callData []byte) *Aggregate3s {
+	*a = append(*a, Aggregate3{Target: target, AllowFail: true, CallData: callData})
+	return a
+}
+
 type Aggregator3Result struct {
 	Success    bool
 	ReturnData []byte

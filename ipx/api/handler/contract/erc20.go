@@ -9,16 +9,30 @@ import (
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
 	"github.com/andantan/evmlab/core/types"
+	"github.com/andantan/evmlab/internal/config"
 	"github.com/andantan/evmlab/internal/rpc"
 	"github.com/andantan/evmlab/internal/util"
 )
 
 type ERC20Handler struct {
-	client *rpc.Client
+	client         *rpc.Client
+	multicall3Addr *types.Address
 }
 
-func NewERC20Handler(client *rpc.Client) *ERC20Handler {
-	return &ERC20Handler{client: client}
+func NewERC20Handler(cfg *config.Config, client *rpc.Client) *ERC20Handler {
+	if cfg.Multicall3 == "" {
+		panic("multicall3 address not configured")
+	}
+
+	addr, err := types.NewAddressFromHex(cfg.Multicall3)
+	if err != nil {
+		panic(fmt.Sprintf("multicall3: invalid address: %s", err))
+	}
+
+	return &ERC20Handler{
+		client:         client,
+		multicall3Addr: addr,
+	}
 }
 
 // Metadata godoc
@@ -43,13 +57,6 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := map[string]string{"to": req.Contract}
-	var (
-		raw  string
-		data []byte
-		err  error
-	)
-
 	ok, err := h.client.IsContract(r.Context(), req.Contract, req.Block)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_getCode failed: %s", err))
@@ -60,61 +67,55 @@ func (h *ERC20Handler) Metadata(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.NameCalldata())
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call name() failed: %s", err))
+	target, _ := types.NewAddressFromHex(req.Contract)
+	calls := new(types.Aggregate3s).
+		With(target, core.NameCalldata()).
+		With(target, core.SymbolCalldata()).
+		With(target, core.DecimalsCalldata()).
+		With(target, core.TotalSupplyCalldata())
+
+	p := map[string]string{
+		"to":   h.multicall3Addr.String(),
+		"data": "0x" + hex.EncodeToString(core.Multicall3Aggregator3CallData(*calls)),
+	}
+
+	raw, err := h.client.CallContract(r.Context(), p, req.Block)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("multicall3 failed: %s", err))
 		return
 	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
+
+	resultBytes, err := util.ParseHex(raw)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("parse response: %s", err))
 		return
 	}
-	name, err := types.DecodeString(data)
+
+	results, err := types.DecodeAggregate3Results(resultBytes)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("decode results: %s", err))
+		return
+	}
+
+	name, err := types.DecodeString(results[0].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode name: %s", err))
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.SymbolCalldata())
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call symbol() failed: %s", err))
-		return
-	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
-		return
-	}
-	symbol, err := types.DecodeString(data)
+	symbol, err := types.DecodeString(results[1].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode symbol: %s", err))
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.DecimalsCalldata())
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call decimals() failed: %s", err))
-		return
-	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
-		return
-	}
-	decimals, err := types.DecodeUint8(data)
+	decimals, err := types.DecodeUint8(results[2].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode decimals: %s", err))
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.TotalSupplyCalldata())
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call totalSupply() failed: %s", err))
-		return
-	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
-		return
-	}
-	totalSupply, err := types.DecodeUint256(data)
+	totalSupply, err := types.DecodeUint256(results[3].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode totalSupply: %s", err))
 		return
@@ -145,13 +146,6 @@ func (h *ERC20Handler) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p := map[string]string{"to": req.Contract}
-	var (
-		raw  string
-		data []byte
-		err  error
-	)
-
 	ok, err := h.client.IsContract(r.Context(), req.Contract, req.Block)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_getCode failed: %s", err))
@@ -162,31 +156,40 @@ func (h *ERC20Handler) Balance(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.DecimalsCalldata())
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call decimals() failed: %s", err))
+	calls := new(types.Aggregate3s).
+		With(req.ToContract(), core.DecimalsCalldata()).
+		With(req.ToContract(), core.BalanceOfCalldata(req.ToAccount()))
+
+	p := map[string]string{
+		"to":   h.multicall3Addr.String(),
+		"data": "0x" + hex.EncodeToString(core.Multicall3Aggregator3CallData(*calls)),
+	}
+
+	raw, err := h.client.CallContract(r.Context(), p, req.Block)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("multicall3 failed: %s", err))
 		return
 	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
+
+	resultBytes, err := util.ParseHex(raw)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("parse response: %s", err))
 		return
 	}
-	decimals, err := types.DecodeUint8(data)
+
+	results, err := types.DecodeAggregate3Results(resultBytes)
+	if err != nil {
+		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("decode results: %s", err))
+		return
+	}
+
+	decimals, err := types.DecodeUint8(results[0].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode decimals: %s", err))
 		return
 	}
 
-	p["data"] = "0x" + hex.EncodeToString(core.BalanceOfCalldata(req.ToAccount()))
-	if raw, err = h.client.CallContract(r.Context(), p, req.Block); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("eth_call balanceOf() failed: %s", err))
-		return
-	}
-	if data, err = util.ParseHex(raw); err != nil {
-		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to parse hex response: %s", err))
-		return
-	}
-	amount, err := types.DecodeUint256(data)
+	amount, err := types.DecodeUint256(results[1].ReturnData)
 	if err != nil {
 		handler.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("failed to decode balance: %s", err))
 		return

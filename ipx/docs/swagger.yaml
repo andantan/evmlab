@@ -159,8 +159,6 @@ definitions:
         items:
           $ref: '#/definitions/contract.Multicall3Call'
         type: array
-      target:
-        type: string
     type: object
   contract.Multicall3Aggregate3Response:
     properties:
@@ -2452,7 +2450,7 @@ paths:
       description: Batch multiple eth_call invocations via Multicall3 aggregate3.
         allow_failure is always true.
       parameters:
-      - description: Multicall3 target and calls
+      - description: Multicall3 calls
         in: body
         name: body
         required: true

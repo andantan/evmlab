@@ -43,7 +43,7 @@ func TransferFromCalldata(from, to *types.Address, amount *big.Int) []byte {
 }
 
 // Multicall3Aggregator3CallData builds calldata for aggregate3((address,bool,bytes)[]).
-func Multicall3Aggregator3CallData(calls []types.Aggregate3) []byte {
+func Multicall3Aggregator3CallData(calls types.Aggregate3s) []byte {
 	n := len(calls)
 
 	elemSizes := make([]int, n)

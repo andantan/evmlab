@@ -9,16 +9,30 @@ import (
 	"github.com/andantan/evmlab/api/handler"
 	"github.com/andantan/evmlab/core"
 	"github.com/andantan/evmlab/core/types"
+	"github.com/andantan/evmlab/internal/config"
 	"github.com/andantan/evmlab/internal/rpc"
 	"github.com/andantan/evmlab/internal/util"
 )
 
 type Multicall3Handler struct {
-	client *rpc.Client
+	client         *rpc.Client
+	multicall3Addr *types.Address
 }
 
-func NewMulticall3Handler(client *rpc.Client) *Multicall3Handler {
-	return &Multicall3Handler{client: client}
+func NewMulticall3Handler(cfg *config.Config, client *rpc.Client) *Multicall3Handler {
+	if cfg.Multicall3 == "" {
+		panic("multicall3 address not configured")
+	}
+
+	addr, err := types.NewAddressFromHex(cfg.Multicall3)
+	if err != nil {
+		panic(fmt.Sprintf("multicall3: invalid address: %s", err))
+	}
+
+	return &Multicall3Handler{
+		client:         client,
+		multicall3Addr: addr,
+	}
 }
 
 // Aggregate3 godoc
@@ -27,7 +41,7 @@ func NewMulticall3Handler(client *rpc.Client) *Multicall3Handler {
 // @Tags         contract
 // @Accept       json
 // @Produce      json
-// @Param        body  body      Multicall3Aggregate3Request   true  "Multicall3 target and calls"
+// @Param        body  body      Multicall3Aggregate3Request   true  "Multicall3 calls"
 // @Success      200   {object}  Multicall3Aggregate3Response
 // @Failure      400   {object}  map[string]string
 // @Failure      502   {object}  map[string]string
@@ -44,11 +58,9 @@ func (h *Multicall3Handler) Aggregate3(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p := map[string]string{
-		"to":   req.Target,
+		"to":   h.multicall3Addr.String(),
 		"data": "0x" + hex.EncodeToString(core.Multicall3Aggregator3CallData(req.ToCalls())),
 	}
-
-	fmt.Println("0x" + hex.EncodeToString(core.Multicall3Aggregator3CallData(req.ToCalls())))
 
 	raw, err := h.client.CallContract(r.Context(), p, "latest")
 	if err != nil {

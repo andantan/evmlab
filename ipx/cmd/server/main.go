@@ -109,14 +109,14 @@ func run() error {
 	})
 
 	r.Route("/evm/contract", func(r chi.Router) {
-		mc3 := contract.NewMulticall3Handler(client)
+		mc3 := contract.NewMulticall3Handler(cfg, client)
 		r.Post("/multicall3/aggregate3", mc3.Aggregate3)
 
 		eip := contract.NewEIPHandler(client)
 		r.Post("/eip712/domain", eip.EIP712Domain)
 		r.Post("/eip2612/nonces", eip.EIP2612Nonces)
 
-		erc20 := contract.NewERC20Handler(client)
+		erc20 := contract.NewERC20Handler(cfg, client)
 		r.Post("/erc20/metadata", erc20.Metadata)
 		r.Post("/erc20/balance", erc20.Balance)
 		r.Post("/erc20/allowance", erc20.Allowance)

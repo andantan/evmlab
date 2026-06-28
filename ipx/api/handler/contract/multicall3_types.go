@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/andantan/evmlab/core/types"
-	"github.com/andantan/evmlab/internal/config"
 )
 
 type Multicall3Call struct {
@@ -16,23 +15,16 @@ type Multicall3Call struct {
 }
 
 type Multicall3Aggregate3Request struct {
-	Target string           `json:"target"`
-	Calls  []Multicall3Call `json:"calls"`
+	Calls []Multicall3Call `json:"calls"`
 
-	calls []types.Aggregate3
+	c types.Aggregate3s
 }
 
 func (r *Multicall3Aggregate3Request) ValidateRequest() error {
-	r.Target = strings.TrimSpace(r.Target)
-	if r.Target == "" {
-		r.Target = config.Multicall3CanonicalAddress
-	}
-
 	if len(r.Calls) == 0 {
 		return errors.New("calls is required")
 	}
 
-	r.calls = make([]types.Aggregate3, len(r.Calls))
 	for i, c := range r.Calls {
 		addr, err := types.NewAddressFromHex(c.To)
 		if err != nil {
@@ -42,12 +34,12 @@ func (r *Multicall3Aggregate3Request) ValidateRequest() error {
 		if err != nil {
 			return fmt.Errorf("calls[%d]: data: %s", i, err)
 		}
-		r.calls[i] = types.Aggregate3{Target: addr, AllowFail: true, CallData: callData}
+		r.c.With(addr, callData)
 	}
 	return nil
 }
 
-func (r *Multicall3Aggregate3Request) ToCalls() []types.Aggregate3 { return r.calls }
+func (r *Multicall3Aggregate3Request) ToCalls() types.Aggregate3s { return r.c }
 
 type Multicall3Aggregate3Result struct {
 	Success    bool   `json:"success"`

@@ -47,16 +47,17 @@ type ERC20BalanceRequest struct {
 	Account  string `json:"account"  example:"0xAbcD1234..."`
 	Block    string `json:"block"    example:"latest"`
 
-	account *types.Address
+	contract *types.Address
+	account  *types.Address
 }
 
 func (r *ERC20BalanceRequest) ValidateRequest() error {
 	r.Contract = strings.TrimSpace(r.Contract)
-	if !util.IsHexAddress(r.Contract) {
+	var err error
+	if r.contract, err = types.NewAddressFromHex(r.Contract); err != nil {
 		return errors.New("contract: invalid address")
 	}
 	r.Account = strings.TrimSpace(r.Account)
-	var err error
 	if r.account, err = types.NewAddressFromHex(r.Account); err != nil {
 		return errors.New("account: invalid address")
 	}
@@ -66,7 +67,8 @@ func (r *ERC20BalanceRequest) ValidateRequest() error {
 	return nil
 }
 
-func (r *ERC20BalanceRequest) ToAccount() *types.Address { return r.account }
+func (r *ERC20BalanceRequest) ToContract() *types.Address { return r.contract }
+func (r *ERC20BalanceRequest) ToAccount() *types.Address  { return r.account }
 
 type ERC20BalanceResponse struct {
 	Balance string `json:"balance"`
